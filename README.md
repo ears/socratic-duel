@@ -1,7 +1,14 @@
-# epistemic-synth
+# Dialectical Epistemic Synthesizer (Capstone)
 
-Simple ReAct agent
-Agent generated with `agents-cli` version `1.0.0`
+A multi-agent system designed to rigorously analyze theses using highly specialized academic lenses. Built with Google ADK for the AI Agents Intensive Vibe Coding Capstone Project.
+
+See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut/scientific-synthesizer/epistemic-synth/SPEC.md).
+
+## Features
+- **Human-In-The-Loop Triage**: An orchestrator agent that triages the thesis and lets you dynamically choose from 8 epistemic lenses (e.g., The Systems Theorist, The Ethicist).
+- **Crucible-Style Debate Loop**: A strictly controlled `LoopAgent` that pits a dynamically assigned protagonist against a contrarian to stress-test your thesis.
+- **Interdisciplinary Synthesis**: A final Report Composer agent that outputs a clear, zero-placeholder Markdown report.
+- **Security Guardrails**: Includes a `before_model_callback` to actively block prompt injections.
 
 ## Project Structure
 
