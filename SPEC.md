@@ -30,7 +30,7 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 
 The architecture must include robust protections to prevent runaway costs and malicious usage:
 
-1. **Token Explosion Prevention:** The `LoopAgent` must never run indefinitely. Implement an `EscalationChecker` (a custom `BaseAgent`) that acts as a hard circuit breaker. It must yield an `escalate=True` event strictly after 5 iterations to terminate the loop safely.
+1. **Token Explosion Prevention:** The `LoopAgent` must never run indefinitely. Implement an `EscalationChecker` (a custom `BaseAgent`) that acts as a circuit breaker. It must yield an `escalate=True` event either strictly after 5 iterations OR if a semantic Judge agent declares a consensus to terminate the loop early and safely.
 2. **Prompt Injection Mitigation:** Implement a `before_model_callback` (e.g., `guardrail_callback`) that intercepts every LLM request. If the user attempts to jailbreak the system (e.g., "ignore previous instructions"), the callback must block the request and return a hardcoded security alert, completely bypassing the LLM.
 3. **Bring-Your-Own-Key (BYOK):** No hardcoded API keys. The system must rely on `.env` configuration or Google Cloud Application Default Credentials (ADC) for Vertex AI access.
 
@@ -47,14 +47,15 @@ The backend must consist of the following orchestrated ADK components:
       - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
       - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
       - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
-      - **`escalator`**: The `BaseAgent` that counts iterations and stops the loop at 5.
+      - **`judge`**: A semantic stopping condition agent that reviews the debate and calls the `declare_consensus` tool if arguments stagnate.
+      - **`escalator`**: The `BaseAgent` that counts iterations and checks for consensus, stopping the loop at 5 rounds or earlier.
   2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
 
 ---
 
 ## 5. Developer Experience (DX) & Non-Functional Requirements (NFR)
 
-1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. A custom `set_chosen_lens` tool enables the root agent to write the user's selection into state memory.
+1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
 2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
 3. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 
@@ -69,6 +70,8 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
    - **Strict Academic Constraint:** Must bolster arguments with real-world academic citations and are strictly forbidden from hallucinating.
 2. **`citation_checker` (Academic Integrity Auditors):**
    - **Intent:** Must extract every citation or empirical claim from the debaters' drafts, verify them against high-reputation references via web search, and explicitly rewrite the text to remove any hallucinations or fake sources before finalizing the output.
-3. **`synthesizer` (The Final Writer):**
+3. **`judge` (The Semantic Referee):**
+   - **Intent:** Evaluate if the debate has stagnated or if no new substantial arguments are being introduced. If stagnant, call the `declare_consensus` tool. Otherwise, output 'CONTINUE'.
+4. **`synthesizer` (The Final Writer):**
    - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
    - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" to ensure clarity, lack of jargon, and removal of raw LaTeX/math artifacts.
