@@ -17,7 +17,7 @@ from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
 from google.adk.apps import App
 from google.adk.models import Gemini
 from google.genai import types
-from google.adk.tools import google_search, ToolContext
+from google.adk.tools import google_search, ToolContext, AgentTool
 from google.adk.agents.callback_context import CallbackContext
 from google.adk.models.llm_request import LlmRequest
 from google.adk.models.llm_response import LlmResponse
@@ -206,6 +206,17 @@ research_pipeline = SequentialAgent(
     description="Runs the Crucible-style dialectic debate and synthesizes a final report. Call this ONLY after a lens has been chosen and set."
 )
 
+# 1.5. Triage Researcher (Sub-Agent for Planner)
+triage_researcher = Agent(
+    name="triage_researcher",
+    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
+Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
+Provide a concise 'Context Brief' summarizing the real-world context of the thesis so the Orchestrator can intelligently choose an Epistemic Lens.""",
+    description="Searches the web to provide real-world context for a thesis.",
+    tools=[google_search]
+)
+
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
@@ -214,9 +225,10 @@ root_agent = Agent(
 
 PHASE 1 (Triage & Human-In-The-Loop):
 When the user provides a thesis or uploads a paper:
-1. Provide a brief 2-3 sentence synthesis of their core thesis.
-2. Suggest ONE of the Epistemic Lenses that would be most insightful.
-3. Present a numbered list of ALL 8 available lenses:
+1. (Optional but recommended) Call the `triage_researcher` tool to search the web for context on their thesis.
+2. Provide a brief 2-3 sentence synthesis of their core thesis.
+3. Suggest ONE of the Epistemic Lenses that would be most insightful, based on your internal knowledge and the web context.
+4. Present a numbered list of ALL 8 available lenses:
    1. The Empiricist
    2. The Rationalist
    3. The Hermeneut
@@ -225,14 +237,14 @@ When the user provides a thesis or uploads a paper:
    6. The Cognitive Scientist
    7. The Discourse Analyst
    8. The Systems Theorist
-4. ASK the user to reply with the NUMBER (1-8) of the lens they would like to use.
+5. ASK the user to reply with the NUMBER (1-8) of the lens they would like to use.
 DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
 
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
 1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
 2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.""",
-    tools=[set_chosen_lens],
+    tools=[set_chosen_lens, AgentTool(triage_researcher)],
     sub_agents=[research_pipeline]
 )
 
