@@ -239,5 +239,5 @@ Once the user replies with their chosen number, map it to the corresponding lens
 app = App(
     root_agent=root_agent,
     name="app",
-    plugins=[TokenCounterPlugin()]
+    plugins=[TokenCounterPlugin(name="token_counter")]
 )
