@@ -83,6 +83,7 @@ antagonist = Agent(
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.""",
+    tools=[google_search],
     output_key="antagonist_output",
     before_model_callback=guardrail_callback,
 )
@@ -106,13 +107,16 @@ Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, 
 Protagonist's view: {protagonist_output}
 Contrarian's view: {antagonist_output}
 
+You have access to web search. Do not just summarize the debate. Actively search for meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table.
+
 Structure the report:
 1. The Epistemic Frame ({chosen_lens})
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
-4. Interdisciplinary Synthesis (Where they converge/diverge)
+4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 
 CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts (e.g., convert them into plain, normal readable text).""",
+    tools=[google_search],
     output_key="final_report"
 )
 
