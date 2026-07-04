@@ -43,13 +43,17 @@ async def append_token_count(callback_context: CallbackContext) -> types.Content
     return types.Content(parts=[types.Part(text=msg)])
 
 # Tool to save the chosen lens
-async def set_chosen_lens(lens_name: str, tool_context: ToolContext) -> dict:
-    """Saves the user's chosen epistemic lens to the state so the debate agents can use it.
+async def set_chosen_lens(lens_name: str, thesis: str, language: str, tool_context: ToolContext) -> dict:
+    """Saves the user's chosen epistemic lens, thesis, and language to the state so the debate agents can use it.
     
     Args:
         lens_name: The name of the chosen lens (e.g., 'The Empiricist', 'The Ethicist').
+        thesis: The user's original thesis or argument string.
+        language: The language the user initiated the conversation in (e.g., 'English', 'German').
     """
     tool_context.state["chosen_lens"] = lens_name
+    tool_context.state["thesis"] = thesis
+    tool_context.state["language"] = language
     return {"status": f"Lens successfully set to '{lens_name}'. You may now delegate to the research_pipeline."}
 
 # Guardrail: Prevent Prompt Injection
@@ -89,6 +93,10 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
         callback_context.state["chosen_lens"] = "The Empiricist (Default Fallback)"
     if "consensus_reached" not in callback_context.state:
         callback_context.state["consensus_reached"] = False
+    if "thesis" not in callback_context.state:
+        callback_context.state["thesis"] = "No thesis provided."
+    if "language" not in callback_context.state:
+        callback_context.state["language"] = "English"
 
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
@@ -106,11 +114,16 @@ protagonist = Agent(
     name="protagonist",
     model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
     generate_content_config=default_generation_config,
+    include_contents='none',
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
-Apply this specific academic/analytical lens to analyze the thesis presented. 
+Apply this specific academic/analytical lens to analyze the following thesis:
+{thesis}
+
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
 
 STRICT ACADEMIC CONSTRAINT: You must bolster your arguments with real-world academic citations or empirical data. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
@@ -124,6 +137,7 @@ citation_checker_proto = Agent(
     name="citation_checker_proto",
     model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
     generate_content_config=default_generation_config,
+    include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
 Review the following analysis drafted by the Protagonist: {protagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
@@ -132,6 +146,8 @@ Review the following analysis drafted by the Protagonist: {protagonist_draft}
 4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
 5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
 Output the finalized, verified analysis in Markdown.
+
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
@@ -143,11 +159,14 @@ antagonist = Agent(
     name="antagonist",
     model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
     generate_content_config=default_generation_config,
+    include_contents='none',
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
 
 STRICT ACADEMIC CONSTRAINT: You must bolster your critique with real-world academic citations. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
@@ -160,6 +179,7 @@ citation_checker_anto = Agent(
     name="citation_checker_anto",
     model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
     generate_content_config=default_generation_config,
+    include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
@@ -168,6 +188,8 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
 5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
 Output the finalized, verified analysis in Markdown.
+
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
@@ -178,6 +200,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 judge = Agent(
     name="judge",
     model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    include_contents='none',
     instruction="""You are the Debate Judge.
 Review the latest arguments from the Protagonist and Antagonist:
 Protagonist: {protagonist_output}
@@ -185,7 +208,9 @@ Antagonist: {antagonist_output}
 
 Evaluate if the debate has stagnated, if no new substantial arguments are being introduced, or if they have reached a consensus/stalemate.
 If the debate has stagnated and is repeating itself, you MUST call the `declare_consensus` tool to end the debate early. 
-If the debate is still producing novel, productive friction, simply output 'CONTINUE'.""",
+If the debate is still producing novel, productive friction, simply output 'CONTINUE'.
+
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.""",
     tools=[declare_consensus],
     output_key="judge_output"
 )
@@ -205,6 +230,7 @@ synthesizer = Agent(
     name="synthesizer",
     model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
     generate_content_config=default_generation_config,
+    include_contents='none',
     instruction="""You are the Epistemic Synthesizer.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
@@ -220,7 +246,7 @@ Structure the report:
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
 
-CRITICAL LANGUAGE CONSTRAINT: You must dynamically detect the language used in the Protagonist's and Contrarian's debate transcripts. You must write the ENTIRE final report (including your section headers) in that exact same language. Do NOT default to English if the debate was conducted in German or another language.
+CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including your section headers) in {language}. Do NOT default to English.
 
 CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
     tools=[google_search],
@@ -274,7 +300,7 @@ DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
 
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
-1. Call the `set_chosen_lens` tool (pass the chosen lens name as the 'lens_name' parameter) to save the full lens name to the system state.
+1. Call the `set_chosen_lens` tool. Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, and the detected language as the 'language' parameter.
 2. DO NOT call any other tools simultaneously. WAIT for the `set_chosen_lens` tool to return a success message.
 3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
 4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
