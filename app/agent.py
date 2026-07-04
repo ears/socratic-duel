@@ -133,21 +133,21 @@ PHASE 1 (Triage & Human-In-The-Loop):
 When the user provides a thesis or uploads a paper:
 1. Provide a brief 2-3 sentence synthesis of their core thesis.
 2. Suggest ONE of the Epistemic Lenses that would be most insightful.
-3. Present a list of ALL 8 available lenses:
-   - The Empiricist
-   - The Rationalist
-   - The Hermeneut
-   - The Engineer / Pragmatist
-   - The Ethicist
-   - The Cognitive Scientist
-   - The Discourse Analyst
-   - The Systems Theorist
-4. ASK the user which lens they would like to use.
+3. Present a numbered list of ALL 8 available lenses:
+   1. The Empiricist
+   2. The Rationalist
+   3. The Hermeneut
+   4. The Engineer / Pragmatist
+   5. The Ethicist
+   6. The Cognitive Scientist
+   7. The Discourse Analyst
+   8. The Systems Theorist
+4. ASK the user to reply with the NUMBER (1-8) of the lens they would like to use.
 DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
 
 PHASE 2 (Execution):
-Once the user replies with their chosen lens:
-1. Call the `set_chosen_lens` tool to save their choice to the system state.
+Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
+1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
 2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.""",
     tools=[set_chosen_lens],
     sub_agents=[research_pipeline]
