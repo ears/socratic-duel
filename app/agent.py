@@ -69,11 +69,28 @@ protagonist = Agent(
     model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the thesis presented. 
-If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}""",
+If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
+
+STRICT ACADEMIC CONSTRAINT: You must bolster your arguments with real-world academic citations or empirical data. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.""",
     tools=[google_search],
-    output_key="protagonist_output",
+    output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
     before_agent_callback=init_debate_state,
+)
+
+# 1.5. Protagonist Citation Auditor
+citation_checker_proto = Agent(
+    name="citation_checker_proto",
+    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    instruction="""You are the Academic Integrity Auditor. 
+Review the following analysis drafted by the Protagonist: {protagonist_draft}
+1. Extract every citation, statistic, or empirical claim.
+2. Use web search to strictly verify each citation against hallucination.
+3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
+4. If a citation is hallucinated, fake, or low-reputation, rewrite the text to explicitly remove it and adjust the argument accordingly.
+Output the finalized, verified analysis in Markdown.""",
+    tools=[google_search],
+    output_key="protagonist_output",
 )
 
 # 2. Antagonist (Contrarian)
@@ -82,10 +99,27 @@ antagonist = Agent(
     model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
-Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.""",
+Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
+
+STRICT ACADEMIC CONSTRAINT: You must bolster your critique with real-world academic citations. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.""",
+    tools=[google_search],
+    output_key="antagonist_draft",
+    before_model_callback=guardrail_callback,
+)
+
+# 2.5. Antagonist Citation Auditor
+citation_checker_anto = Agent(
+    name="citation_checker_anto",
+    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    instruction="""You are the Academic Integrity Auditor. 
+Review the following critique drafted by the Antagonist: {antagonist_draft}
+1. Extract every citation, statistic, or empirical claim.
+2. Use web search to strictly verify each citation against hallucination.
+3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
+4. If a citation is hallucinated, fake, or low-reputation, rewrite the text to explicitly remove it and adjust the argument accordingly.
+Output the finalized, verified analysis in Markdown.""",
     tools=[google_search],
     output_key="antagonist_output",
-    before_model_callback=guardrail_callback,
 )
 
 # Escalation to break the loop
@@ -94,7 +128,7 @@ escalation_checker = EscalationChecker(name="escalator")
 # Interactive Reflection Loop
 debate_loop = LoopAgent(
     name="debate_loop",
-    sub_agents=[protagonist, antagonist, escalation_checker],
+    sub_agents=[protagonist, citation_checker_proto, antagonist, citation_checker_anto, escalation_checker],
     max_iterations=5,
 )
 
