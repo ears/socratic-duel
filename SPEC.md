@@ -18,7 +18,7 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 
 1. Scaffold a new ADK project named `epistemic-synth` using `agents-cli scaffold create epistemic-synth --agent adk --prototype`.
 2. Rewrite `app/agent.py` to implement a multi-agent dialectical pipeline.
-3. **Human-In-The-Loop (HITL):** Implement a strict Two-Phase interaction model in the root agent. Phase 1: Triage the thesis, suggest a lens, present all 8 lenses, and wait for the user to select one. Phase 2: Save the user's choice using a custom `set_chosen_lens` tool, then execute the pipeline.
+3. **Human-In-The-Loop (HITL):** Implement a strict Two-Phase interaction model in the root agent. Phase 1: Triage the thesis, suggest a lens, present all 8 lenses (with explicit 1-2 sentence descriptions for each), and wait for the user to select one. Phase 2: Save the user's choice using a custom `set_chosen_lens` tool, then execute the pipeline.
 4. **The Crucible Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
 5. **Natural Language Communication:** The agents must communicate using raw, unstructured Markdown text rather than strict JSON schemas. This ensures a fluid, high-quality academic debate without wasting tokens on JSON overhead.
 6. **Synthesis:** Once the loop terminates, pass the entire debate transcript to a `SequentialAgent` pipeline where a final Synthesizer agent writes the concluding Markdown report.
@@ -39,26 +39,27 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 ## 4. Architectural Logic (Agent Orchestration)
 
-The backend must consist of the following orchestrated ADK components:
+The backend must consist of the following orchestrated ADK components, utilizing a **Hybrid Model Architecture** (`gemini-3.1-pro-preview` for deep reasoning, and `gemini-flash-latest` for simple utility tasks):
 
-- **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
-- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
+- **`triage_researcher`** (Flash): A sub-agent equipped with `google_search` that provides real-world context for a thesis.
+- **`interactive_planner` (Root, Pro)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
-      - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
-      - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
-      - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
-      - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
-      - **`judge`**: A semantic stopping condition agent that reviews the debate and calls the `declare_consensus` tool if arguments stagnate.
+      - **`protagonist`** (Pro): Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
+      - **`citation_checker_proto`** (Flash): An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
+      - **`antagonist`** (Pro): Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
+      - **`citation_checker_anto`** (Flash): An Academic Integrity Auditor that verifies the antagonist's citations via web search.
+      - **`judge`** (Flash): A semantic stopping condition agent that reviews the debate and calls the `declare_consensus` tool if arguments stagnate.
       - **`escalator`**: The `BaseAgent` that counts iterations and checks for consensus, stopping the loop at 5 rounds or earlier.
-  2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
+  2. **`synthesizer`** (Pro): Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
 
 ---
 
 ## 5. Developer Experience (DX) & Non-Functional Requirements (NFR)
 
-1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
-2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
+1. **Clean Console Logging:** The FastAPI application (`fast_api_app.py`) must implement a custom `logging.Filter` to suppress `uvicorn` access logs for static `/dev-ui/` requests, preventing terminal clutter during development.
+2. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
+3. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
 3. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 
 ---
@@ -70,7 +71,8 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
 1. **General Communication Style (All Text-Generating Agents):**
    - **Rule:** Must write in crisp, clear, highly digestible prose accessible to an educated layperson, avoiding dense academic jargon while maintaining rigorous intellectual precision.
 2. **`interactive_planner` (Root Orchestrator):**
-   - **Language Constraint:** Must dynamically detect the user's initial input language and ensure its entire response (including lens suggestions) is strictly in that same language, preventing fallback to English.
+   - **Explicit Lens Descriptions:** Must hardcode and provide brief (1-2 sentence) descriptions for each of the 8 lenses when presenting choices to the user.
+   - **Language Constraint:** Must dynamically detect the user's initial input language and ensure its entire response (including lens suggestions and descriptions) is strictly in that same language, preventing fallback to English.
 3. **`protagonist` & `antagonist` (Dynamic Debaters):**
    - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
    - **Strict Academic Constraint:** Must bolster arguments with real-world academic citations and are strictly forbidden from hallucinating.
