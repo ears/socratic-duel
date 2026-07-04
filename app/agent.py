@@ -42,8 +42,14 @@ async def guardrail_callback(callback_context: CallbackContext, llm_request: Llm
         return LlmResponse(contents=[types.Content(parts=[types.Part(text="Security alert: Prompt injection detected. Request denied.")])])
     return None
 
+# Tool for the Judge to stop the debate
+async def declare_consensus(tool_context: ToolContext) -> dict:
+    """Call this tool ONLY when you determine that the debate has reached a stalemate and no new arguments are being made."""
+    tool_context.state["consensus_reached"] = True
+    return {"status": "Consensus declared. The debate loop will now terminate."}
+
 class EscalationChecker(BaseAgent):
-    """Stops the LoopAgent when maximum iterations are reached to prevent token explosion."""
+    """Stops the LoopAgent when maximum iterations are reached or consensus is declared."""
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
@@ -51,8 +57,10 @@ class EscalationChecker(BaseAgent):
         iterations += 1
         ctx.session.state["loop_iterations"] = iterations
         
-        # Escalate after 5 iterations of debate
-        if iterations >= 5:
+        consensus = ctx.session.state.get("consensus_reached", False)
+        
+        # Escalate after 5 iterations OR if the Judge declared consensus
+        if iterations >= 5 or consensus:
             yield Event(author=self.name, actions=EventActions(escalate=True))
         else:
             yield Event(author=self.name)
@@ -62,6 +70,8 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
         callback_context.state["antagonist_output"] = "No feedback yet. This is your first analysis."
     if "chosen_lens" not in callback_context.state:
         callback_context.state["chosen_lens"] = "The Empiricist (Default Fallback)"
+    if "consensus_reached" not in callback_context.state:
+        callback_context.state["consensus_reached"] = False
 
 # 1. Protagonist Lens
 protagonist = Agent(
@@ -122,13 +132,29 @@ Output the finalized, verified analysis in Markdown.""",
     output_key="antagonist_output",
 )
 
+# 3. The Judge (Semantic Stopping Condition)
+judge = Agent(
+    name="judge",
+    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    instruction="""You are the Debate Judge.
+Review the latest arguments from the Protagonist and Antagonist:
+Protagonist: {protagonist_output}
+Antagonist: {antagonist_output}
+
+Evaluate if the debate has stagnated, if no new substantial arguments are being introduced, or if they have reached a consensus/stalemate.
+If the debate has stagnated and is repeating itself, you MUST call the `declare_consensus` tool to end the debate early. 
+If the debate is still producing novel, productive friction, simply output 'CONTINUE'.""",
+    tools=[declare_consensus],
+    output_key="judge_output"
+)
+
 # Escalation to break the loop
 escalation_checker = EscalationChecker(name="escalator")
 
 # Interactive Reflection Loop
 debate_loop = LoopAgent(
     name="debate_loop",
-    sub_agents=[protagonist, citation_checker_proto, antagonist, citation_checker_anto, escalation_checker],
+    sub_agents=[protagonist, citation_checker_proto, antagonist, citation_checker_anto, judge, escalation_checker],
     max_iterations=5,
 )
 
