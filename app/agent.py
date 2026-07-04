@@ -204,6 +204,8 @@ Structure the report:
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
 
+CRITICAL LANGUAGE CONSTRAINT: You must dynamically detect the language used in the Protagonist's and Contrarian's debate transcripts. You must write the ENTIRE final report (including your section headers) in that exact same language. Do NOT default to English if the debate was conducted in German or another language.
+
 CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
     tools=[google_search],
     output_key="final_report",
