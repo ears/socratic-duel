@@ -31,6 +31,7 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 The architecture must include robust protections to prevent runaway costs and malicious usage:
 
 1. **Token Explosion Prevention:** The `LoopAgent` must never run indefinitely. Implement an `EscalationChecker` (a custom `BaseAgent`) that acts as a circuit breaker. It must yield an `escalate=True` event either strictly after 5 iterations OR if a semantic Judge agent declares a consensus to terminate the loop early and safely.
+   - **Context Tracking:** To prevent the massive raw JSON history of web searches from bloating the context window exponentially, all agents within the `research_pipeline` (debaters, checkers, synthesizer) MUST set `include_contents='none'`. They will rely exclusively on dynamic state injection (e.g., `{thesis}`, `{language}`) for historical context.
 2. **Global Cost Tracking:** Implement a custom `TokenCounterPlugin` (inheriting from `BasePlugin`) injected at the `App` level. It must intercept the `after_model_callback` for every agent in the architecture, tally the `usage_metadata.total_token_count`, and store it in session memory. The Synthesizer must use an `after_agent_callback` to extract this tally and append it to the bottom of the final Markdown report.
 3. **Prompt Injection Mitigation:** Implement a `before_model_callback` (e.g., `guardrail_callback`) that intercepts every LLM request. If the user attempts to jailbreak the system (e.g., "ignore previous instructions"), the callback must block the request and return a hardcoded security alert, completely bypassing the LLM.
 4. **Network & API Stability:** To prevent deadlocks when an agent chains too many searches, all models must implement strict API timeouts (`HttpOptions(timeout=60000)`) and cap Automatic Function Calling (AFC) at a maximum of 3 remote calls per turn via `GenerateContentConfig`.
@@ -70,10 +71,12 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
 
 1. **General Communication Style (All Text-Generating Agents):**
    - **Rule:** Must write in crisp, clear, highly digestible prose accessible to an educated layperson, avoiding dense academic jargon while maintaining rigorous intellectual precision.
+   - **Persistent Language Tracking:** Every single agent in the `research_pipeline` MUST have `{language}` dynamically injected into its system prompt, accompanied by a `CRITICAL LANGUAGE CONSTRAINT` forcing it to output exclusively in that language to prevent English fallbacks.
 2. **`interactive_planner` (Root Orchestrator):**
    - **Explicit Lens Descriptions:** Must hardcode and provide brief (1-2 sentence) descriptions for each of the 8 lenses when presenting choices to the user.
    - **Language Constraint:** Must dynamically detect the user's initial input language and ensure its entire response (including lens suggestions and descriptions) is strictly in that same language, preventing fallback to English.
    - **Strict Tool Schema Anchoring:** To prevent `MALFORMED_FUNCTION_CALL` errors (especially when users upload files), the instruction must explicitly tell the model the exact parameter names for its tools (e.g., pass the thesis as the `'request'` parameter for `triage_researcher`, and `'lens_name'` for `set_chosen_lens`).
+   - **State Persistence for Downstream Agents:** Because downstream agents do not receive conversational history, `set_chosen_lens` MUST capture and save the original `{thesis}` and the detected `{language}` alongside the lens name.
    - **Sequential Delegation:** In Phase 2, the prompt must explicitly forbid parallel tool calling. The agent must call `set_chosen_lens`, wait for a success status, and *then* use the delegation tool to transfer control in a subsequent turn.
 3. **`protagonist` & `antagonist` (Dynamic Debaters):**
    - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
@@ -85,5 +88,5 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
    - **Intent:** Evaluate if the debate has stagnated or if no new substantial arguments are being introduced. If stagnant, call the `declare_consensus` tool. Otherwise, output 'CONTINUE'.
 6. **`synthesizer` (The Final Writer):**
    - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
-   - **Language Constraint:** Must dynamically detect the language used in the debate and ensure the entire final report (including section headers) is output in that exact same language.
+   - **Language Constraint:** Must output the entire final report (including section headers) in the dynamically injected `{language}`. Do NOT default to English.
    - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" to ensure clarity, lack of jargon, and explicitly forbid inline math mode (e.g. `$Word$`) to prevent the LLM from outputting raw LaTeX variables.
