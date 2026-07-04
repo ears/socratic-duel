@@ -24,6 +24,24 @@ from google.adk.models.llm_response import LlmResponse
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 from typing import AsyncGenerator
+from google.adk.plugins.base_plugin import BasePlugin
+
+class TokenCounterPlugin(BasePlugin):
+    async def after_model_callback(self, *, callback_context, llm_response):
+        current_tokens = callback_context.session.state.get("total_tokens", 0)
+        try:
+            if hasattr(llm_response, "usage_metadata") and llm_response.usage_metadata:
+                current_tokens += getattr(llm_response.usage_metadata, "total_token_count", 0)
+        except Exception:
+            pass
+        callback_context.session.state["total_tokens"] = current_tokens
+        return None
+
+async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
+    tokens = callback_context.session.state.get("total_tokens", 0)
+    current_report = callback_context.state.get("final_report", "")
+    new_report = f"{current_report}\n\n---\n**Total Tokens Used in Session:** {tokens}"
+    return types.Content(parts=[types.Part(text=new_report)])
 
 # Tool to save the chosen lens
 async def set_chosen_lens(lens_name: str, tool_context: ToolContext) -> dict:
@@ -177,7 +195,8 @@ Structure the report:
 
 CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts (e.g., convert them into plain, normal readable text).""",
     tools=[google_search],
-    output_key="final_report"
+    output_key="final_report",
+    after_agent_callback=append_token_count,
 )
 
 # Sequential Pipeline
@@ -220,4 +239,5 @@ Once the user replies with their chosen number, map it to the corresponding lens
 app = App(
     root_agent=root_agent,
     name="app",
+    plugins=[TokenCounterPlugin()]
 )
