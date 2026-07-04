@@ -19,7 +19,7 @@ from collections.abc import AsyncIterator
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
 from google.cloud import logging as google_cloud_logging
@@ -75,6 +75,12 @@ app: FastAPI = get_fast_api_app(
 )
 app.title = "epistemic-synth"
 app.description = "API for interacting with the Agent epistemic-synth"
+
+
+@app.get("/dev-ui/prism-light.css")
+def dummy_prism_css():
+    """Dummy endpoint to silence 404 errors for prism-light.css"""
+    return Response(content="", media_type="text/css")
 
 
 @app.post("/feedback")
