@@ -33,7 +33,8 @@ The architecture must include robust protections to prevent runaway costs and ma
 1. **Token Explosion Prevention:** The `LoopAgent` must never run indefinitely. Implement an `EscalationChecker` (a custom `BaseAgent`) that acts as a circuit breaker. It must yield an `escalate=True` event either strictly after 5 iterations OR if a semantic Judge agent declares a consensus to terminate the loop early and safely.
 2. **Global Cost Tracking:** Implement a custom `TokenCounterPlugin` (inheriting from `BasePlugin`) injected at the `App` level. It must intercept the `after_model_callback` for every agent in the architecture, tally the `usage_metadata.total_token_count`, and store it in session memory. The Synthesizer must use an `after_agent_callback` to extract this tally and append it to the bottom of the final Markdown report.
 3. **Prompt Injection Mitigation:** Implement a `before_model_callback` (e.g., `guardrail_callback`) that intercepts every LLM request. If the user attempts to jailbreak the system (e.g., "ignore previous instructions"), the callback must block the request and return a hardcoded security alert, completely bypassing the LLM.
-4. **Bring-Your-Own-Key (BYOK):** No hardcoded API keys. The system must rely on `.env` configuration or Google Cloud Application Default Credentials (ADC) for Vertex AI access.
+4. **Network & API Stability:** To prevent deadlocks when an agent chains too many searches, all models must implement strict API timeouts (`HttpOptions(timeout=60000)`) and cap Automatic Function Calling (AFC) at a maximum of 3 remote calls per turn via `GenerateContentConfig`.
+5. **Bring-Your-Own-Key (BYOK):** No hardcoded API keys. The system must rely on `.env` configuration or Google Cloud Application Default Credentials (ADC) for Vertex AI access.
 
 ---
 
@@ -72,6 +73,8 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
 2. **`interactive_planner` (Root Orchestrator):**
    - **Explicit Lens Descriptions:** Must hardcode and provide brief (1-2 sentence) descriptions for each of the 8 lenses when presenting choices to the user.
    - **Language Constraint:** Must dynamically detect the user's initial input language and ensure its entire response (including lens suggestions and descriptions) is strictly in that same language, preventing fallback to English.
+   - **Strict Tool Schema Anchoring:** To prevent `MALFORMED_FUNCTION_CALL` errors (especially when users upload files), the instruction must explicitly tell the model the exact parameter names for its tools (e.g., pass the thesis as the `'request'` parameter for `triage_researcher`, and `'lens_name'` for `set_chosen_lens`).
+   - **Sequential Delegation:** In Phase 2, the prompt must explicitly forbid parallel tool calling. The agent must call `set_chosen_lens`, wait for a success status, and *then* use the delegation tool to transfer control in a subsequent turn.
 3. **`protagonist` & `antagonist` (Dynamic Debaters):**
    - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
    - **Strict Academic Constraint:** Must bolster arguments with real-world academic citations and are strictly forbidden from hallucinating.

@@ -90,10 +90,22 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
     if "consensus_reached" not in callback_context.state:
         callback_context.state["consensus_reached"] = False
 
+# Resiliency defaults for Vertex AI
+default_http_options = types.HttpOptions(
+    timeout=60000, 
+    retry_options=types.HttpRetryOptions(attempts=3)
+)
+default_generation_config = types.GenerateContentConfig(
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(
+        maximum_remote_calls=3
+    )
+)
+
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
-    model=Gemini(model="gemini-3.1-pro-preview", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the thesis presented. 
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
@@ -110,7 +122,8 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 1.5. Protagonist Citation Auditor
 citation_checker_proto = Agent(
     name="citation_checker_proto",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are the Academic Integrity Auditor. 
 Review the following analysis drafted by the Protagonist: {protagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
@@ -128,7 +141,8 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 2. Antagonist (Contrarian)
 antagonist = Agent(
     name="antagonist",
-    model=Gemini(model="gemini-3.1-pro-preview", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
@@ -144,7 +158,8 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 2.5. Antagonist Citation Auditor
 citation_checker_anto = Agent(
     name="citation_checker_anto",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
@@ -162,7 +177,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 3. The Judge (Semantic Stopping Condition)
 judge = Agent(
     name="judge",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
     instruction="""You are the Debate Judge.
 Review the latest arguments from the Protagonist and Antagonist:
 Protagonist: {protagonist_output}
@@ -188,7 +203,8 @@ debate_loop = LoopAgent(
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
-    model=Gemini(model="gemini-3.1-pro-preview"),
+    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are the Epistemic Synthesizer.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
@@ -222,7 +238,8 @@ research_pipeline = SequentialAgent(
 # 1.5. Triage Researcher (Sub-Agent for Planner)
 triage_researcher = Agent(
     name="triage_researcher",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    generate_content_config=default_generation_config,
     instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
 Provide a concise 'Context Brief' summarizing the real-world context of the thesis so the Orchestrator can intelligently choose an Epistemic Lens.
@@ -235,12 +252,12 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
-    model=Gemini(model="gemini-3.1-pro-preview"),
+    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
     instruction="""You are the Orchestrator for the Epistemic Synthesizer. You operate in a strict TWO-PHASE interaction model.
 
 PHASE 1 (Triage & Human-In-The-Loop):
 When the user provides a thesis or uploads a paper:
-1. (Optional but recommended) Call the `triage_researcher` tool to search the web for context on their thesis.
+1. (Optional but recommended) Call the `triage_researcher` tool (pass the thesis as the 'request' parameter) to search the web for context on their thesis.
 2. Provide a brief 2-3 sentence synthesis of their core thesis.
 3. Suggest ONE of the Epistemic Lenses that would be most insightful, based on your internal knowledge and the web context.
 4. Present a numbered list of ALL 8 available lenses. You MUST provide a brief description for each lens, regardless of the language:
@@ -257,9 +274,10 @@ DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
 
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
-1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
-2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.
-3. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
+1. Call the `set_chosen_lens` tool (pass the chosen lens name as the 'lens_name' parameter) to save the full lens name to the system state.
+2. DO NOT call any other tools simultaneously. WAIT for the `set_chosen_lens` tool to return a success message.
+3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
+4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
 
