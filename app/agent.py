@@ -232,7 +232,7 @@ PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
 1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
 2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.""",
-    tools=[set_chosen_lens],
+    tools=[set_chosen_lens, google_search],
     sub_agents=[research_pipeline]
 )
 
