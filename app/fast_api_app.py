@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Request
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
 from google.cloud import logging as google_cloud_logging
@@ -80,10 +80,11 @@ app.title = "epistemic-synth"
 app.description = "API for interacting with the Agent epistemic-synth"
 
 
-@app.get("/dev-ui/prism-light.css")
-def dummy_prism_css():
-    """Dummy endpoint to silence 404 errors for prism-light.css"""
-    return Response(content="", media_type="text/css")
+@app.middleware("http")
+async def intercept_prism_css(request: Request, call_next):
+    if request.url.path == "/dev-ui/prism-light.css":
+        return Response(content="", media_type="text/css")
+    return await call_next(request)
 
 
 @app.post("/feedback")
