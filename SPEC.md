@@ -8,7 +8,7 @@ This document serves as the central "Source of Truth" for the `epistemic-synth` 
 
 **The Problem:** When standard LLMs are asked to analyze complex theses or arguments, they often produce a generic, middle-of-the-road consensus that lacks academic rigor and fails to expose critical blind spots.
 **The Solution:** The "Dialectical Epistemic Synthesizer". Inspired by the Crucible specification, this system avoids generic consensus by actively forcing a dialectical debate between highly specialized academic lenses.
-**The Purpose:** The system pits a protagonist (The Empiricist) against an antagonist (The Contrarian) in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
+**The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper. The user provides a thesis, and the system suggests an appropriate epistemic lens (e.g., The Empiricist, The Systems Theorist) while listing all 8 available options. Once the user selects a lens, the system pits a dynamically assigned protagonist against a contrarian in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
 
 ---
 
@@ -18,10 +18,11 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 
 1. Scaffold a new ADK project named `epistemic-synth` using `agents-cli scaffold create epistemic-synth --agent adk --prototype`.
 2. Rewrite `app/agent.py` to implement a multi-agent dialectical pipeline.
-3. **The Crucible Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
-4. **Natural Language Communication:** The agents must communicate using raw, unstructured Markdown text rather than strict JSON schemas. This ensures a fluid, high-quality academic debate without wasting tokens on JSON overhead.
-5. **Synthesis:** Once the loop terminates, pass the entire debate transcript to a `SequentialAgent` pipeline where a final Synthesizer agent writes the concluding Markdown report.
-6. **Built-in Tooling:** Equip the protagonist agent with the `google_search` tool to ensure empirical claims are grounded in actual web data.
+3. **Human-In-The-Loop (HITL):** Implement a strict Two-Phase interaction model in the root agent. Phase 1: Triage the thesis, suggest a lens, present all 8 lenses, and wait for the user to select one. Phase 2: Save the user's choice using a custom `set_chosen_lens` tool, then execute the pipeline.
+4. **The Crucible Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
+5. **Natural Language Communication:** The agents must communicate using raw, unstructured Markdown text rather than strict JSON schemas. This ensures a fluid, high-quality academic debate without wasting tokens on JSON overhead.
+6. **Synthesis:** Once the loop terminates, pass the entire debate transcript to a `SequentialAgent` pipeline where a final Synthesizer agent writes the concluding Markdown report.
+7. **Built-in Tooling:** Equip the protagonist agent with the `google_search` tool to ensure empirical claims are grounded in actual web data.
 
 ---
 
@@ -39,11 +40,11 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 The backend must consist of the following orchestrated ADK components:
 
-- **`interactive_planner` (Root)**: The overarching orchestrator that receives the initial thesis and delegates the workload to the pipeline.
+- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. Receives the initial thesis, interacts with the user to select a lens, and delegates the workload to the pipeline.
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
-      - **`empiricist` (Protagonist)**: Generates the initial empirical frame.
-      - **`contrarian` (Antagonist)**: Critiques the empiricist.
+      - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
+      - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
       - **`escalator`**: The `BaseAgent` that counts iterations and stops the loop at 5.
   2. **`synthesizer`**: Reads the final state of the debate and generates the output report.
 
@@ -51,7 +52,7 @@ The backend must consist of the following orchestrated ADK components:
 
 ## 5. Developer Experience (DX) & Non-Functional Requirements (NFR)
 
-1. **State Initialization:** To prevent "Context variable not found" crashes on the very first loop iteration, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects a default placeholder for the antagonist's output.
+1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. A custom `set_chosen_lens` tool enables the root agent to write the user's selection into state memory.
 2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
 3. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 
@@ -61,10 +62,10 @@ The backend must consist of the following orchestrated ADK components:
 
 The system instructions for the agents in `app/agent.py` must adhere to these strict behavioral rules:
 
-1. **`empiricist` (The Protagonist):**
-   - **Intent:** Must focus solely on empirical evidence, experimental design, and causality. Must respond directly to the Contrarian's previous feedback if it exists in the state.
-2. **`contrarian` (The Antagonist):**
-   - **Intent:** Must explicitly attack the methodological vulnerabilities and implicit assumptions of the Empiricist's output. Must provide the strongest, academically backed opposing argument.
+1. **`protagonist` (Dynamic Lens):**
+   - **Intent:** Must focus solely on the methodology and criteria of the dynamically assigned `{chosen_lens}`. Must respond directly to the Antagonist's previous feedback if it exists in the state.
+2. **`antagonist` (Dynamic Contrarian):**
+   - **Intent:** Must explicitly attack the methodological vulnerabilities and implicit assumptions of the Protagonist's output. Must provide the strongest, academically backed opposing argument tailored against the `{chosen_lens}`.
 3. **`synthesizer` (The Final Writer):**
-   - **Rule:** "Zero Placeholders, Maximum Clarity."
-   - **Intent:** The synthesizer is strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" internally before returning the text, ensuring the final interdisciplinary synthesis is clear, concise, and devoid of obfuscating jargon.
+   - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting."
+   - **Intent:** The synthesizer is strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" internally before returning the text, ensuring the final interdisciplinary synthesis is clear, concise, devoid of obfuscating jargon, and free of raw LaTeX/math artifacts (e.g., converting `\text{...}` to plain readable text).
