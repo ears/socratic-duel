@@ -19,16 +19,6 @@ from collections.abc import AsyncIterator
 
 warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
 
-import logging
-
-class DevUiFilter(logging.Filter):
-    def filter(self, record: logging.LogRecord) -> bool:
-        if record.args and len(record.args) >= 3 and "/dev-ui/" in str(record.args[2]):
-            return False
-        return True
-
-logging.getLogger("uvicorn.access").addFilter(DevUiFilter())
-
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
