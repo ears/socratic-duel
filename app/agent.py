@@ -93,7 +93,7 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
-    model=Gemini(model="gemini-2.5-pro", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-3.1-pro-preview", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the thesis presented. 
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
@@ -128,7 +128,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 2. Antagonist (Contrarian)
 antagonist = Agent(
     name="antagonist",
-    model=Gemini(model="gemini-2.5-pro", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-3.1-pro-preview", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
@@ -188,7 +188,7 @@ debate_loop = LoopAgent(
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
-    model=Gemini(model="gemini-2.5-pro"),
+    model=Gemini(model="gemini-3.1-pro-preview"),
     instruction="""You are the Epistemic Synthesizer.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
@@ -233,7 +233,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
-    model=Gemini(model="gemini-2.5-pro"),
+    model=Gemini(model="gemini-3.1-pro-preview"),
     instruction="""You are the Orchestrator for the Epistemic Synthesizer. You operate in a strict TWO-PHASE interaction model.
 
 PHASE 1 (Triage & Human-In-The-Loop):
