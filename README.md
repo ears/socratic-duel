@@ -10,6 +10,7 @@ See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut
 - **Academic Integrity Auditors**: Dedicated fact-checking agents that intercept both the protagonist's and antagonist's drafts, using web search to verify every citation against hallucination.
 - **Semantic Debate Judge**: An intelligent referee agent that evaluates the debate and dynamically stops the loop early if arguments stagnate.
 - **Interdisciplinary Synthesis**: A final Report Composer agent that actively uses web search to find novel meta-arguments and outputs a clear, zero-placeholder Markdown report.
+- **Global Token Tracking**: A custom App-level ADK plugin automatically tallies token usage across all agents (debaters, auditors, judge) and displays the total session cost at the end of the report.
 - **Security Guardrails**: Includes a `before_model_callback` to actively block prompt injections.
 
 ## Project Structure
