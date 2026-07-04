@@ -93,12 +93,14 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-2.5-pro", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the thesis presented. 
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
 
-STRICT ACADEMIC CONSTRAINT: You must bolster your arguments with real-world academic citations or empirical data. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.""",
+STRICT ACADEMIC CONSTRAINT: You must bolster your arguments with real-world academic citations or empirical data. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
@@ -114,8 +116,11 @@ Review the following analysis drafted by the Protagonist: {protagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
 2. Use web search to strictly verify each citation against hallucination.
 3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
-4. If a citation is hallucinated, fake, or low-reputation, rewrite the text to explicitly remove it and adjust the argument accordingly.
-Output the finalized, verified analysis in Markdown.""",
+4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
+5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
+Output the finalized, verified analysis in Markdown.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
     output_key="protagonist_output",
 )
@@ -123,12 +128,14 @@ Output the finalized, verified analysis in Markdown.""",
 # 2. Antagonist (Contrarian)
 antagonist = Agent(
     name="antagonist",
-    model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
+    model=Gemini(model="gemini-2.5-pro", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
 
-STRICT ACADEMIC CONSTRAINT: You must bolster your critique with real-world academic citations. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.""",
+STRICT ACADEMIC CONSTRAINT: You must bolster your critique with real-world academic citations. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
@@ -143,8 +150,11 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
 2. Use web search to strictly verify each citation against hallucination.
 3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
-4. If a citation is hallucinated, fake, or low-reputation, rewrite the text to explicitly remove it and adjust the argument accordingly.
-Output the finalized, verified analysis in Markdown.""",
+4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
+5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
+Output the finalized, verified analysis in Markdown.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search],
     output_key="antagonist_output",
 )
@@ -178,7 +188,7 @@ debate_loop = LoopAgent(
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
-    model=Gemini(model="gemini-flash-latest"),
+    model=Gemini(model="gemini-2.5-pro"),
     instruction="""You are the Epistemic Synthesizer.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
@@ -192,7 +202,9 @@ Structure the report:
 3. The Disciplinary Contrarian View
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 
-CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
+
+CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
     tools=[google_search],
     output_key="final_report",
     after_agent_callback=append_token_count,
@@ -211,7 +223,9 @@ triage_researcher = Agent(
     model=Gemini(model="gemini-flash-latest", retry_options=types.HttpRetryOptions(attempts=3)),
     instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
-Provide a concise 'Context Brief' summarizing the real-world context of the thesis so the Orchestrator can intelligently choose an Epistemic Lens.""",
+Provide a concise 'Context Brief' summarizing the real-world context of the thesis so the Orchestrator can intelligently choose an Epistemic Lens.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     description="Searches the web to provide real-world context for a thesis.",
     tools=[google_search]
 )
@@ -219,7 +233,7 @@ Provide a concise 'Context Brief' summarizing the real-world context of the thes
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
-    model=Gemini(model="gemini-flash-latest"),
+    model=Gemini(model="gemini-2.5-pro"),
     instruction="""You are the Orchestrator for the Epistemic Synthesizer. You operate in a strict TWO-PHASE interaction model.
 
 PHASE 1 (Triage & Human-In-The-Loop):
@@ -243,7 +257,11 @@ PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
 1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
 2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.
-3. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.""",
+3. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
+
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
+
+CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis, suggestions, the numbered list of lenses, and your questions—is strictly in that same language. Do NOT default to English if the user speaks German or another language. Translate the descriptions of the 8 lenses if necessary. However, when mapping their numerical choice (1-8) in Phase 2, ensure you always pass the standard English name (e.g., "The Empiricist") to the `set_chosen_lens` tool.""",
     tools=[set_chosen_lens, AgentTool(triage_researcher)],
     sub_agents=[research_pipeline]
 )
