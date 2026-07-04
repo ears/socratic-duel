@@ -67,13 +67,18 @@ The backend must consist of the following orchestrated ADK components:
 
 The system instructions for the agents in `app/agent.py` must adhere to these strict behavioral rules:
 
-1. **`protagonist` & `antagonist` (Dynamic Debaters):**
+1. **General Communication Style (All Text-Generating Agents):**
+   - **Rule:** Must write in crisp, clear, highly digestible prose accessible to an educated layperson, avoiding dense academic jargon while maintaining rigorous intellectual precision.
+2. **`interactive_planner` (Root Orchestrator):**
+   - **Language Constraint:** Must dynamically detect the user's initial input language and ensure its entire response (including lens suggestions) is strictly in that same language, preventing fallback to English.
+3. **`protagonist` & `antagonist` (Dynamic Debaters):**
    - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
    - **Strict Academic Constraint:** Must bolster arguments with real-world academic citations and are strictly forbidden from hallucinating.
-2. **`citation_checker` (Academic Integrity Auditors):**
-   - **Intent:** Must extract every citation or empirical claim from the debaters' drafts, verify them against high-reputation references via web search, and explicitly rewrite the text to remove any hallucinations or fake sources before finalizing the output.
-3. **`judge` (The Semantic Referee):**
+4. **`citation_checker` (Academic Integrity Auditors):**
+   - **Intent:** Must extract every citation or empirical claim from the debaters' drafts, verify them against high-reputation references via web search, and explicitly remove any hallucinations or fake sources.
+   - **Strict Constraint:** Must ONLY check alleged citations and strictly preserve the original text, core arguments, and author's voice without rewriting or critiquing the draft.
+5. **`judge` (The Semantic Referee):**
    - **Intent:** Evaluate if the debate has stagnated or if no new substantial arguments are being introduced. If stagnant, call the `declare_consensus` tool. Otherwise, output 'CONTINUE'.
-4. **`synthesizer` (The Final Writer):**
+6. **`synthesizer` (The Final Writer):**
    - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
    - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" to ensure clarity, lack of jargon, and explicitly forbid inline math mode (e.g. `$Word$`) to prevent the LLM from outputting raw LaTeX variables.
