@@ -80,11 +80,7 @@ app.title = "epistemic-synth"
 app.description = "API for interacting with the Agent epistemic-synth"
 
 
-@app.middleware("http")
-async def intercept_prism_css(request: Request, call_next):
-    if request.url.path == "/dev-ui/prism-light.css":
-        return Response(content="", media_type="text/css")
-    return await call_next(request)
+
 
 
 @app.post("/feedback")
