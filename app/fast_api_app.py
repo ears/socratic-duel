@@ -14,7 +14,10 @@
 
 import contextlib
 import os
+import warnings
 from collections.abc import AsyncIterator
+
+warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
 
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
