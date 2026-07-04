@@ -39,9 +39,8 @@ class TokenCounterPlugin(BasePlugin):
 
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
     tokens = callback_context.session.state.get("total_tokens", 0)
-    current_report = callback_context.state.get("final_report", "")
-    new_report = f"{current_report}\n\n---\n**Total Tokens Used in Session:** {tokens}"
-    return types.Content(parts=[types.Part(text=new_report)])
+    msg = f"**Total Tokens Used in Session:** {tokens}"
+    return types.Content(parts=[types.Part(text=msg)])
 
 # Tool to save the chosen lens
 async def set_chosen_lens(lens_name: str, tool_context: ToolContext) -> dict:
