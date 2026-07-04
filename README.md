@@ -7,7 +7,8 @@ See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut
 ## Features
 - **Human-In-The-Loop Triage**: An orchestrator agent that triages the thesis and lets you dynamically choose from 8 epistemic lenses (e.g., The Systems Theorist, The Ethicist).
 - **Crucible-Style Debate Loop**: A strictly controlled `LoopAgent` that pits a dynamically assigned protagonist against a contrarian to stress-test your thesis.
-- **Interdisciplinary Synthesis**: A final Report Composer agent that outputs a clear, zero-placeholder Markdown report.
+- **Academic Integrity Auditors**: Dedicated fact-checking agents that intercept both the protagonist's and antagonist's drafts, using web search to verify every citation against hallucination.
+- **Interdisciplinary Synthesis**: A final Report Composer agent that actively uses web search to find novel meta-arguments and outputs a clear, zero-placeholder Markdown report.
 - **Security Guardrails**: Includes a `before_model_callback` to actively block prompt injections.
 
 ## Project Structure

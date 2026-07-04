@@ -44,9 +44,11 @@ The backend must consist of the following orchestrated ADK components:
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
       - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
+      - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
       - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
+      - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
       - **`escalator`**: The `BaseAgent` that counts iterations and stops the loop at 5.
-  2. **`synthesizer`**: Reads the final state of the debate and generates the output report.
+  2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
 
 ---
 
@@ -62,10 +64,11 @@ The backend must consist of the following orchestrated ADK components:
 
 The system instructions for the agents in `app/agent.py` must adhere to these strict behavioral rules:
 
-1. **`protagonist` (Dynamic Lens):**
-   - **Intent:** Must focus solely on the methodology and criteria of the dynamically assigned `{chosen_lens}`. Must respond directly to the Antagonist's previous feedback if it exists in the state.
-2. **`antagonist` (Dynamic Contrarian):**
-   - **Intent:** Must explicitly attack the methodological vulnerabilities and implicit assumptions of the Protagonist's output. Must provide the strongest, academically backed opposing argument tailored against the `{chosen_lens}`.
+1. **`protagonist` & `antagonist` (Dynamic Debaters):**
+   - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
+   - **Strict Academic Constraint:** Must bolster arguments with real-world academic citations and are strictly forbidden from hallucinating.
+2. **`citation_checker` (Academic Integrity Auditors):**
+   - **Intent:** Must extract every citation or empirical claim from the debaters' drafts, verify them against high-reputation references via web search, and explicitly rewrite the text to remove any hallucinations or fake sources before finalizing the output.
 3. **`synthesizer` (The Final Writer):**
-   - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting."
-   - **Intent:** The synthesizer is strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" internally before returning the text, ensuring the final interdisciplinary synthesis is clear, concise, devoid of obfuscating jargon, and free of raw LaTeX/math artifacts (e.g., converting `\text{...}` to plain readable text).
+   - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
+   - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" to ensure clarity, lack of jargon, and removal of raw LaTeX/math artifacts.
