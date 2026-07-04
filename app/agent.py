@@ -112,7 +112,7 @@ Structure the report:
 3. The Disciplinary Contrarian View
 4. Interdisciplinary Synthesis (Where they converge/diverge)
 
-CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts (e.g., convert `\\text{{Netto-TCO-Vorteil}}` or `\\mathbf{{X}}` into plain, normal readable text).""",
+CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts (e.g., convert them into plain, normal readable text).""",
     output_key="final_report"
 )
 
