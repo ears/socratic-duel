@@ -193,7 +193,7 @@ Structure the report:
 3. The Disciplinary Contrarian View
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 
-CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode (e.g., wrapping text in dollar signs like `$Macht/keine Macht$`). You must convert all such instances into plain, readable text (e.g., '(Macht/keine Macht)').""",
+CRITICAL QUALITY CHECK: Before finalizing your output, review the text to ensure it is clear, concise, and understandable. Ensure there is no obfuscating jargon. You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
     tools=[google_search],
     output_key="final_report",
     after_agent_callback=append_token_count,
@@ -243,7 +243,8 @@ DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
 1. Call the `set_chosen_lens` tool to save the full lens name to the system state.
-2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.""",
+2. After the tool succeeds, delegate to the `research_pipeline` to initiate the debate and generate the synthesis report.
+3. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.""",
     tools=[set_chosen_lens, AgentTool(triage_researcher)],
     sub_agents=[research_pipeline]
 )
