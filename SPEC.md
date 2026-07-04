@@ -22,7 +22,7 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 4. **The Crucible Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
 5. **Natural Language Communication:** The agents must communicate using raw, unstructured Markdown text rather than strict JSON schemas. This ensures a fluid, high-quality academic debate without wasting tokens on JSON overhead.
 6. **Synthesis:** Once the loop terminates, pass the entire debate transcript to a `SequentialAgent` pipeline where a final Synthesizer agent writes the concluding Markdown report.
-7. **Built-in Tooling:** Equip the `protagonist`, `antagonist`, `citation_checker`s, and `synthesizer` agents with the `google_search` tool to ensure all analysis, triage, and synthesis are grounded in real-world web data.
+7. **Built-in Tooling:** Equip the `triage_researcher`, `protagonist`, `antagonist`, `citation_checker`s, and `synthesizer` agents with the `google_search` tool to ensure all analysis, triage, and synthesis are grounded in real-world web data.
 
 ---
 
@@ -41,7 +41,8 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 The backend must consist of the following orchestrated ADK components:
 
-- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. Receives the initial thesis, interacts with the user to select a lens, and delegates the workload to the pipeline.
+- **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
+- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
       - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
