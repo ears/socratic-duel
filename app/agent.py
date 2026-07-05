@@ -48,12 +48,16 @@ class TokenCounterPlugin(BasePlugin):
 import urllib.request
 import urllib.error
 
+import re
 def verify_url_status(url: str) -> str:
-    """Strictly verifies if a URL is alive by returning its HTTP status code. If it returns 404, the URL is dead."""
+    """Strictly verifies if a URL is alive by returning its HTTP status code and the page Title. If it returns 404 or a 'Not Found' title, the URL is dead."""
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         with urllib.request.urlopen(req, timeout=5) as response:
-            return f"STATUS: {response.getcode()} OK - URL is alive."
+            html = response.read(8192).decode('utf-8', errors='ignore')
+            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
+            title = title_match.group(1).strip() if title_match else "No Title Found"
+            return f"STATUS: {response.getcode()} OK - Title: {title}"
     except urllib.error.HTTPError as e:
         return f"STATUS: DEAD - {e.code}"
     except Exception as e:
@@ -186,7 +190,7 @@ Review the following draft by the Protagonist: {protagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
 3. Otherwise, strictly verify each URL. You must verify three things:
-   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL and ensure it returns 200 OK. Do NOT rely on google_search to verify if a specific URL is alive.
+   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. Do NOT rely on google_search to verify if a specific URL is alive.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
@@ -236,7 +240,7 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
 3. Otherwise, strictly verify each URL. You must verify three things:
-   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL and ensure it returns 200 OK. Do NOT rely on google_search to verify if a specific URL is alive.
+   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. Do NOT rely on google_search to verify if a specific URL is alive.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
