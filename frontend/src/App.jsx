@@ -70,14 +70,17 @@ function App() {
     };
   };
 
-  const startDebate = () => {
-    if (selectedLensIndex === null) return;
+  const startDebate = (lensIndex) => {
+    const targetIndex = lensIndex !== undefined ? lensIndex : selectedLensIndex;
+    if (targetIndex === null) return;
+    
+    setSelectedLensIndex(targetIndex);
     setPhase('debate');
     setIsTyping(true);
     setErrorMessage(null);
     
     // Send the chosen number (1-8) to the backend to resume the session
-    const choiceNumber = selectedLensIndex + 1;
+    const choiceNumber = targetIndex + 1;
     const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${choiceNumber}`);
     eventSourceRef.current = es;
 
@@ -218,7 +221,7 @@ function App() {
                    {LENSES.map((lens, idx) => (
                      <div 
                        key={lens.id}
-                       onClick={() => setSelectedLensIndex(idx)}
+                       onClick={() => startDebate(idx)}
                        className={`relative p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
                          selectedLensIndex === idx 
                            ? 'border-violet-500 bg-violet-500/5 shadow-xl shadow-violet-500/10' 
@@ -233,15 +236,18 @@ function App() {
                    ))}
                  </div>
      
+                 {/* Single-selection mode: Debate starts immediately on card click.
+                     Keep this button commented out for future multi-select features.
                  <div className="flex justify-center mt-12 pt-8 border-t border-[var(--border-color)]">
                    <button 
-                     onClick={startDebate}
+                     onClick={() => startDebate()}
                      disabled={selectedLensIndex === null}
                      className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 text-lg"
                    >
                      Start Debate
                    </button>
                  </div>
+                 */}
                </>
             )}
           </div>
