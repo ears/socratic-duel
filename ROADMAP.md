@@ -14,6 +14,15 @@ Based on an analysis of the current Socratic Duel architecture and cutting-edge 
 
 ---
 
+## Recently Implemented
+
+### Adjustable Cognitive Complexity (Target Audience Profiling)
+*   **Status:** ✅ Implemented
+*   **The Concept:** Different users require different depths of intellectual rigor and vocabulary.
+*   **The Implementation:** A UI selector injects a `target_audience` variable into the system state. The Orchestrator maps this to specific prompt constraints governing vocabulary, sentence structure, and conceptual depth (Level 1 to Level 4). This seamlessly propagates to all downstream agents.
+
+---
+
 ## Strategic Roadmap (Future Releases)
 
 ### 1. Embedding-Based Stability Detection
@@ -31,11 +40,3 @@ Based on an analysis of the current Socratic Duel architecture and cutting-edge 
 ### 4. True Socratic Dialogue Mode
 *   **The Concept:** The current architecture essentially acts as a "debate duel," where agents shoot well-researched arguments at one another without truly listening or showing empathy. A genuine Socratic dialogue requires active listening, mutual questioning, identifying common ground, and progressively refining understanding together.
 *   **The Implementation:** Shift the agent persona instructions away from purely adversarial debate toward "Collaborative Epistemic Inquiry." Introduce intermediate "clarification rounds" where agents are forced to summarize the opponent's strongest point and explicitly ask a clarifying question before advancing their own argument. This transforms the duel into a rigorous but empathetic collaborative pursuit of truth.
-
-### 5. Adjustable Cognitive Complexity (Target Audience Profiling)
-*   **The Concept:** Currently, the agents are instructed to write for an "educated layperson." While this is generally safe, it limits the flexibility of the platform. Different users require different depths of intellectual rigor and vocabulary.
-*   **The Implementation:** Introduce a UI selector that injects a `target_audience` variable into the system state. The Triage Orchestrator maps this to specific prompt constraints governing vocabulary, sentence structure, and conceptual depth. Proposed levels:
-    *   **Level 1 (15-year old):** Analogies, plain language, avoiding all jargon.
-    *   **Level 2 (Average Adult):** The current standard (educated layperson).
-    *   **Level 3 (Average Academic):** Field-specific terminology allowed, standard academic prose.
-    *   **Level 4 (PhD-Level):** Unrestricted complexity, dense theoretical framing, and highly technical jargon.
