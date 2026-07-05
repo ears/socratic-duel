@@ -50,19 +50,45 @@ import urllib.request
 import urllib.error
 
 import re
+import io
+try:
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader = None
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+
 def verify_url_status(url: str) -> str:
-    """Strictly verifies if a URL is alive by returning its HTTP status code and the page Title. If it returns 404 or a 'Not Found' title, the URL is dead."""
+    """Strictly verifies if a URL is alive and returns a snippet of its text content to allow the Auditor to perform the Content Congruence check."""
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         with urllib.request.urlopen(req, timeout=5) as response:
             content_type = response.headers.get('Content-Type', '')
-            if 'application/pdf' in content_type:
-                return f"STATUS: {response.getcode()} OK - Document: PDF"
+            raw_data = response.read(1024 * 1024) # Read up to 1MB
             
-            html = response.read(8192).decode('utf-8', errors='ignore')
+            if 'application/pdf' in content_type:
+                snippet = "No text could be extracted."
+                if PdfReader:
+                    try:
+                        reader = PdfReader(io.BytesIO(raw_data))
+                        if len(reader.pages) > 0:
+                            snippet = reader.pages[0].extract_text()[:1500]
+                    except Exception:
+                        pass
+                return f"STATUS: {response.getcode()} OK - Document: PDF\nContent Snippet: {snippet}..."
+            
+            html = raw_data.decode('utf-8', errors='ignore')
             title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
             title = title_match.group(1).strip() if title_match else "No Title Found"
-            return f"STATUS: {response.getcode()} OK - Title: {title}"
+            
+            snippet = ""
+            if BeautifulSoup:
+                soup = BeautifulSoup(html, "html.parser")
+                snippet = soup.get_text(separator=" ", strip=True)[:1500]
+            
+            return f"STATUS: {response.getcode()} OK - Title: {title}\nContent Snippet: {snippet}..."
     except urllib.error.HTTPError as e:
         if e.code in [403, 401]:
             return f"STATUS: {e.code} (Bot Protection Active - Could not verify content, but server is alive)"
