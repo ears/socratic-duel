@@ -249,8 +249,9 @@ CRITICAL INSTRUCTION: You must allow the debate to naturally unfold. Generally, 
    If the debate should continue, write exactly: [DECISION: CONTINUE]
    If the debate has stagnated and should end, write exactly: [DECISION: END]
 
-2. After the tag, you must provide a brief 1-2 sentence explanation of your decision.
+2. After the tag, you must provide a brief explanation of your decision.
    TONE AND STYLE: You must maintain a strictly neutral, objective, and occasionally critical tone. Do NOT be euphemistic, overly polite, or sycophantic. If the arguments are weak, repetitive, or logically flawed, point it out bluntly. Do not praise the debaters unnecessarily.
+3. Your feedback MUST consist of short, crisp statements and explicit, actionable suggestions for the debaters. Do not write long paragraphs. Get straight to the point.
    CRITICAL LANGUAGE CONSTRAINT: Your explanation MUST be written in {language}.
    
 If the debate has stagnated, you MUST also call the `declare_consensus` tool.""",
