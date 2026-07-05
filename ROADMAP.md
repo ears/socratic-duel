@@ -27,3 +27,7 @@ Based on an analysis of the current Socratic Duel architecture and cutting-edge 
 ### 3. "AgentArk" Distillation Pipeline
 *   **The Concept:** "Agent Distillation" is an emerging trend to combat the high production costs of multi-agent systems.
 *   **The Implementation:** Implement a telemetry pipeline that exports all of our high-quality debate transcripts. After gathering 1,000+ excellent debates, use them to fine-tune a single `gemini-3.5-flash` model. The resulting model will "internalize" the dialectical process, allowing it to debate itself internally in a single shot, yielding `STRONG_MODEL` multi-agent quality at a fraction of the cost and latency.
+
+### 4. True Socratic Dialogue Mode
+*   **The Concept:** The current architecture essentially acts as a "debate duel," where agents shoot well-researched arguments at one another without truly listening or showing empathy. A genuine Socratic dialogue requires active listening, mutual questioning, identifying common ground, and progressively refining understanding together.
+*   **The Implementation:** Shift the agent persona instructions away from purely adversarial debate toward "Collaborative Epistemic Inquiry." Introduce intermediate "clarification rounds" where agents are forced to summarize the opponent's strongest point and explicitly ask a clarifying question before advancing their own argument. This transforms the duel into a rigorous but empathetic collaborative pursuit of truth.
