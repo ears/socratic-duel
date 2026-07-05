@@ -42,9 +42,7 @@ class TokenCounterPlugin(BasePlugin):
 
 import urllib.request
 import urllib.error
-from google.adk.tools import tool
 
-@tool
 def verify_url_status(url: str) -> str:
     """Strictly verifies if a URL is alive by returning its HTTP status code. If it returns 404, the URL is dead."""
     try:
