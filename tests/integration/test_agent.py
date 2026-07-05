@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
@@ -23,7 +24,8 @@ load_dotenv()
 from app.agent import root_agent
 
 
-def test_agent_stream() -> None:
+@pytest.mark.asyncio
+async def test_agent_stream() -> None:
     """
     Integration test for the agent stream functionality.
     Tests that the agent returns valid streaming responses.
@@ -34,21 +36,22 @@ def test_agent_stream() -> None:
 
     session_service = InMemorySessionService()
 
-    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
     message = types.Content(
         role="user", parts=[types.Part.from_text(text="Why is the sky blue?")]
     )
 
-    events = list(
-        runner.run(
-            new_message=message,
-            user_id="test_user",
-            session_id=session.id,
-            run_config=RunConfig(streaming_mode=StreamingMode.SSE),
-        )
-    )
+    events = []
+    async for event in runner.run_async(
+        new_message=message,
+        user_id="test_user",
+        session_id=session.id,
+        run_config=RunConfig(streaming_mode=StreamingMode.SSE),
+    ):
+        events.append(event)
+
     assert len(events) > 0, "Expected at least one message"
 
     has_text_content = False
@@ -63,10 +66,12 @@ def test_agent_stream() -> None:
             full_output += "".join(part.text for part in event.content.parts if part.text)
             
     print(f"Output received length: {len(full_output)}")
+    print(f"Actual Response:\n{full_output}")
     assert has_text_content, "Expected at least one message with text content"
     print("Result: PASS")
 
-def test_agent_prompt_injection() -> None:
+@pytest.mark.asyncio
+async def test_agent_prompt_injection() -> None:
     """
     Integration test to verify the Orchestrator blocks prompt injection.
     """
@@ -76,20 +81,27 @@ def test_agent_prompt_injection() -> None:
     print(f"Input Prompt: '{prompt}'")
     
     session_service = InMemorySessionService()
-    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
     message = types.Content(
         role="user", parts=[types.Part.from_text(text=prompt)]
     )
-    events = list(runner.run(new_message=message, user_id="test_user", session_id=session.id))
+    events = []
+    async for event in runner.run_async(
+        new_message=message,
+        user_id="test_user",
+        session_id=session.id
+    ):
+        events.append(event)
     
     response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
     print(f"Actual Response:\n{response_text}")
     assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject prompt injection, got: {response_text}"
     print("Result: PASS - Prompt successfully rejected.")
 
-def test_agent_unclear_thesis() -> None:
+@pytest.mark.asyncio
+async def test_agent_unclear_thesis() -> None:
     """
     Integration test to verify the Orchestrator rejects vague inputs.
     """
@@ -99,16 +111,21 @@ def test_agent_unclear_thesis() -> None:
     print(f"Input Prompt: '{prompt}'")
     
     session_service = InMemorySessionService()
-    session = session_service.create_session_sync(user_id="test_user", app_name="test")
+    session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
     message = types.Content(
         role="user", parts=[types.Part.from_text(text=prompt)]
     )
-    events = list(runner.run(new_message=message, user_id="test_user", session_id=session.id))
+    events = []
+    async for event in runner.run_async(
+        new_message=message,
+        user_id="test_user",
+        session_id=session.id
+    ):
+        events.append(event)
     
     response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
     print(f"Actual Response:\n{response_text}")
     assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject unclear thesis, got: {response_text}"
     print("Result: PASS - Unclear thesis successfully rejected.")
-
