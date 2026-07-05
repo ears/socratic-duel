@@ -92,12 +92,12 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
    - **Intent:** Must explicitly attack methodological vulnerabilities or defend the epistemic frame based on the `{chosen_lens}`. 
    - **Strict Academic URL Constraint:** Must heavily incentivize backing up arguments with real-world academic sources, which MUST be formatted exclusively as Markdown URLs (hyperlinks). Text-only citations are forbidden.
 4. **`citation_checker` (Academic Integrity Auditors):**
-   - **Intent:** Must scan the text exclusively for URLs. If no URLs exist, instantly declare `[STATUS: NO_CITATIONS]`. If URLs exist, verify them via web search to strip out dead or hallucinated links.
+   - **Intent:** Must scan the text exclusively for URLs. If no URLs exist, instantly declare `[STATUS: NO_CITATIONS]`. If URLs exist, strictly verify them via web search. They must enforce three rules: (1) The URL is not dead or hallucinated. (2) The URL points to a legitimate academic/journalistic source (strictly rejecting Goodreads, Wikipedia, commercial sites, etc.). (3) Content Congruence (the URL's actual content must empirically support the claim).
    - **Strict Constraint:** Must strictly preserve the original text, core arguments, and author's voice without rewriting or critiquing the draft.
 5. **`judge` (The Semantic Referee):**
-   - **Intent:** Evaluate if the debate has stagnated. Must begin its output strictly with an English machine-readable tag (`[DECISION: CONTINUE]` or `[DECISION: END]`) before explaining its reasoning in the user's `{language}`, guaranteeing robustness in multi-lingual debates.
+   - **Intent:** Evaluate if the debate has stagnated. Must begin its output strictly with an English machine-readable tag (`[DECISION: CONTINUE]` or `[DECISION: END]`) before explaining its reasoning in the user's `{language}`, guaranteeing robustness in multi-lingual debates. It must maintain a strictly neutral, objective, and occasionally critical tone, bluntly pointing out weak or logically flawed arguments.
 6. **`synthesizer` (The Final Writer):**
-   - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
+   - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension. It must explicitly begin the report with a large H1 Markdown header explicitly declaring the active lens (`# ⚖️ Active Lens: {chosen_lens}`).
    - **Language Constraint:** Must output the entire final report (including section headers) in the dynamically injected `{language}`. Do NOT default to English.
    - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL - **`ensure clarity, lack of`** jargon, offer and explicitly forbid inline math mode (e.g. `$Word$`) to prevent the LLM from outputting raw LaTeX variables.
 
