@@ -81,9 +81,9 @@ async def event_generator(session_id: str, message: str):
                     elif "VERIFIED" in status_part.upper():
                         text_content = "Citations verified."
                     elif "ERROR:" in status_part.upper():
-                        # Remove the word ERROR: and format the links
+                        # Remove the word ERROR: and format the links with newlines
                         error_text = re.sub(r'(?i)ERROR:', '', status_part).strip()
-                        text_content = re.sub(r'\[(.*?)\]\((.*?)\)', r'\1 (\2)', error_text)
+                        text_content = re.sub(r'\[(.*?)\]\((.*?)\)\s*', r'\1 (\2)\n', error_text).strip()
                         is_citation_error = True
                     else:
                         text_content = status_part
