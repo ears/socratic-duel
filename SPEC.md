@@ -83,7 +83,12 @@ The backend must consist of the following orchestrated ADK components. To optimi
 The system instructions for the agents in `app/agent.py` must adhere to these strict behavioral rules:
 
 1. **General Communication Style (All Text-Generating Agents):**
-   - **Rule:** Must write in crisp, clear, highly digestible prose while dynamically adapting its vocabulary, conceptual depth, and tone to the specific `{target_audience}` selected by the user (ranging from a 15-year old to PhD-level).
+   - **Rule:** Must write in crisp, clear, highly digestible prose while dynamically adapting its vocabulary, conceptual depth, and tone to the specific `{target_audience}` selected by the user.
+   - **Target Audience Profiling:** The UI prepends a `[Target Audience: ...]` tag to the user's initial thesis. The `interactive_planner` parses this tag and saves it to the global state via the `set_chosen_lens` tool. This ensures all downstream agents (Debaters, Auditors, Synthesizer) automatically adapt their complexity to one of 4 defined levels:
+     - Level 1 (15-year old)
+     - Level 2 (Average Adult)
+     - Level 3 (Average Academic)
+     - Level 4 (PhD-Level)
    - **Persistent Language Tracking:** Every single agent in the `research_pipeline` MUST have `{language}` dynamically injected into its system prompt, accompanied by a `CRITICAL LANGUAGE CONSTRAINT` forcing it to output exclusively in that language to prevent English fallbacks.
 2. **`interactive_planner` (Root Orchestrator):**
    - **Input Evaluation Guardrail:** Must evaluate the input before doing anything else. If it's a prompt injection or non-thesis fragment, it must output `[STATUS: REJECTED]` and politely decline, instructing the frontend to halt triage and display the rejection message.
