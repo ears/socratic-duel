@@ -40,6 +40,22 @@ class TokenCounterPlugin(BasePlugin):
         callback_context.session.state["total_tokens"] = current_tokens
         return None
 
+import urllib.request
+import urllib.error
+from google.adk.tools import tool
+
+@tool
+def verify_url_status(url: str) -> str:
+    """Strictly verifies if a URL is alive by returning its HTTP status code. If it returns 404, the URL is dead."""
+    try:
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req, timeout=5) as response:
+            return f"STATUS: {response.getcode()} OK - URL is alive."
+    except urllib.error.HTTPError as e:
+        return f"STATUS: DEAD - {e.code}"
+    except Exception as e:
+        return f"STATUS: DEAD - {str(e)}"
+
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
     tokens = callback_context.session.state.get("total_tokens", 0)
     msg = f"**Total Tokens Used in Session:** {tokens}"
@@ -166,8 +182,8 @@ citation_checker_proto = Agent(
 Review the following draft by the Protagonist: {protagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, use web search to strictly verify each URL. You must verify three things:
-   - The URL is not dead or hallucinated.
+3. Otherwise, strictly verify each URL. You must verify three things:
+   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL and ensure it returns 200 OK. Do NOT rely on google_search to verify if a specific URL is alive.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
@@ -180,7 +196,7 @@ CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critiq
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
-    tools=[google_search],
+    tools=[google_search, verify_url_status],
     output_key="protagonist_output",
 )
 
@@ -216,8 +232,8 @@ citation_checker_anto = Agent(
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, use web search to strictly verify each URL. You must verify three things:
-   - The URL is not dead or hallucinated.
+3. Otherwise, strictly verify each URL. You must verify three things:
+   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL and ensure it returns 200 OK. Do NOT rely on google_search to verify if a specific URL is alive.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
@@ -230,7 +246,7 @@ CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critiq
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
-    tools=[google_search],
+    tools=[google_search, verify_url_status],
     output_key="antagonist_output",
 )
 
