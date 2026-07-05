@@ -7,8 +7,13 @@ This diagram shows the end-to-end flow from the user's initial input to the fina
 ```mermaid
 graph TD
     User(["User Input: Thesis"]) --> Orchestrator["Interactive Planner (Root)"]
-    Orchestrator -->|Delegates Context| TriageResearcher[Triage Researcher]
+    
+    Orchestrator -->|Input Invalid| Reject["Output: [STATUS: REJECTED]"]
+    Reject -.->|UI shows Error| User
+    
+    Orchestrator -->|Input Valid| TriageResearcher[Triage Researcher]
     TriageResearcher -->|Web Search & Context| Orchestrator
+    
     Orchestrator -->|Presents 8 Lenses| UI[HITL: User selects Lens]
     UI -->|Choice 1-8| Orchestrator
     Orchestrator -->|Routes Task| Pipeline[Research Pipeline]
