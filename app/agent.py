@@ -225,8 +225,8 @@ Review the latest arguments from the Protagonist and Antagonist:
 Protagonist: {protagonist_output}
 Antagonist: {antagonist_output}
 
-Evaluate if the debate has stagnated, if no new substantial arguments are being introduced, or if they have reached a consensus/stalemate.
-
+Evaluate if the debate has completely stagnated or if they have reached a consensus.
+CRITICAL INSTRUCTION: You must allow the debate to naturally unfold. Generally, allow the debate to CONTINUE for multiple rounds to encourage deep dialectical exploration. ONLY declare END if they are literally repeating the exact same points with absolutely no new nuance or empirical data.
 1. You MUST begin your response with a strict system tag (in English):
    If the debate should continue, write exactly: [DECISION: CONTINUE]
    If the debate has stagnated and should end, write exactly: [DECISION: END]
