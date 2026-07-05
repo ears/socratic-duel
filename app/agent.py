@@ -93,17 +93,19 @@ async def append_token_count(callback_context: CallbackContext) -> types.Content
     return types.Content(parts=[types.Part(text=msg)])
 
 # Tool to save the chosen lens
-async def set_chosen_lens(lens_name: str, thesis: str, language: str, tool_context: ToolContext) -> dict:
-    """Saves the user's chosen epistemic lens, thesis, and language to the state so the debate agents can use it.
+async def set_chosen_lens(lens_name: str, thesis: str, language: str, target_audience: str, tool_context: ToolContext) -> dict:
+    """Saves the user's chosen epistemic lens, thesis, language, and target audience to the state so the debate agents can use it.
     
     Args:
         lens_name: The name of the chosen lens (e.g., 'The Empiricist', 'The Ethicist').
         thesis: The user's original thesis or argument string.
         language: The language the user initiated the conversation in (e.g., 'English', 'German').
+        target_audience: The requested target audience (e.g., 'Level 3 (Average Academic)').
     """
     tool_context.state["chosen_lens"] = lens_name
     tool_context.state["thesis"] = thesis
     tool_context.state["language"] = language
+    tool_context.state["target_audience"] = target_audience
     return {"status": f"Lens successfully set to '{lens_name}'. You may now delegate to the research_pipeline."}
 
 # Guardrail: Prevent Prompt Injection
@@ -159,6 +161,8 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
         callback_context.state["thesis"] = "No thesis provided."
     if "language" not in callback_context.state:
         callback_context.state["language"] = "English"
+    if "target_audience" not in callback_context.state:
+        callback_context.state["target_audience"] = "Level 3 (Average Academic)"
 
 # Global Model Configuration
 STRONG_MODEL = "gemini-3.1-pro-preview"
@@ -196,7 +200,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
     tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
@@ -247,7 +251,7 @@ It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a ve
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
     tools=[google_search, search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
@@ -355,7 +359,7 @@ Begin the report explicitly with a large two-line Markdown header formatted exac
 3. The Disciplinary Contrarian View
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including your section headers) in {language}. Do NOT default to English.
 
@@ -406,7 +410,7 @@ When the user first provides an input, you MUST evaluate it before proceeding:
 
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
-1. Call the `set_chosen_lens` tool. Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, and the detected language as the 'language' parameter.
+1. Call the `set_chosen_lens` tool. Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, the detected language as the 'language' parameter, and the target audience (extracted from the "[Target Audience: ...]" prefix in the input) as the 'target_audience' parameter.
 2. DO NOT call any other tools simultaneously. WAIT for the `set_chosen_lens` tool to return a success message.
 3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
 4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.

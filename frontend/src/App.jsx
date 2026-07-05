@@ -16,6 +16,7 @@ const LENSES = [
 function App() {
   const [theme, setTheme] = useState('light');
   const [thesis, setThesis] = useState('');
+  const [targetAudience, setTargetAudience] = useState('Level 3 (Average Academic)');
   const [phase, setPhase] = useState('input'); // input -> triage_loading -> triage -> debate
   const [selectedLensIndex, setSelectedLensIndex] = useState(null);
   const [sessionId, setSessionId] = useState(() => Math.random().toString(36).substring(7));
@@ -43,7 +44,8 @@ function App() {
     let localContent = "";
     
     // Call backend to trigger Phase 1 Triage
-    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(thesis)}`);
+    const payload = `[Target Audience: ${targetAudience}]\n\n${thesis}`;
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(payload)}`);
     eventSourceRef.current = es;
     
     es.onmessage = (event) => {
@@ -158,7 +160,20 @@ function App() {
               />
             </div>
             
-            <div className="flex justify-end">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <label className="text-sm font-semibold opacity-70 whitespace-nowrap">Cognitive Complexity:</label>
+                <select 
+                  className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 flex-grow"
+                  value={targetAudience}
+                  onChange={(e) => setTargetAudience(e.target.value)}
+                >
+                  <option value="Level 1 (15-year old)">Level 1 (15-year old)</option>
+                  <option value="Level 2 (Average Adult)">Level 2 (Average Adult)</option>
+                  <option value="Level 3 (Average Academic)">Level 3 (Average Academic)</option>
+                  <option value="Level 4 (PhD-Level)">Level 4 (PhD-Level)</option>
+                </select>
+              </div>
               <button 
                 onClick={analyzeTriage}
                 disabled={!thesis.trim()}
