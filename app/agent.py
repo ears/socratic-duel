@@ -102,7 +102,20 @@ async def set_chosen_lens(lens_name: str, thesis: str, language: str, target_aud
         language: The language the user initiated the conversation in (e.g., 'English', 'German').
         target_audience: The requested target audience (e.g., 'Level 3 (Average Academic)').
     """
+    LENS_ICONS = {
+        "The Empiricist": "🔬",
+        "The Rationalist": "🧠",
+        "The Hermeneut": "📖",
+        "The Engineer / Pragmatist": "⚙️",
+        "The Ethicist": "⚖️",
+        "The Cognitive Scientist": "👁️",
+        "The Discourse Analyst": "🗣️",
+        "The Systems Theorist": "🕸️"
+    }
+    icon = LENS_ICONS.get(lens_name, "")
+    
     tool_context.state["chosen_lens"] = lens_name
+    tool_context.state["chosen_lens_icon"] = icon
     tool_context.state["thesis"] = thesis
     tool_context.state["language"] = language
     tool_context.state["target_audience"] = target_audience
@@ -353,7 +366,7 @@ You have access to web search and Semantic Scholar. Do not just summarize the de
 Structure the report:
 Begin the report explicitly with a large two-line Markdown header formatted exactly like this (but translate 'Socratic Synthesis' and 'Through the Lens of' into {language}):
 # Socratic Synthesis
-### Through the Lens of: {chosen_lens}
+### Through the Lens of: {chosen_lens_icon} {chosen_lens}
 1. The Epistemic Frame ({chosen_lens})
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
