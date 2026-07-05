@@ -134,6 +134,8 @@ STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
 It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it.
 
+CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text.
+
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",

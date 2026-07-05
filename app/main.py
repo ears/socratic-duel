@@ -86,6 +86,13 @@ async def event_generator(session_id: str, message: str):
                 text_content = text_content.replace("[DECISION: CONTINUE]", "").strip()
                 text_content = text_content.replace("[DECISION: END]", "").strip()
 
+            # Clean up any tags that might leak from the citation checkers into the debaters' text
+            if author in ["protagonist", "antagonist"]:
+                text_content = text_content.replace("[STATUS: VERIFIED]", "").strip()
+                text_content = text_content.replace("[DRAFT:", "").strip()
+                if text_content.endswith("]"):
+                    text_content = text_content[:-1].strip()
+
             # Build JSON payload
             payload = {
                 "author": author,
