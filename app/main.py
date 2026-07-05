@@ -82,7 +82,11 @@ async def event_generator(session_id: str, message: str):
                     if "NO_CITATIONS" in status_part.upper():
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part.upper():
-                        text_content = "Citations verified."
+                        matches = re.findall(r'(\[[^\]]+\]\([^\)]+\))\s*\[🛡️\s*Bot Protected\]', text_content, re.IGNORECASE)
+                        if matches:
+                            text_content = "Citations verified.\n🛡️ Bot Protected: " + ", ".join(matches)
+                        else:
+                            text_content = "Citations verified."
                     elif "ERROR:" in status_part.upper():
                         # Extract all markdown links, ignoring stray characters like commas
                         matches = re.findall(r'\[(.*?)\]\((.*?)\)', status_part)
