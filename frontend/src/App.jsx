@@ -261,7 +261,13 @@ function App() {
                       <div className={`font-bold text-sm opacity-80 flex items-center gap-2 ${msg.author === 'antagonist' ? 'flex-row-reverse' : ''}`}>
                         {authorName}
                       </div>
-                      <div className={`p-5 rounded-2xl text-base leading-relaxed ${msg.author === 'antagonist' ? 'rounded-tr-none bg-rose-50 border border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' : 'rounded-tl-none bg-gray-100 dark:bg-gray-800/50 border border-transparent'}`}>
+                      <div className={`p-5 rounded-2xl text-base leading-relaxed ${
+                        msg.author === 'antagonist' 
+                          ? 'rounded-tr-none bg-rose-50 border border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' 
+                          : msg.author === 'synthesizer'
+                          ? 'rounded-tl-none bg-violet-50 border border-violet-200 dark:bg-violet-900/20 dark:border-violet-800/40 shadow-inner shadow-violet-500/5'
+                          : 'rounded-tl-none bg-gray-100 dark:bg-gray-800/50 border border-transparent'
+                      }`}>
                         <ReactMarkdown
                           components={{
                             h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-5 mb-3" {...props} />,
