@@ -272,6 +272,7 @@ Contrarian's view: {antagonist_output}
 You have access to web search. Do not just summarize the debate. Actively search for meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table.
 
 Structure the report:
+Begin the report explicitly with a line indicating the active lens, formatted exactly like: "⚖️ Active Lens: {chosen_lens}" (translating 'Active Lens' into {language}).
 1. The Epistemic Frame ({chosen_lens})
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
