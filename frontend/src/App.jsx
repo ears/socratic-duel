@@ -222,7 +222,7 @@ function App() {
                       {msg.is_citation_error ? (
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 p-4 rounded-xl text-red-800 dark:text-red-300 w-full max-w-2xl shadow-sm">
                           <div className="font-bold mb-2 flex items-center gap-2">
-                            <span className="text-xl">❌</span> Bad Citation Removed
+                            <span className="text-xl">❌</span> <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span> Bad Citation Removed
                           </div>
                           <div className="italic text-sm">{msg.content}</div>
                         </div>
