@@ -69,7 +69,7 @@ The backend allocates specific reasoning models based on the cognitive complexit
 
 ```mermaid
 pie title "Agent Model Allocation (Vertex AI: Global)"
-    "gemini-3.1-flash-lite (Checkers, Triage)" : 3
-    "gemini-3.5-flash (Judge)" : 1
+    "gemini-3.1-flash-lite (Checkers)" : 2
+    "gemini-3.5-flash (Judge, Triage)" : 2
     "gemini-3.1-pro-preview (Orchestrator, Debaters, Synthesizer)" : 4
 ```

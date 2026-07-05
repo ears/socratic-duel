@@ -326,7 +326,7 @@ research_pipeline = SequentialAgent(
 # 1.5. Triage Researcher (Sub-Agent for Planner)
 triage_researcher = Agent(
     name="triage_researcher",
-    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
+    model=Gemini(model=MID_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
