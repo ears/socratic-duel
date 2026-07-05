@@ -162,9 +162,10 @@ citation_checker_proto = Agent(
 Review the following draft by the Protagonist: {protagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, use web search to strictly verify each URL. You must verify two things:
+3. Otherwise, use web search to strictly verify each URL. You must verify three things:
    - The URL is not dead or hallucinated.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
+   - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
 [STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid, hallucinated, or non-academic URL, use exactly "ERROR:" followed by the EXACT Markdown hyperlink you removed (e.g., ERROR: [Einstein 1930](http://badlink.com)).>]
@@ -211,9 +212,10 @@ citation_checker_anto = Agent(
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
 2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, use web search to strictly verify each URL. You must verify two things:
+3. Otherwise, use web search to strictly verify each URL. You must verify three things:
    - The URL is not dead or hallucinated.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
+   - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data.
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
 [STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid, hallucinated, or non-academic URL, use exactly "ERROR:" followed by the EXACT Markdown hyperlink you removed (e.g., ERROR: [Einstein 1930](http://badlink.com)).>]
