@@ -98,6 +98,10 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
     if "language" not in callback_context.state:
         callback_context.state["language"] = "English"
 
+# Global Model Configuration
+STRONG_MODEL = "gemini-1.5-flash-8b"
+FAST_MODEL = "gemini-1.5-flash-8b"
+
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
     timeout=60000, 
@@ -112,7 +116,7 @@ default_generation_config = types.GenerateContentConfig(
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
-    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
@@ -135,7 +139,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 1.5. Protagonist Citation Auditor
 citation_checker_proto = Agent(
     name="citation_checker_proto",
-    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
@@ -157,7 +161,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 2. Antagonist (Contrarian)
 antagonist = Agent(
     name="antagonist",
-    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
@@ -177,7 +181,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 2.5. Antagonist Citation Auditor
 citation_checker_anto = Agent(
     name="citation_checker_anto",
-    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
@@ -199,7 +203,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # 3. The Judge (Semantic Stopping Condition)
 judge = Agent(
     name="judge",
-    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     include_contents='none',
     instruction="""You are the Debate Judge.
 Review the latest arguments from the Protagonist and Antagonist:
@@ -228,7 +232,7 @@ debate_loop = LoopAgent(
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
-    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
     instruction="""You are the Epistemic Synthesizer.
@@ -264,7 +268,7 @@ research_pipeline = SequentialAgent(
 # 1.5. Triage Researcher (Sub-Agent for Planner)
 triage_researcher = Agent(
     name="triage_researcher",
-    model=Gemini(model="gemini-flash-latest", http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
@@ -278,7 +282,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
-    model=Gemini(model="gemini-3.1-pro-preview", http_options=default_http_options),
+    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     instruction="""You are the Orchestrator for the Epistemic Synthesizer. You operate in a strict TWO-PHASE interaction model.
 
 PHASE 1 (Triage & Human-In-The-Loop):

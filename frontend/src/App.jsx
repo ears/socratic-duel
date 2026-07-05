@@ -12,7 +12,7 @@ const LENSES = [
 ];
 
 function App() {
-  const [theme, setTheme] = useState('dark');
+  const [theme, setTheme] = useState('light');
   const [thesis, setThesis] = useState('');
   const [phase, setPhase] = useState('input'); // input -> triage -> debate
   const [selectedLens, setSelectedLens] = useState(null);
@@ -146,18 +146,73 @@ function App() {
           </div>
         )}
 
-        {/* Phase 3: Debate State (Placeholder for now) */}
+        {/* Phase 3: Debate State */}
         {phase === 'debate' && (
-          <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in duration-1000 pt-16">
-            <div className="relative inline-block">
-              <div className="w-24 h-24 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
-              <div className="absolute inset-0 flex items-center justify-center text-3xl">⚔️</div>
+          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500 pt-8">
+            <div className="text-center space-y-4">
+              <div className="relative inline-block">
+                <div className="w-16 h-16 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
+                <div className="absolute inset-0 flex items-center justify-center text-xl">⚔️</div>
+              </div>
+              <h2 className="text-3xl font-extrabold">Live Dialectical Debate</h2>
+              <p className="text-lg opacity-70">
+                You are reading along as the {LENSES.find(l => l.id === selectedLens)?.name} and its Contrarian stress-test your thesis.
+              </p>
             </div>
-            <h2 className="text-4xl font-extrabold">Debate Pipeline Active</h2>
-            <p className="text-xl opacity-70">
-              The {LENSES.find(l => l.id === selectedLens)?.name} is currently stress-testing your thesis.<br/>
-              Awaiting final synthesized report...
-            </p>
+
+            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 shadow-xl space-y-6">
+              {/* Mockup of a debate stream */}
+              <div className="flex flex-col gap-6">
+                
+                {/* Protagonist Message */}
+                <div className="flex gap-4 w-[85%]">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 text-xl shadow-sm border border-violet-200 dark:border-violet-800">
+                    {LENSES.find(l => l.id === selectedLens)?.icon || '🏛️'}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-bold text-sm opacity-80 flex items-center gap-2">
+                      Protagonist ({LENSES.find(l => l.id === selectedLens)?.name})
+                      <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Citations Verified</span>
+                    </div>
+                    <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800/50 text-base leading-relaxed">
+                      While the thesis suggests AI leads to post-scarcity, we must demand strict empirical evidence. Current data from the National Bureau of Economic Research (NBER, 2024) indicates AI accelerates productivity but also centralizes capital. Post-scarcity requires infinite physical resources, which computational intelligence cannot generate ex nihilo.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Antagonist Message */}
+                <div className="flex gap-4 w-[85%] self-end flex-row-reverse">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 text-xl shadow-sm border border-rose-200 dark:border-rose-800">
+                    🤺
+                  </div>
+                  <div className="space-y-2 flex flex-col items-end">
+                    <div className="font-bold text-sm opacity-80 flex items-center gap-2 flex-row-reverse">
+                      Antagonist (Contrarian)
+                      <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Citations Verified</span>
+                    </div>
+                    <div className="p-4 rounded-2xl rounded-tr-none bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 text-base leading-relaxed text-right">
+                      Your reliance on current NBER data represents a fundamental linearity bias. The thesis does not claim AI creates physical matter, but that it collapses the *marginal cost* of production. As computational intelligence optimizes logistics and materials science, energy constraints drop. You are analyzing a paradigm shift using legacy economic constraints.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Typing Indicator */}
+                <div className="flex gap-4 w-[85%] opacity-70">
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 text-xl shadow-sm border border-violet-200 dark:border-violet-800">
+                    {LENSES.find(l => l.id === selectedLens)?.icon || '🏛️'}
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-bold text-sm">Protagonist is drafting a rebuttal...</div>
+                    <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800/50 flex gap-1.5 items-center w-16 h-12">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
           </div>
         )}
       </main>
