@@ -1,21 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
 
+// Must match the exact order in the backend prompt (1-8)
 const LENSES = [
-  { id: 'empiricist', name: 'The Empiricist', description: 'Requires strict empirical evidence and data-driven validation. Rejects unfalsifiable claims.', icon: '🔬' },
-  { id: 'systems_theorist', name: 'The Systems Theorist', description: 'Evaluates the thesis through complex interactions, feedback loops, and holistic consequences.', icon: '🕸️' },
-  { id: 'ethicist', name: 'The Ethicist', description: 'Analyzes moral implications, human rights impact, and fairness of the proposed arguments.', icon: '⚖️' },
-  { id: 'historian', name: 'The Historian', description: 'Contextualizes the thesis within historical precedents and long-term societal trends.', icon: '📜' },
-  { id: 'pragmatist', name: 'The Pragmatist', description: 'Focuses on actionable outcomes, feasibility, and real-world utility over theoretical perfection.', icon: '⚙️' },
-  { id: 'skeptic', name: 'The Skeptic', description: 'Actively tries to dismantle the thesis by exposing logical fallacies, biases, and weak assumptions.', icon: '🤔' },
-  { id: 'economist', name: 'The Economist', description: 'Assesses cost-benefit ratios, resource allocation, and market dynamics surrounding the thesis.', icon: '📈' },
-  { id: 'phenomenologist', name: 'The Phenomenologist', description: 'Examines the subjective, lived human experience and qualitative impacts of the thesis.', icon: '👁️' }
+  { id: 'empiricist', name: 'The Empiricist', description: 'Focuses on observable data, evidence, and rigorous testing.', icon: '🔬' },
+  { id: 'rationalist', name: 'The Rationalist', description: 'Focuses on logical consistency, theoretical frameworks, and first principles.', icon: '🧠' },
+  { id: 'hermeneut', name: 'The Hermeneut', description: 'Focuses on meaning, context, interpretation, and underlying narratives.', icon: '📖' },
+  { id: 'pragmatist', name: 'The Engineer / Pragmatist', description: 'Focuses on practical utility, problem-solving, and implementation.', icon: '⚙️' },
+  { id: 'ethicist', name: 'The Ethicist', description: 'Focuses on moral implications, values, fairness, and human impact.', icon: '⚖️' },
+  { id: 'cognitive', name: 'The Cognitive Scientist', description: 'Focuses on human cognition, biases, mental models, and perception.', icon: '👁️' },
+  { id: 'discourse', name: 'The Discourse Analyst', description: 'Focuses on power dynamics, rhetoric, ideology, and framing.', icon: '🗣️' },
+  { id: 'systems', name: 'The Systems Theorist', description: 'Focuses on complex interactions, feedback loops, and holistic structures.', icon: '🕸️' }
 ];
 
 function App() {
   const [theme, setTheme] = useState('light');
   const [thesis, setThesis] = useState('');
-  const [phase, setPhase] = useState('input'); // input -> triage -> debate
-  const [selectedLens, setSelectedLens] = useState(null);
+  const [phase, setPhase] = useState('input'); // input -> triage_loading -> triage -> debate
+  const [selectedLensIndex, setSelectedLensIndex] = useState(null);
+  const [sessionId, setSessionId] = useState(() => Math.random().toString(36).substring(7));
+  const [messages, setMessages] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const eventSourceRef = useRef(null);
 
   useEffect(() => {
     if (theme === 'dark') document.documentElement.classList.add('dark');
@@ -24,37 +31,85 @@ function App() {
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
+  const analyzeTriage = () => {
+    if (!thesis.trim()) return;
+    setPhase('triage_loading');
+    setErrorMessage(null);
+    
+    // Call backend to trigger Phase 1 Triage
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(thesis)}`);
+    eventSourceRef.current = es;
+    
+    es.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        if (data.error) {
+            setErrorMessage(`Phase 1 Error: ${data.error}`);
+            setPhase('input');
+            es.close();
+        }
+    };
+    
+    es.onerror = () => {
+        es.close();
+        // If we didn't hit an error payload, move to choice UI
+        setPhase(prev => prev === 'triage_loading' ? 'triage' : prev);
+    };
+  };
+
   const startDebate = () => {
-    if (!selectedLens) return;
+    if (selectedLensIndex === null) return;
     setPhase('debate');
+    setIsTyping(true);
+    setErrorMessage(null);
+    
+    // Send the chosen number (1-8) to the backend to resume the session
+    const choiceNumber = selectedLensIndex + 1;
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${choiceNumber}`);
+    eventSourceRef.current = es;
+
+    es.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.error) {
+          setErrorMessage(`Phase 2 Error: ${data.error}`);
+          setIsTyping(false);
+          es.close();
+          return;
+      }
+      if (data.content && data.content.trim() !== "") {
+        setMessages(prev => [...prev, data]);
+      }
+    };
+
+    es.onerror = () => {
+      setIsTyping(false);
+      es.close();
+    };
   };
 
   return (
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] font-sans transition-colors duration-300">
-      {/* Header */}
       <header className="border-b border-[var(--border-color)] bg-[var(--card-bg)]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">
-              ES
+              PD
             </div>
-            <h1 className="text-xl font-bold tracking-tight">
-              Epistemic Synthesizer
-            </h1>
+            <h1 className="text-xl font-bold tracking-tight">Peer Duel</h1>
           </div>
-          <button 
-            onClick={toggleTheme} 
-            className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition flex items-center justify-center w-10 h-10"
-          >
+          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition flex items-center justify-center w-10 h-10">
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-6xl mx-auto px-6 py-16">
         
-        {/* Phase 1: Input */}
+        {errorMessage && (
+          <div className="max-w-3xl mx-auto mb-8 p-6 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 font-bold shadow-lg">
+            🚨 Backend Error: {errorMessage}
+          </div>
+        )}
+        
         {phase === 'input' && (
           <div className="max-w-3xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="text-center space-y-4">
@@ -71,7 +126,7 @@ function App() {
               <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
               <textarea 
                 className="relative w-full h-56 p-8 rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-lg shadow-xl leading-relaxed"
-                placeholder="e.g., Artificial Intelligence will inevitably lead to a post-scarcity economy, rendering traditional capitalism obsolete..."
+                placeholder="e.g., Artificial Intelligence will inevitably lead to a post-scarcity economy..."
                 value={thesis}
                 onChange={e => setThesis(e.target.value)}
               />
@@ -79,7 +134,7 @@ function App() {
             
             <div className="flex justify-end">
               <button 
-                onClick={() => setPhase('triage')}
+                onClick={analyzeTriage}
                 disabled={!thesis.trim()}
                 className="px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-2xl shadow-lg shadow-violet-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-1 active:translate-y-0 text-lg flex items-center gap-2"
               >
@@ -89,47 +144,36 @@ function App() {
           </div>
         )}
 
-        {/* Phase 2: HITL Lens Selection */}
+        {phase === 'triage_loading' && (
+          <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in pt-16">
+             <div className="w-16 h-16 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
+             <h2 className="text-3xl font-extrabold">Triaging Thesis...</h2>
+             <p className="text-lg opacity-70">The Orchestrator is analyzing your thesis and establishing context via Google Search.</p>
+          </div>
+        )}
+
         {phase === 'triage' && (
           <div className="space-y-12 animate-in fade-in zoom-in-95 duration-500">
             <div className="text-center space-y-4 max-w-3xl mx-auto">
               <h2 className="text-4xl font-extrabold tracking-tight">Select an Epistemic Lens</h2>
-              <p className="text-lg opacity-70">
-                The triage agent has analyzed your thesis. Choose the academic framework that will drive the dialectical debate.
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--card-bg)] border border-[var(--border-color)] shadow-sm max-w-4xl mx-auto">
-              <h3 className="text-sm font-bold uppercase tracking-wider opacity-50 mb-3">Your Thesis</h3>
-              <p className="text-lg italic border-l-4 border-violet-500 pl-4 py-1">{thesis}</p>
+              <p className="text-lg opacity-70">Choose the academic framework that will drive the dialectical debate.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {LENSES.map(lens => (
+              {LENSES.map((lens, idx) => (
                 <div 
                   key={lens.id}
-                  onClick={() => setSelectedLens(lens.id)}
+                  onClick={() => setSelectedLensIndex(idx)}
                   className={`relative p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
-                    selectedLens === lens.id 
+                    selectedLensIndex === idx 
                       ? 'border-violet-500 bg-violet-500/5 shadow-xl shadow-violet-500/10' 
                       : 'border-[var(--border-color)] bg-[var(--card-bg)] hover:border-violet-500/50 hover:shadow-lg'
                   }`}
                 >
-                  {selectedLens === lens.id && (
-                    <div className="absolute top-0 left-0 w-full h-1 bg-violet-500"></div>
-                  )}
+                  {selectedLensIndex === idx && <div className="absolute top-0 left-0 w-full h-1 bg-violet-500"></div>}
                   <div className="text-4xl mb-4">{lens.icon}</div>
                   <h3 className="text-xl font-bold mb-2">{lens.name}</h3>
                   <p className="opacity-70 text-sm leading-relaxed">{lens.description}</p>
-                  
-                  {/* Selection Indicator */}
-                  <div className={`mt-6 h-8 rounded-lg flex items-center justify-center font-medium text-sm transition-colors ${
-                    selectedLens === lens.id 
-                      ? 'bg-violet-600 text-white' 
-                      : 'bg-[var(--border-color)]/50 text-[var(--text-color)]/70'
-                  }`}>
-                    {selectedLens === lens.id ? 'Selected' : 'Select'}
-                  </div>
                 </div>
               ))}
             </div>
@@ -137,7 +181,7 @@ function App() {
             <div className="flex justify-center mt-12 pt-8 border-t border-[var(--border-color)]">
               <button 
                 onClick={startDebate}
-                disabled={!selectedLens}
+                disabled={selectedLensIndex === null}
                 className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 text-lg"
               >
                 Initialize Dialectical Loop
@@ -146,72 +190,86 @@ function App() {
           </div>
         )}
 
-        {/* Phase 3: Debate State */}
         {phase === 'debate' && (
-          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in-95 duration-500 pt-8">
+          <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in pt-8">
             <div className="text-center space-y-4">
               <div className="relative inline-block">
-                <div className="w-16 h-16 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
-                <div className="absolute inset-0 flex items-center justify-center text-xl">⚔️</div>
+                {isTyping ? (
+                  <div className="w-12 h-12 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
+                ) : (
+                  <div className="w-12 h-12 border-4 border-green-500/30 bg-green-500/10 text-green-500 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">✓</div>
+                )}
               </div>
-              <h2 className="text-3xl font-extrabold">Live Dialectical Debate</h2>
-              <p className="text-lg opacity-70">
-                You are reading along as the {LENSES.find(l => l.id === selectedLens)?.name} and its Contrarian stress-test your thesis.
-              </p>
+              <h2 className="text-3xl font-extrabold">
+                {isTyping ? "Live Dialectical Debate" : "Synthesis Complete"}
+              </h2>
             </div>
 
-            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 shadow-xl space-y-6">
-              {/* Mockup of a debate stream */}
-              <div className="flex flex-col gap-6">
-                
-                {/* Protagonist Message */}
-                <div className="flex gap-4 w-[85%]">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 text-xl shadow-sm border border-violet-200 dark:border-violet-800">
-                    {LENSES.find(l => l.id === selectedLens)?.icon || '🏛️'}
+            <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 shadow-xl space-y-6 flex flex-col gap-6">
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-4 w-[90%] ${msg.author === 'antagonist' ? 'self-end flex-row-reverse' : ''}`}>
+                  <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-xl shadow-sm border ${msg.author === 'antagonist' ? 'bg-rose-100 border-rose-200 text-rose-600 dark:bg-rose-900/30 dark:border-rose-800' : 'bg-violet-100 border-violet-200 text-violet-600 dark:bg-violet-900/30 dark:border-violet-800'}`}>
+                    {msg.author === 'antagonist' ? '🤺' : (LENSES[selectedLensIndex]?.icon || '🏛️')}
                   </div>
-                  <div className="space-y-2">
-                    <div className="font-bold text-sm opacity-80 flex items-center gap-2">
-                      Protagonist ({LENSES.find(l => l.id === selectedLens)?.name})
-                      <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Citations Verified</span>
+                  <div className={`space-y-2 flex flex-col ${msg.author === 'antagonist' ? 'items-end' : 'items-start'}`}>
+                    <div className={`font-bold text-sm opacity-80 flex items-center gap-2 ${msg.author === 'antagonist' ? 'flex-row-reverse' : ''}`}>
+                      {msg.author.toUpperCase()}
                     </div>
-                    <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800/50 text-base leading-relaxed">
-                      While the thesis suggests AI leads to post-scarcity, we must demand strict empirical evidence. Current data from the National Bureau of Economic Research (NBER, 2024) indicates AI accelerates productivity but also centralizes capital. Post-scarcity requires infinite physical resources, which computational intelligence cannot generate ex nihilo.
-                    </div>
-                  </div>
-                </div>
-
-                {/* Antagonist Message */}
-                <div className="flex gap-4 w-[85%] self-end flex-row-reverse">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 dark:text-rose-400 text-xl shadow-sm border border-rose-200 dark:border-rose-800">
-                    🤺
-                  </div>
-                  <div className="space-y-2 flex flex-col items-end">
-                    <div className="font-bold text-sm opacity-80 flex items-center gap-2 flex-row-reverse">
-                      Antagonist (Contrarian)
-                      <span className="text-[10px] uppercase tracking-wider bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">Citations Verified</span>
-                    </div>
-                    <div className="p-4 rounded-2xl rounded-tr-none bg-rose-50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30 text-base leading-relaxed text-right">
-                      Your reliance on current NBER data represents a fundamental linearity bias. The thesis does not claim AI creates physical matter, but that it collapses the *marginal cost* of production. As computational intelligence optimizes logistics and materials science, energy constraints drop. You are analyzing a paradigm shift using legacy economic constraints.
+                    <div className={`p-5 rounded-2xl text-base leading-relaxed ${msg.author === 'antagonist' ? 'rounded-tr-none bg-rose-50 border border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' : 'rounded-tl-none bg-gray-100 dark:bg-gray-800/50 border border-transparent'}`}>
+                      <ReactMarkdown
+                        components={{
+                          h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-5 mb-3" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2" {...props} />,
+                          p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+                          li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-semibold text-violet-700 dark:text-violet-400" {...props} />,
+                          em: ({node, ...props}) => <em className="italic opacity-90" {...props} />,
+                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-violet-500/50 pl-4 italic my-4 opacity-80" {...props} />,
+                          a: ({node, ...props}) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>
+              ))}
 
-                {/* Typing Indicator */}
+              {isTyping && (
                 <div className="flex gap-4 w-[85%] opacity-70">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center text-violet-600 dark:text-violet-400 text-xl shadow-sm border border-violet-200 dark:border-violet-800">
-                    {LENSES.find(l => l.id === selectedLens)?.icon || '🏛️'}
+                  <div className="w-10 h-10 shrink-0 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xl border border-gray-200 dark:bg-gray-800 dark:border-gray-700">
+                    ⏳
                   </div>
                   <div className="space-y-2">
-                    <div className="font-bold text-sm">Protagonist is drafting a rebuttal...</div>
-                    <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800/50 flex gap-1.5 items-center w-16 h-12">
+                    <div className="font-bold text-sm">Agents are thinking...</div>
+                    <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800 flex gap-1.5 items-center w-16 h-12">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
                   </div>
                 </div>
+              )}
 
-              </div>
+              {!isTyping && !errorMessage && (
+                <div className="flex justify-center mt-8 pt-8 border-t border-[var(--border-color)]">
+                  <button 
+                    onClick={() => {
+                      setPhase('input');
+                      setThesis('');
+                      setSelectedLensIndex(null);
+                      setMessages([]);
+                      setSessionId(Math.random().toString(36).substring(7));
+                    }}
+                    className="px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl shadow-xl shadow-violet-600/30 transition-all transform hover:-translate-y-1 active:translate-y-0 text-lg flex items-center gap-2"
+                  >
+                    Start New Discussion <span>↺</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -1,13 +1,19 @@
 import os
 import json
 import asyncio
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from app.agent import app as adk_app
+from google.adk.runners import InMemoryRunner
+from google.genai import types
 
-app = FastAPI(title="Epistemic Synthesizer API")
+app = FastAPI(title="Peer Duel API")
+runner = InMemoryRunner(app=adk_app)
 
 # Allow CORS for local dev
 app.add_middleware(
@@ -24,23 +30,47 @@ async def event_generator(session_id: str, message: str):
     This enables the 'Live Dialectical Debate UI' (Phase 3) where the user can 'read along'.
     """
     try:
-        async for event in adk_app.run(session_id=session_id, message=message):
+        # Ensure the session exists in memory before attempting to run or resume it
+        session = await runner.session_service.get_session(app_name="app", user_id="default_user", session_id=session_id)
+        if not session:
+            await runner.session_service.create_session(app_name="app", user_id="default_user", session_id=session_id)
+
+        content = types.Content(parts=[types.Part.from_text(text=message)], role="user")
+        async for event in runner.run_async(user_id="default_user", session_id=session_id, new_message=content):
             # Extract basic text content if available
             text_content = ""
-            if hasattr(event, "model_response") and event.model_response and event.model_response.contents:
-                for part in event.model_response.contents[0].parts:
-                    if part.text:
+            if hasattr(event, "model_response") and event.model_response:
+                try:
+                    text_content = event.model_response.text or ""
+                except ValueError:
+                    pass
+            elif hasattr(event, "content") and event.content and hasattr(event.content, "parts"):
+                for part in event.content.parts:
+                    if hasattr(part, "text") and part.text:
                         text_content += part.text
-
-            # Extract tool calls (like set_chosen_lens, google_search)
+            
+            # Extract tool calls
             tool_calls = []
             if hasattr(event, "tool_calls") and event.tool_calls:
                 for tc in event.tool_calls:
                     tool_calls.append({"name": tc.name, "args": tc.args})
+            elif hasattr(event, "content") and event.content and hasattr(event.content, "parts"):
+                for part in event.content.parts:
+                    if hasattr(part, "function_call") and part.function_call:
+                        tc = part.function_call
+                        tool_calls.append({"name": tc.name, "args": tc.args})
+
+            author = getattr(event, "author", "system")
+            if author in ["citation_checker_proto", "citation_checker_anto"] and "[STATUS:" in text_content:
+                try:
+                    status_part = text_content.split("[STATUS:")[1].split("]")[0].strip()
+                    text_content = f"**Auditor Status:** {status_part}"
+                except IndexError:
+                    pass
 
             # Build JSON payload
             payload = {
-                "author": event.author,
+                "author": author,
                 "content": text_content,
                 "tool_calls": tool_calls
             }

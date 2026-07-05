@@ -1,4 +1,4 @@
-# Dialectical Epistemic Synthesizer (Capstone)
+# Peer Duel (Dialectical Epistemic Synthesizer)
 
 A multi-agent system designed to rigorously analyze theses using highly specialized academic lenses. Built with Google ADK for the AI Agents Intensive Vibe Coding Capstone Project.
 

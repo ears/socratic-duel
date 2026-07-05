@@ -441,6 +441,7 @@ dependencies = [
     { name = "google-adk", extra = ["gcp"] },
     { name = "google-cloud-logging" },
     { name = "opentelemetry-instrumentation-google-genai" },
+    { name = "python-dotenv" },
     { name = "sse-starlette" },
     { name = "uvicorn" },
 ]
@@ -475,6 +476,7 @@ requires-dist = [
     { name = "google-cloud-aiplatform", extras = ["evaluation"], marker = "extra == 'eval'", specifier = ">=1.156.0" },
     { name = "google-cloud-logging", specifier = ">=3.12.0,<4.0.0" },
     { name = "opentelemetry-instrumentation-google-genai", specifier = ">=0.1.0,<1.0.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "ruff", marker = "extra == 'lint'", specifier = ">=0.4.6,<1.0.0" },
     { name = "sse-starlette", specifier = ">=3.4.5" },
     { name = "ty", marker = "extra == 'lint'", specifier = ">=0.0.1a0" },

@@ -1,4 +1,4 @@
-# Epistemic Synthesizer - Specification (MVP)
+# Peer Duel - Specification (MVP)
 
 This document serves as the central "Source of Truth" for the `epistemic-synth` Capstone project. If the project needs to be recreated, refactored, or scaled, this specification acts as the precise blueprint. It captures the architectural decisions, non-functional requirements, and the distinct *intent* behind the design choices.
 
@@ -7,14 +7,14 @@ This document serves as the central "Source of Truth" for the `epistemic-synth` 
 ## 1. Purpose & Why
 
 **The Problem:** When standard LLMs are asked to analyze complex theses or arguments, they often produce a generic, middle-of-the-road consensus that lacks academic rigor and fails to expose critical blind spots.
-**The Solution:** The "Dialectical Epistemic Synthesizer". This system avoids generic consensus by actively forcing a rigorous dialectical debate between highly specialized academic lenses, stress-testing ideas through structured opposition.
+**The Solution:** "Peer Duel" (formerly the Dialectical Epistemic Synthesizer). This system avoids generic consensus by actively forcing a rigorous dialectical debate between highly specialized academic lenses, stress-testing ideas through structured opposition.
 **The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper. The user provides a thesis, and the system suggests an appropriate epistemic lens (e.g., The Empiricist, The Systems Theorist) while listing all 8 available options. Once the user selects a lens, the system pits a dynamically assigned protagonist against a contrarian in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
 
 ---
 
 ## 2. The Master Prompt (System Architecture & Workflow)
 
-You are an expert Google ADK developer. Please build the "Epistemic Synthesizer" using the following architecture:
+You are an expert Google ADK developer. Please build "Peer Duel" using the following architecture:
 
 1. Scaffold a new ADK project named `epistemic-synth` using `agents-cli scaffold create epistemic-synth --agent adk --prototype`.
 2. Rewrite `app/agent.py` to implement a multi-agent dialectical pipeline.
@@ -41,19 +41,19 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 ## 4. Architectural Logic (Agent Orchestration)
 
-The backend must consist of the following orchestrated ADK components, utilizing a **Hybrid Model Architecture** (`gemini-3.1-pro-preview` for deep reasoning, and `gemini-flash-latest` for simple utility tasks):
+The backend must consist of the following orchestrated ADK components. For the current MVP, due to API region availability constraints, all agents utilize **`gemini-3.1-flash-lite`** in the `global` region (rather than a Pro/Flash split):
 
-- **`triage_researcher`** (Flash): A sub-agent equipped with `google_search` that provides real-world context for a thesis.
-- **`interactive_planner` (Root, Pro)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
+- **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
+- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
-      - **`protagonist`** (Pro): Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
-      - **`citation_checker_proto`** (Flash): An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
-      - **`antagonist`** (Pro): Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
-      - **`citation_checker_anto`** (Flash): An Academic Integrity Auditor that verifies the antagonist's citations via web search.
-      - **`judge`** (Flash): A semantic stopping condition agent that reviews the debate and calls the `declare_consensus` tool if arguments stagnate.
+      - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
+      - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
+      - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
+      - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
+      - **`judge`**: A semantic stopping condition agent that reviews the debate and calls the `declare_consensus` tool if arguments stagnate.
       - **`escalator`**: The `BaseAgent` that counts iterations and checks for consensus, stopping the loop at 5 rounds or earlier.
-  2. **`synthesizer`** (Pro): Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
+  2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
 
 ---
 

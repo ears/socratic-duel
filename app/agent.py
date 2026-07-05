@@ -14,7 +14,7 @@
 # limitations under the License.
 
 from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
-from google.adk.apps import App
+from google.adk.apps import App, ResumabilityConfig
 from google.adk.models import Gemini
 from google.genai import types
 from google.adk.tools import google_search, ToolContext, AgentTool
@@ -99,8 +99,8 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
         callback_context.state["language"] = "English"
 
 # Global Model Configuration
-STRONG_MODEL = "gemini-1.5-flash-8b"
-FAST_MODEL = "gemini-1.5-flash-8b"
+STRONG_MODEL = "gemini-3.1-flash-lite"
+FAST_MODEL = "gemini-3.1-flash-lite"
 
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
@@ -146,14 +146,17 @@ citation_checker_proto = Agent(
 Review the following analysis drafted by the Protagonist: {protagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
 2. Use web search to strictly verify each citation against hallucination.
-3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
+3. Only permit citations that can be proven with high-reputation references.
 4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
-5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
-Output the finalized, verified analysis in Markdown.
+5. You MUST output your response in this EXACT format:
+[STATUS: <If verified perfectly, write "All citations verified. No errors found." If you removed something, explicitly state what you removed, e.g. "Removed hallucinated citation regarding METR 2025 study.">]
+[DRAFT: <The full finalized text here>]
+
+CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[google_search],
     output_key="protagonist_output",
 )
@@ -188,14 +191,17 @@ citation_checker_anto = Agent(
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Extract every citation, statistic, or empirical claim.
 2. Use web search to strictly verify each citation against hallucination.
-3. Only permit citations that can be proven with high-reputation references (e.g., peer-reviewed journals, universities, reputable institutions). Just an appearance on any random website is NOT sufficient.
+3. Only permit citations that can be proven with high-reputation references.
 4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
-5. CRITICAL CONSTRAINT: You must ONLY check alleged citations, statistics, and empirical claims. Do NOT alter, critique, or rewrite the general content, style, or core arguments of the draft. Preserve the original text exactly, except for the removal of unverified citations.
-Output the finalized, verified analysis in Markdown.
+5. You MUST output your response in this EXACT format:
+[STATUS: <If verified perfectly, write "All citations verified. No errors found." If you removed something, explicitly state what you removed, e.g. "Removed hallucinated citation regarding METR 2025 study.">]
+[DRAFT: <The full finalized text here>]
+
+CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[google_search],
     output_key="antagonist_output",
 )
@@ -235,7 +241,7 @@ synthesizer = Agent(
     model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents='none',
-    instruction="""You are the Epistemic Synthesizer.
+    instruction="""You are the Epistemic Synthesizer for Peer Duel.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
 Contrarian's view: {antagonist_output}
@@ -283,7 +289,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 root_agent = Agent(
     name="interactive_planner",
     model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
-    instruction="""You are the Orchestrator for the Epistemic Synthesizer. You operate in a strict TWO-PHASE interaction model.
+    instruction="""You are the Orchestrator for Peer Duel. You operate in a strict TWO-PHASE interaction model.
 
 PHASE 1 (Triage & Human-In-The-Loop):
 When the user provides a thesis or uploads a paper:
@@ -319,5 +325,6 @@ CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial
 app = App(
     root_agent=root_agent,
     name="app",
-    plugins=[TokenCounterPlugin(name="token_counter")]
+    plugins=[TokenCounterPlugin(name="token_counter")],
+    resumability_config=ResumabilityConfig(is_resumable=True)
 )
