@@ -192,6 +192,8 @@ It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a ve
 
 CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text.
 
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
+
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
