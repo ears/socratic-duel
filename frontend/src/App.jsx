@@ -388,7 +388,7 @@ function App() {
                     }}
                     className="px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl shadow-xl shadow-violet-600/30 transition-all transform hover:-translate-y-1 active:translate-y-0 text-lg flex items-center gap-2"
                   >
-                    New Socratic Dialogue <span>↺</span>
+                    New Socratic Duel <span>↺</span>
                   </button>
                 </div>
               )}
