@@ -6,11 +6,11 @@ This diagram shows the end-to-end flow from the user's initial input to the fina
 
 ```mermaid
 graph TD
-    User([User Input: Thesis]) --> Orchestrator[Interactive Planner (Root)]
+    User(["User Input: Thesis"]) --> Orchestrator["Interactive Planner (Root)"]
     Orchestrator -->|Delegates Context| TriageResearcher[Triage Researcher]
     TriageResearcher -->|Web Search & Context| Orchestrator
     Orchestrator -->|Presents 8 Lenses| UI[HITL: User selects Lens]
-    UI -->|Choice (1-8)| Orchestrator
+    UI -->|Choice 1-8| Orchestrator
     Orchestrator -->|Routes Task| Pipeline[Research Pipeline]
     
     subgraph Pipeline [Sequential Pipeline]
@@ -21,7 +21,7 @@ graph TD
         DebateLoop -->|Final Debate Transcript| Synthesizer
     end
     
-    Synthesizer -->|Outputs Markdown| FinalReport([Final Interdisciplinary Report])
+    Synthesizer -->|Outputs Markdown| FinalReport(["Final Interdisciplinary Report"])
 ```
 
 ## 2. Dialectical Debate Loop (The Engine)
@@ -46,7 +46,7 @@ graph TD
     
     CheckedA --> Judge{Semantic Judge}
     
-    Judge -->|Rounds < 2| Continue1[Sleep/Continue]
+    Judge -->|Rounds < 2| Continue1[Sleep / Continue]
     Judge -->|Rounds >= 2 & Active Debate| Continue2[DECISION: CONTINUE]
     Judge -->|Stagnation| End1[DECISION: END / Consensus]
     
@@ -69,7 +69,7 @@ The backend allocates specific reasoning models based on the cognitive complexit
 
 ```mermaid
 pie title "Agent Model Allocation (Vertex AI: Global)"
-    "gemini-3.1-flash-lite (Debaters, Checkers, Triage)" : 4
+    "gemini-3.1-flash-lite (Checkers, Triage)" : 3
     "gemini-3.5-flash (Judge)" : 1
-    "gemini-3.1-pro-preview (Orchestrator, Synthesizer)" : 2
+    "gemini-3.1-pro-preview (Orchestrator, Debaters, Synthesizer)" : 4
 ```
