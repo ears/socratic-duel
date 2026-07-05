@@ -84,7 +84,7 @@ uv run adk --help
 ```
 *Useful commands include:*
 - `uv run adk run app/agent.py`: Run the agent directly from the command line without the web server.
-- `uv run adk db clear`: Clear the local SQLite database if your local session state gets corrupted or you want a completely fresh start.
+- `uv run adk db clear`: Clear the local SQLite database (`app/.adk/session.db`—where ADK automatically saves all conversation history and agent state) if your session gets corrupted or you want a completely fresh start.
 
 ## Commands
 
