@@ -90,12 +90,21 @@ function App() {
     <div className="min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] font-sans transition-colors duration-300">
       <header className="border-b border-[var(--border-color)] bg-[var(--card-bg)]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => {
+              setPhase('input');
+              setThesis('');
+              setSelectedLensIndex(null);
+              setMessages([]);
+              setSessionId(Math.random().toString(36).substring(7));
+            }}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer text-left"
+          >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">
               SD
             </div>
             <h1 className="text-xl font-bold tracking-tight">Socratic Duel</h1>
-          </div>
+          </button>
           <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition flex items-center justify-center w-10 h-10">
             {theme === 'dark' ? '☀️' : '🌙'}
           </button>
