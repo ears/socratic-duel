@@ -1,6 +1,6 @@
 # Socratic Duel (Dialectical Epistemic Synthesizer)
 
-A multi-agent system designed to rigorously analyze theses using highly specialized academic lenses. Built with Google ADK for the AI Agents Intensive Vibe Coding Capstone Project.
+A multi-agent system designed to rigorously analyze theses using highly specialized academic lenses. Built with Google ADK for the AI Agents Intensive Vibe Coding Project.
 
 See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut/scientific-synthesizer/epistemic-synth/SPEC.md).
 

@@ -1,6 +1,6 @@
 # Socratic Duel - Specification
 
-This document serves as the central "Source of Truth" for the `epistemic-synth` Capstone project. If the project needs to be recreated, refactored, or scaled, this specification acts as the precise blueprint. It captures the architectural decisions, non-functional requirements, and the distinct *intent* behind the design choices.
+This document serves as the central "Source of Truth" for the `epistemic-synth` project. If the project needs to be recreated, refactored, or scaled, this specification acts as the precise blueprint. It captures the architectural decisions, non-functional requirements, and the distinct *intent* behind the design choices.
 
 ---
 
