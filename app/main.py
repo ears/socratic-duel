@@ -61,18 +61,35 @@ async def event_generator(session_id: str, message: str):
                         tool_calls.append({"name": tc.name, "args": tc.args})
 
             author = getattr(event, "author", "system")
+            is_citation_error = False
+            
             if author in ["citation_checker_proto", "citation_checker_anto"] and "[STATUS:" in text_content:
                 try:
                     status_part = text_content.split("[STATUS:")[1].split("]")[0].strip()
-                    text_content = f"**Auditor Status:** {status_part}"
+                    if "NO_CITATIONS" in status_part:
+                        text_content = "No citations to check."
+                    elif "VERIFIED" in status_part:
+                        text_content = "Citations verified."
+                    elif "ERROR:" in status_part:
+                        # Extract everything after ERROR:
+                        error_text = status_part.split("ERROR:")[1].strip()
+                        text_content = error_text
+                        is_citation_error = True
+                    else:
+                        text_content = status_part
                 except IndexError:
                     pass
+
+            if author == "judge":
+                text_content = text_content.replace("[DECISION: CONTINUE]", "").strip()
+                text_content = text_content.replace("[DECISION: END]", "").strip()
 
             # Build JSON payload
             payload = {
                 "author": author,
                 "content": text_content,
-                "tool_calls": tool_calls
+                "tool_calls": tool_calls,
+                "is_citation_error": is_citation_error
             }
             
             yield f"data: {json.dumps(payload)}\n\n"

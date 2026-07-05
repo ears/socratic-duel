@@ -78,7 +78,12 @@ class EscalationChecker(BaseAgent):
         iterations += 1
         ctx.session.state["loop_iterations"] = iterations
         
+        judge_output = str(ctx.session.state.get("judge_output", "")).upper()
         consensus = ctx.session.state.get("consensus_reached", False)
+        
+        # Fallback: if the Judge didn't call the tool but output [DECISION: END] or omitted CONTINUE
+        if judge_output and ("[DECISION: END]" in judge_output or "[DECISION: CONTINUE]" not in judge_output):
+            consensus = True
         
         # Escalate after 5 iterations OR if the Judge declared consensus
         if iterations >= 5 or consensus:
@@ -125,7 +130,7 @@ Apply this specific academic/analytical lens to analyze the following thesis:
 
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
 
-STRICT ACADEMIC CONSTRAINT: You must bolster your arguments with real-world academic citations or empirical data. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+STRICT ACADEMIC CONSTRAINT: You are highly incentivized to back up your arguments with real-world academic sources and empirical data. However, any citation you provide MUST be formatted as a direct URL hyperlink to a real, accessible source (e.g., [Author Year](https://example.com/paper)). Do NOT provide text-only citations like "(Smith, 2023)". You are strictly forbidden from hallucinating URLs or citations. You MUST verify the URL exists using your web search tool before including it.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
@@ -144,12 +149,12 @@ citation_checker_proto = Agent(
     include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
 Review the following analysis drafted by the Protagonist: {protagonist_draft}
-1. Extract every citation, statistic, or empirical claim.
-2. Use web search to strictly verify each citation against hallucination.
-3. Only permit citations that can be proven with high-reputation references.
-4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
+1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
+2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
+3. Otherwise, use web search to strictly verify each URL to ensure it is not a hallucinated or dead link, and actually supports the claim.
+4. If a URL is dead, hallucinated, or irrelevant, remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
-[STATUS: <If verified perfectly, write "All citations verified. No errors found." If you removed something, explicitly state what you removed, e.g. "Removed hallucinated citation regarding METR 2025 study.">]
+[STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid or hallucinated URL/citation, use exactly "ERROR:" followed by the complete text of the bad citation you removed.>]
 [DRAFT: <The full finalized text here>]
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
@@ -171,7 +176,7 @@ antagonist = Agent(
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
 
-STRICT ACADEMIC CONSTRAINT: You must bolster your critique with real-world academic citations. You are strictly forbidden from hallucinating citations. If you cite a paper, author, or statistic, you MUST first verify it exists using your web search tool.
+STRICT ACADEMIC CONSTRAINT: You are highly incentivized to back up your critique with real-world academic sources and empirical data. However, any citation you provide MUST be formatted as a direct URL hyperlink to a real, accessible source (e.g., [Author Year](https://example.com/paper)). Do NOT provide text-only citations like "(Smith, 2023)". You are strictly forbidden from hallucinating URLs or citations. You MUST verify the URL exists using your web search tool before including it.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
@@ -189,12 +194,12 @@ citation_checker_anto = Agent(
     include_contents='none',
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
-1. Extract every citation, statistic, or empirical claim.
-2. Use web search to strictly verify each citation against hallucination.
-3. Only permit citations that can be proven with high-reputation references.
-4. If a citation is hallucinated, fake, or low-reputation, remove it from the text and gently adjust the immediate sentence.
+1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
+2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
+3. Otherwise, use web search to strictly verify each URL to ensure it is not a hallucinated or dead link, and actually supports the claim.
+4. If a URL is dead, hallucinated, or irrelevant, remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
-[STATUS: <If verified perfectly, write "All citations verified. No errors found." If you removed something, explicitly state what you removed, e.g. "Removed hallucinated citation regarding METR 2025 study.">]
+[STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid or hallucinated URL/citation, use exactly "ERROR:" followed by the complete text of the bad citation you removed.>]
 [DRAFT: <The full finalized text here>]
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
@@ -217,10 +222,15 @@ Protagonist: {protagonist_output}
 Antagonist: {antagonist_output}
 
 Evaluate if the debate has stagnated, if no new substantial arguments are being introduced, or if they have reached a consensus/stalemate.
-If the debate has stagnated and is repeating itself, you MUST call the `declare_consensus` tool to end the debate early. 
-If the debate is still producing novel, productive friction, simply output 'CONTINUE'.
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.""",
+1. You MUST begin your response with a strict system tag (in English):
+   If the debate should continue, write exactly: [DECISION: CONTINUE]
+   If the debate has stagnated and should end, write exactly: [DECISION: END]
+
+2. After the tag, you may provide a brief 1-2 sentence explanation of your decision.
+   CRITICAL LANGUAGE CONSTRAINT: Your explanation MUST be written in {language}.
+   
+If the debate has stagnated, you MUST also call the `declare_consensus` tool.""",
     tools=[declare_consensus],
     output_key="judge_output"
 )

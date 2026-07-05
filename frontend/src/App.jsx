@@ -203,40 +203,77 @@ function App() {
               <h2 className="text-3xl font-extrabold">
                 {isTyping ? "Live Dialectical Debate" : "Synthesis Complete"}
               </h2>
+              {selectedLensIndex !== null && (
+                <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                  <span className="text-3xl drop-shadow-sm">{LENSES[selectedLensIndex]?.icon}</span>
+                  <span>Active Lens: {LENSES[selectedLensIndex]?.name}</span>
+                </div>
+              )}
             </div>
 
             <div className="bg-[var(--card-bg)] border border-[var(--border-color)] rounded-3xl p-6 shadow-xl space-y-6 flex flex-col gap-6">
-              {messages.map((msg, i) => (
-                <div key={i} className={`flex gap-4 w-[90%] ${msg.author === 'antagonist' ? 'self-end flex-row-reverse' : ''}`}>
-                  <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-xl shadow-sm border ${msg.author === 'antagonist' ? 'bg-rose-100 border-rose-200 text-rose-600 dark:bg-rose-900/30 dark:border-rose-800' : 'bg-violet-100 border-violet-200 text-violet-600 dark:bg-violet-900/30 dark:border-violet-800'}`}>
-                    {msg.author === 'antagonist' ? '🤺' : (LENSES[selectedLensIndex]?.icon || '🏛️')}
-                  </div>
-                  <div className={`space-y-2 flex flex-col ${msg.author === 'antagonist' ? 'items-end' : 'items-start'}`}>
-                    <div className={`font-bold text-sm opacity-80 flex items-center gap-2 ${msg.author === 'antagonist' ? 'flex-row-reverse' : ''}`}>
-                      {msg.author.toUpperCase()}
+              {messages.map((msg, i) => {
+                const isCitationChecker = msg.author.startsWith('citation_checker');
+                const authorName = isCitationChecker ? 'Citation Checker' : msg.author.toUpperCase();
+                
+                if (isCitationChecker) {
+                  return (
+                    <div key={i} className="flex justify-center w-full my-2">
+                      {msg.is_citation_error ? (
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 p-4 rounded-xl text-red-800 dark:text-red-300 w-full max-w-2xl shadow-sm">
+                          <div className="font-bold mb-2 flex items-center gap-2">
+                            <span className="text-xl">❌</span> Bad Citation Removed
+                          </div>
+                          <div className="italic text-sm">{msg.content}</div>
+                        </div>
+                      ) : (
+                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm font-medium opacity-80">
+                          <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
+                          {msg.content === "No citations to check." ? (
+                            <span className="text-gray-500 dark:text-gray-400">No citations to check.</span>
+                          ) : msg.content === "Citations verified." ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ Citations verified.</span>
+                          ) : (
+                            <span>{msg.content}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className={`p-5 rounded-2xl text-base leading-relaxed ${msg.author === 'antagonist' ? 'rounded-tr-none bg-rose-50 border border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' : 'rounded-tl-none bg-gray-100 dark:bg-gray-800/50 border border-transparent'}`}>
-                      <ReactMarkdown
-                        components={{
-                          h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-5 mb-3" {...props} />,
-                          h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3" {...props} />,
-                          h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2" {...props} />,
-                          p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
-                          ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-                          ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
-                          li: ({node, ...props}) => <li className="pl-1" {...props} />,
-                          strong: ({node, ...props}) => <strong className="font-semibold text-violet-700 dark:text-violet-400" {...props} />,
-                          em: ({node, ...props}) => <em className="italic opacity-90" {...props} />,
-                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-violet-500/50 pl-4 italic my-4 opacity-80" {...props} />,
-                          a: ({node, ...props}) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />
-                        }}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
+                  );
+                }
+
+                return (
+                  <div key={i} className={`flex gap-4 w-[90%] ${msg.author === 'antagonist' ? 'self-end flex-row-reverse' : ''}`}>
+                    <div className={`w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-xl shadow-sm border ${msg.author === 'antagonist' ? 'bg-rose-100 border-rose-200 text-rose-600 dark:bg-rose-900/30 dark:border-rose-800' : 'bg-violet-100 border-violet-200 text-violet-600 dark:bg-violet-900/30 dark:border-violet-800'}`}>
+                      {msg.author === 'antagonist' ? '🤺' : (LENSES[selectedLensIndex]?.icon || '🏛️')}
+                    </div>
+                    <div className={`space-y-2 flex flex-col ${msg.author === 'antagonist' ? 'items-end' : 'items-start'}`}>
+                      <div className={`font-bold text-sm opacity-80 flex items-center gap-2 ${msg.author === 'antagonist' ? 'flex-row-reverse' : ''}`}>
+                        {authorName}
+                      </div>
+                      <div className={`p-5 rounded-2xl text-base leading-relaxed ${msg.author === 'antagonist' ? 'rounded-tr-none bg-rose-50 border border-rose-100 dark:bg-rose-900/10 dark:border-rose-900/30' : 'rounded-tl-none bg-gray-100 dark:bg-gray-800/50 border border-transparent'}`}>
+                        <ReactMarkdown
+                          components={{
+                            h1: ({node, ...props}) => <h1 className="text-2xl font-bold mt-5 mb-3" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-xl font-bold mt-5 mb-3" {...props} />,
+                            h3: ({node, ...props}) => <h3 className="text-lg font-bold mt-4 mb-2" {...props} />,
+                            p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                            ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
+                            ol: ({node, ...props}) => <ol className="list-decimal pl-6 mb-4 space-y-2" {...props} />,
+                            li: ({node, ...props}) => <li className="pl-1" {...props} />,
+                            strong: ({node, ...props}) => <strong className="font-semibold text-violet-700 dark:text-violet-400" {...props} />,
+                            em: ({node, ...props}) => <em className="italic opacity-90" {...props} />,
+                            blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-violet-500/50 pl-4 italic my-4 opacity-80" {...props} />,
+                            a: ({node, ...props}) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />
+                          }}
+                        >
+                          {msg.content}
+                        </ReactMarkdown>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               {isTyping && (
                 <div className="flex gap-4 w-[85%] opacity-70">
