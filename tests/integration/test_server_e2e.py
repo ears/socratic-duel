@@ -49,10 +49,20 @@ FEEDBACK_URL = BASE_URL + "/feedback"
 HEADERS = {"Content-Type": "application/json"}
 
 
-def log_output(pipe: Any, log_func: Any) -> None:
+def log_output(pipe: Any, default_log_func: Any) -> None:
     """Log the output from the given pipe."""
     for line in iter(pipe.readline, ""):
-        log_func(line.strip())
+        line = line.strip()
+        if not line:
+            continue
+        if "INFO" in line:
+            logger.info(line)
+        elif "WARNING" in line:
+            logger.warning(line)
+        elif "ERROR" in line:
+            logger.error(line)
+        else:
+            default_log_func(line)
 
 
 def start_server() -> subprocess.Popen[str]:
