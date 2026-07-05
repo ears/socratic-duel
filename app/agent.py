@@ -55,6 +55,10 @@ def verify_url_status(url: str) -> str:
     try:
         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
         with urllib.request.urlopen(req, timeout=5) as response:
+            content_type = response.headers.get('Content-Type', '')
+            if 'application/pdf' in content_type:
+                return f"STATUS: {response.getcode()} OK - Document: PDF"
+            
             html = response.read(8192).decode('utf-8', errors='ignore')
             title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
             title = title_match.group(1).strip() if title_match else "No Title Found"
