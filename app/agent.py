@@ -81,12 +81,19 @@ class EscalationChecker(BaseAgent):
         judge_output = str(ctx.session.state.get("judge_output", "")).upper()
         consensus = ctx.session.state.get("consensus_reached", False)
         
-        # Fallback: if the Judge didn't call the tool but output [DECISION: END] or omitted CONTINUE
-        if judge_output and ("[DECISION: END]" in judge_output or "[DECISION: CONTINUE]" not in judge_output):
+        # Fallback: if the Judge didn't call the tool but output [DECISION: END]
+        if judge_output and "[DECISION: END]" in judge_output:
             consensus = True
         
         # Escalate after 5 iterations OR if the Judge declared consensus
-        if iterations >= 5 or consensus:
+        if iterations >= 5 and not consensus:
+            # Yield a final message from the Judge explaining the hard limit before escalating
+            yield Event(
+                author="judge", 
+                content="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis.", 
+                actions=EventActions(escalate=True)
+            )
+        elif consensus:
             yield Event(author=self.name, actions=EventActions(escalate=True))
         else:
             yield Event(author=self.name)
