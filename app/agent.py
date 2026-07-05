@@ -90,7 +90,7 @@ class EscalationChecker(BaseAgent):
             # Yield a final message from the Judge explaining the hard limit before escalating
             yield Event(
                 author="judge", 
-                content=types.Content(role="model", parts=[types.Part.from_text("[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis.")]), 
+                content=types.Content(role="model", parts=[types.Part.from_text(text="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis.")]), 
                 actions=EventActions(escalate=True)
             )
         elif consensus:
