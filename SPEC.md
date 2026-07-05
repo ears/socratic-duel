@@ -1,4 +1,4 @@
-# Socratic Duel - Specification (MVP)
+# Socratic Duel - Specification
 
 This document serves as the central "Source of Truth" for the `epistemic-synth` Capstone project. If the project needs to be recreated, refactored, or scaled, this specification acts as the precise blueprint. It captures the architectural decisions, non-functional requirements, and the distinct *intent* behind the design choices.
 
@@ -41,7 +41,7 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 ## 4. Architectural Logic (Agent Orchestration)
 
-The backend must consist of the following orchestrated ADK components. For the current MVP, due to API region availability constraints, all agents utilize **`gemini-3.1-flash-lite`** in the `global` region (rather than a Pro/Flash split):
+The backend must consist of the following orchestrated ADK components. Due to API region availability constraints, all agents utilize **`gemini-3.1-flash-lite`** in the `global` region (rather than a Pro/Flash split):
 
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
 - **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
@@ -61,7 +61,7 @@ The backend must consist of the following orchestrated ADK components. For the c
 
 ### 5.1 Backend & Architecture
 1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
-2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
+2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface.
 3. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 
 ### 5.2 Frontend & Deployment Specifications
