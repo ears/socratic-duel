@@ -184,7 +184,7 @@ function App() {
                 disabled={selectedLensIndex === null}
                 className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 text-lg"
               >
-                Initialize Dialectical Loop
+                Start Debate
               </button>
             </div>
           </div>
@@ -313,7 +313,7 @@ function App() {
                     }}
                     className="px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl shadow-xl shadow-violet-600/30 transition-all transform hover:-translate-y-1 active:translate-y-0 text-lg flex items-center gap-2"
                   >
-                    Start New Discussion <span>↺</span>
+                    Start New Socratic Dialogue <span>↺</span>
                   </button>
                 </div>
               )}
