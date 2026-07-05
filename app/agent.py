@@ -246,7 +246,8 @@ CRITICAL INSTRUCTION: You must allow the debate to naturally unfold. Generally, 
    If the debate should continue, write exactly: [DECISION: CONTINUE]
    If the debate has stagnated and should end, write exactly: [DECISION: END]
 
-2. After the tag, you may provide a brief 1-2 sentence explanation of your decision.
+2. After the tag, you must provide a brief 1-2 sentence explanation of your decision.
+   TONE AND STYLE: You must maintain a strictly neutral, objective, and occasionally critical tone. Do NOT be euphemistic, overly polite, or sycophantic. If the arguments are weak, repetitive, or logically flawed, point it out bluntly. Do not praise the debaters unnecessarily.
    CRITICAL LANGUAGE CONSTRAINT: Your explanation MUST be written in {language}.
    
 If the debate has stagnated, you MUST also call the `declare_consensus` tool.""",
@@ -278,7 +279,7 @@ Contrarian's view: {antagonist_output}
 You have access to web search. Do not just summarize the debate. Actively search for meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table.
 
 Structure the report:
-Begin the report explicitly with a line indicating the active lens, formatted exactly like: "⚖️ Active Lens: {chosen_lens}" (translating 'Active Lens' into {language}).
+Begin the report explicitly with a large H1 header indicating the active lens, formatted exactly like: "# ⚖️ Active Lens: {chosen_lens}" (translating 'Active Lens' into {language}).
 1. The Epistemic Frame ({chosen_lens})
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
