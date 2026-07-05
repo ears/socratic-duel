@@ -240,7 +240,7 @@ function App() {
                         <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 p-4 rounded-xl text-red-800 dark:text-red-300 w-full max-w-2xl shadow-sm">
                           <div className="mb-2 flex items-center gap-2 text-sm font-medium opacity-80">
                             <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span> 
-                            <span className="flex items-center gap-1">❌ Bad Citation Removed</span>
+                            <span className="flex items-center gap-1">❌ Bad Citation</span>
                           </div>
                           <div className="italic text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                         </div>
