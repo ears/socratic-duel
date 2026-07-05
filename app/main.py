@@ -82,9 +82,9 @@ async def event_generator(session_id: str, message: str):
                     if "NO_CITATIONS" in status_part.upper():
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part.upper():
-                        matches = re.findall(r'(\[[^\]]+\]\([^\)]+\))\s*\[🛡️\s*Bot Protected\]', text_content, re.IGNORECASE)
+                        matches = re.findall(r'(\[[^\[\]]{1,200}\]\([^\s\)]+\))\s*\[🛡️\s*Bot Protected\]', text_content, re.IGNORECASE)
                         if matches:
-                            text_content = "Citations verified.\n🛡️ Bot Protected: " + ", ".join(matches)
+                            text_content = "Citations verified.\n\n🛡️ Bot Protected:\n- " + "\n- ".join(matches)
                         else:
                             text_content = "Citations verified."
                     elif "ERROR:" in status_part.upper():
