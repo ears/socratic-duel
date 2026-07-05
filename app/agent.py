@@ -15,6 +15,7 @@
 
 import warnings
 warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
+warnings.filterwarnings("ignore", message=".*ResumabilityConfig.*")
 
 from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
 from google.adk.apps import App, ResumabilityConfig
