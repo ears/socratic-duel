@@ -198,7 +198,6 @@ function App() {
                   <button 
                     onClick={() => {
                       setPhase('input');
-                      setThesis('');
                       setTriageResultText('');
                       setTriageRejected(false);
                       setSessionId(Math.random().toString(36).substring(7));
