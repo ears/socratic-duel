@@ -111,7 +111,7 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
         callback_context.state["language"] = "English"
 
 # Global Model Configuration
-STRONG_MODEL = "gemini-3.1-flash-lite"
+STRONG_MODEL = "gemini-3.1-pro-preview"
 FAST_MODEL = "gemini-3.1-flash-lite"
 
 # Resiliency defaults for Vertex AI
