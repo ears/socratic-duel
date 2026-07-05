@@ -143,7 +143,7 @@ If there is previous feedback from the contrarian, respond to it directly: {anta
 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
-It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it.
+It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
 
 CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text.
 
@@ -196,7 +196,7 @@ Highlight methodological vulnerabilities, implicit assumptions, and blind spots 
 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
-It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it.
+It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
