@@ -241,7 +241,7 @@ async def skip_early_judge_callback(callback_context: CallbackContext, llm_reque
     count = callback_context.state.get("judge_eval_count", 0)
     callback_context.state["judge_eval_count"] = count + 1
     if count < 2:
-        return LlmResponse(text="[DECISION: CONTINUE]\n[Judge is observing the first two rounds to allow arguments to fully develop before intervening.]")
+        return LlmResponse(content=types.Content(role="model", parts=[types.Part.from_text(text="[DECISION: CONTINUE]\n[Judge is observing the first two rounds to allow arguments to fully develop before intervening.]")]))
     return None
 
 judge = Agent(
