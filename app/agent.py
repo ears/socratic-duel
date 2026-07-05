@@ -19,7 +19,8 @@ warnings.filterwarnings("ignore", message=".*compatible with automatic function 
 warnings.filterwarnings("ignore", message=".*AFC is disabled.*")
 
 import logging
-logging.getLogger("google.genai").setLevel(logging.ERROR)
+logging.getLogger("google_genai.models").setLevel(logging.ERROR)
+logging.getLogger("google_genai").setLevel(logging.ERROR)
 
 from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
 from google.adk.apps import App, ResumabilityConfig
