@@ -115,6 +115,7 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 
 # Global Model Configuration
 STRONG_MODEL = "gemini-3.1-pro-preview"
+MID_MODEL = "gemini-3.5-flash"
 FAST_MODEL = "gemini-3.1-flash-lite"
 
 # Resiliency defaults for Vertex AI
@@ -234,9 +235,19 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
 )
 
 # 3. The Judge (Semantic Stopping Condition)
+
+async def skip_early_judge_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> LlmResponse | None:
+    """Dynamically escalates the debate by skipping the Judge for the first 2 rounds."""
+    count = callback_context.state.get("judge_eval_count", 0)
+    callback_context.state["judge_eval_count"] = count + 1
+    if count < 2:
+        return LlmResponse(text="[DECISION: CONTINUE]\n[Judge is observing the first two rounds to allow arguments to fully develop before intervening.]")
+    return None
+
 judge = Agent(
     name="judge",
-    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
+    model=Gemini(model=MID_MODEL, http_options=default_http_options),
+    before_model_callback=skip_early_judge_callback,
     include_contents='none',
     instruction="""You are the Debate Judge.
 Review the latest arguments from the Protagonist and Antagonist:
@@ -245,6 +256,12 @@ Antagonist: {antagonist_output}
 
 Evaluate if the debate has completely stagnated or if they have reached a consensus.
 CRITICAL INSTRUCTION: You must allow the debate to naturally unfold. Generally, allow the debate to CONTINUE for multiple rounds to encourage deep dialectical exploration. ONLY declare END if they are literally repeating the exact same points with absolutely no new nuance or empirical data.
+
+Evaluate the latest arguments using this strict Grading Rubric:
+1. Is the Antagonist attacking the core premise or just a strawman?
+2. Are there empirical gaps in the latest argument?
+3. Is the rhetoric becoming circular?
+
 1. You MUST begin your response with a strict system tag (in English):
    If the debate should continue, write exactly: [DECISION: CONTINUE]
    If the debate has stagnated and should end, write exactly: [DECISION: END]

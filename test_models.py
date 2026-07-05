@@ -4,12 +4,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 models = [
-    "gemini-2.5-pro",
-    "gemini-3-pro-preview",
-    "gemini-3.1-pro-preview",
-    "gemini-3.1-pro",
-    "gemini-3.1-flash",
-    "gemini-3.1-flash-lite"
+    "gemini-2.5-flash",
+    "gemini-3.0-flash",
+    "gemini-3.5-flash",
+    "gemini-3.1-flash"
 ]
 client = genai.Client(vertexai=True, project=os.environ["GOOGLE_CLOUD_PROJECT"], location="global")
 for m in models:
