@@ -22,6 +22,8 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [triageResultText, setTriageResultText] = useState("");
+  const [triageRejected, setTriageRejected] = useState(false);
   const eventSourceRef = useRef(null);
 
   useEffect(() => {
@@ -35,6 +37,10 @@ function App() {
     if (!thesis.trim()) return;
     setPhase('triage_loading');
     setErrorMessage(null);
+    setTriageResultText("");
+    setTriageRejected(false);
+    
+    let localContent = "";
     
     // Call backend to trigger Phase 1 Triage
     const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(thesis)}`);
@@ -46,6 +52,14 @@ function App() {
             setErrorMessage(`Phase 1 Error: ${data.error}`);
             setPhase('input');
             es.close();
+            return;
+        }
+        if (data.content) {
+            localContent += data.content;
+            if (localContent.includes("[STATUS: REJECTED]")) {
+                setTriageRejected(true);
+            }
+            setTriageResultText(prev => prev + data.content.replace("[STATUS: REJECTED]", ""));
         }
     };
     
@@ -166,39 +180,71 @@ function App() {
 
         {phase === 'triage' && (
           <div className="space-y-12 animate-in fade-in zoom-in-95 duration-500">
-            <div className="text-center space-y-4 max-w-3xl mx-auto">
-              <h2 className="text-4xl font-extrabold tracking-tight">Select an Epistemic Lens</h2>
-              <p className="text-lg opacity-70">Choose the academic framework that will drive the dialectical debate.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {LENSES.map((lens, idx) => (
-                <div 
-                  key={lens.id}
-                  onClick={() => setSelectedLensIndex(idx)}
-                  className={`relative p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
-                    selectedLensIndex === idx 
-                      ? 'border-violet-500 bg-violet-500/5 shadow-xl shadow-violet-500/10' 
-                      : 'border-[var(--border-color)] bg-[var(--card-bg)] hover:border-violet-500/50 hover:shadow-lg'
-                  }`}
+            {triageResultText && (
+              <div className="max-w-4xl mx-auto p-6 bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl shadow-lg mb-8 text-lg leading-relaxed">
+                <ReactMarkdown
+                  components={{
+                    p: ({node, ...props}) => <p className="mb-4 last:mb-0" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-semibold text-violet-700 dark:text-violet-400" {...props} />
+                  }}
                 >
-                  {selectedLensIndex === idx && <div className="absolute top-0 left-0 w-full h-1 bg-violet-500"></div>}
-                  <div className="text-4xl mb-4">{lens.icon}</div>
-                  <h3 className="text-xl font-bold mb-2">{lens.name}</h3>
-                  <p className="opacity-70 text-sm leading-relaxed">{lens.description}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex justify-center mt-12 pt-8 border-t border-[var(--border-color)]">
-              <button 
-                onClick={startDebate}
-                disabled={selectedLensIndex === null}
-                className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 text-lg"
-              >
-                Start Debate
-              </button>
-            </div>
+                  {triageResultText}
+                </ReactMarkdown>
+              </div>
+            )}
+            
+            {triageRejected ? (
+               <div className="flex justify-center mt-8 pt-8 border-t border-[var(--border-color)]">
+                  <button 
+                    onClick={() => {
+                      setPhase('input');
+                      setThesis('');
+                      setTriageResultText('');
+                      setTriageRejected(false);
+                      setSessionId(Math.random().toString(36).substring(7));
+                    }}
+                    className="px-12 py-4 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-2xl shadow-xl transition-all"
+                  >
+                    Try Again
+                  </button>
+               </div>
+            ) : (
+               <>
+                 <div className="text-center space-y-4 max-w-3xl mx-auto">
+                   <h2 className="text-4xl font-extrabold tracking-tight">Select an Epistemic Lens</h2>
+                   <p className="text-lg opacity-70">Choose the academic framework that will drive the dialectical debate.</p>
+                 </div>
+     
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                   {LENSES.map((lens, idx) => (
+                     <div 
+                       key={lens.id}
+                       onClick={() => setSelectedLensIndex(idx)}
+                       className={`relative p-6 rounded-3xl border-2 cursor-pointer transition-all duration-300 overflow-hidden ${
+                         selectedLensIndex === idx 
+                           ? 'border-violet-500 bg-violet-500/5 shadow-xl shadow-violet-500/10' 
+                           : 'border-[var(--border-color)] bg-[var(--card-bg)] hover:border-violet-500/50 hover:shadow-lg'
+                       }`}
+                     >
+                       {selectedLensIndex === idx && <div className="absolute top-0 left-0 w-full h-1 bg-violet-500"></div>}
+                       <div className="text-4xl mb-4">{lens.icon}</div>
+                       <h3 className="text-xl font-bold mb-2">{lens.name}</h3>
+                       <p className="opacity-70 text-sm leading-relaxed">{lens.description}</p>
+                     </div>
+                   ))}
+                 </div>
+     
+                 <div className="flex justify-center mt-12 pt-8 border-t border-[var(--border-color)]">
+                   <button 
+                     onClick={startDebate}
+                     disabled={selectedLensIndex === null}
+                     className="px-12 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-xl shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 text-lg"
+                   >
+                     Start Debate
+                   </button>
+                 </div>
+               </>
+            )}
           </div>
         )}
 
