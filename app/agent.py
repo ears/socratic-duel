@@ -63,6 +63,27 @@ def verify_url_status(url: str) -> str:
     except Exception as e:
         return f"STATUS: DEAD - {str(e)}"
 
+import json
+import urllib.parse
+def search_semantic_scholar(query: str) -> str:
+    """Searches the Semantic Scholar academic database for peer-reviewed papers. Returns paper titles, authors, year, abstract, and URL."""
+    try:
+        url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={urllib.parse.quote(query)}&limit=3&fields=title,authors,year,url,abstract,citationCount"
+        req = urllib.request.Request(url, headers={'User-Agent': 'SocraticDuelAgent/1.0'})
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode('utf-8'))
+            if not data.get("data"):
+                return "No academic papers found for this query."
+            
+            results = []
+            for paper in data["data"]:
+                authors = ", ".join([a.get("name", "") for a in paper.get("authors", [])])
+                res = f"Title: {paper.get('title')}\nAuthors: {authors}\nYear: {paper.get('year')}\nCitations: {paper.get('citationCount')}\nURL: {paper.get('url')}\nAbstract: {paper.get('abstract')}\n---"
+                results.append(res)
+            return "\n".join(results)
+    except Exception as e:
+        return f"Error searching Semantic Scholar: {str(e)}"
+
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
     tokens = callback_context.session.state.get("total_tokens", 0)
     msg = f"**Total Tokens Used in Session:** {tokens}"
@@ -166,14 +187,12 @@ If there is previous feedback from the contrarian, respond to it directly: {anta
 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
-It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
+It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST use the `search_semantic_scholar` tool to find real peer-reviewed papers to support your arguments BEFORE drafting your response. Do not hallucinate papers or URLs. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
 
 CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text.
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
-
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
-    tools=[google_search],
+    tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
     before_agent_callback=init_debate_state,
@@ -219,12 +238,12 @@ Highlight methodological vulnerabilities, implicit assumptions, and blind spots 
 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
-It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST verify the URL exists using your web search tool before including it. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
+It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST use the `search_semantic_scholar` tool to find real peer-reviewed papers to support your arguments BEFORE drafting your response. Do not hallucinate papers or URLs. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
-    tools=[google_search],
+    tools=[google_search, search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
 )
@@ -320,7 +339,7 @@ Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, 
 Protagonist's view: {protagonist_output}
 Contrarian's view: {antagonist_output}
 
-You have access to web search. Do not just summarize the debate. Actively search for meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table.
+You have access to web search and Semantic Scholar. Do not just summarize the debate. Actively use the `search_semantic_scholar` tool to search for peer-reviewed meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table. Include direct links to the papers you find.
 
 Structure the report:
 Begin the report explicitly with a large H1 header indicating the active lens, formatted exactly like: "# ⚖️ Active Lens: {chosen_lens}" (translating 'Active Lens' into {language}).
@@ -334,7 +353,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including your section headers) in {language}. Do NOT default to English.
 
 CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
-    tools=[google_search],
+    tools=[google_search, search_semantic_scholar],
     output_key="final_report",
     after_agent_callback=append_token_count,
 )
