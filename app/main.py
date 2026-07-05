@@ -2,7 +2,10 @@ import os
 import json
 import asyncio
 import re
+import warnings
 from dotenv import load_dotenv
+
+warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
 load_dotenv()
 
 from fastapi import FastAPI, Request
