@@ -158,6 +158,9 @@ function App() {
              <div className="w-16 h-16 border-4 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto"></div>
              <h2 className="text-3xl font-extrabold">Triaging Thesis...</h2>
              <p className="text-lg opacity-70">The Orchestrator is analyzing your thesis and establishing context via Google Search.</p>
+             <p className="text-md font-semibold text-violet-600 dark:text-violet-400 mt-6 animate-pulse">
+               A little patience, please. Gemini's frontier model is working for you...
+             </p>
           </div>
         )}
 
@@ -212,6 +215,11 @@ function App() {
               <h2 className="text-3xl font-extrabold">
                 {isTyping ? "Live Debate" : "Synthesis Complete"}
               </h2>
+              {isTyping && (
+                <p className="text-md font-semibold text-violet-600 dark:text-violet-400 animate-pulse mt-2">
+                  A little patience, please. Gemini's frontier model is working for you...
+                </p>
+              )}
               {selectedLensIndex !== null && (
                 <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
                   <span className="text-3xl drop-shadow-sm">{LENSES[selectedLensIndex]?.icon}</span>
