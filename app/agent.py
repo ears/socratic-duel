@@ -258,7 +258,7 @@ CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholder
 research_pipeline = SequentialAgent(
     name="research_pipeline",
     sub_agents=[debate_loop, synthesizer],
-    description="Runs the Crucible-style dialectic debate and synthesizes a final report. Call this ONLY after a lens has been chosen and set."
+    description="Runs the strict dialectical debate and synthesizes a final report. Call this ONLY after a lens has been chosen and set."
 )
 
 # 1.5. Triage Researcher (Sub-Agent for Planner)

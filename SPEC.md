@@ -7,7 +7,7 @@ This document serves as the central "Source of Truth" for the `epistemic-synth` 
 ## 1. Purpose & Why
 
 **The Problem:** When standard LLMs are asked to analyze complex theses or arguments, they often produce a generic, middle-of-the-road consensus that lacks academic rigor and fails to expose critical blind spots.
-**The Solution:** The "Dialectical Epistemic Synthesizer". Inspired by the Crucible specification, this system avoids generic consensus by actively forcing a dialectical debate between highly specialized academic lenses.
+**The Solution:** The "Dialectical Epistemic Synthesizer". This system avoids generic consensus by actively forcing a rigorous dialectical debate between highly specialized academic lenses, stress-testing ideas through structured opposition.
 **The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper. The user provides a thesis, and the system suggests an appropriate epistemic lens (e.g., The Empiricist, The Systems Theorist) while listing all 8 available options. Once the user selects a lens, the system pits a dynamically assigned protagonist against a contrarian in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
 
 ---
@@ -19,7 +19,7 @@ You are an expert Google ADK developer. Please build the "Epistemic Synthesizer"
 1. Scaffold a new ADK project named `epistemic-synth` using `agents-cli scaffold create epistemic-synth --agent adk --prototype`.
 2. Rewrite `app/agent.py` to implement a multi-agent dialectical pipeline.
 3. **Human-In-The-Loop (HITL):** Implement a strict Two-Phase interaction model in the root agent. Phase 1: Triage the thesis, suggest a lens, present all 8 lenses (with explicit 1-2 sentence descriptions for each), and wait for the user to select one. Phase 2: Save the user's choice using a custom `set_chosen_lens` tool, then execute the pipeline.
-4. **The Crucible Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
+4. **The Dialectical Debate Loop:** Implement an interactive reflection loop (`LoopAgent`) that forces a protagonist agent and an antagonist agent to debate the user's input. The antagonist must actively critique the protagonist's previous output. 
 5. **Natural Language Communication:** The agents must communicate using raw, unstructured Markdown text rather than strict JSON schemas. This ensures a fluid, high-quality academic debate without wasting tokens on JSON overhead.
 6. **Synthesis:** Once the loop terminates, pass the entire debate transcript to a `SequentialAgent` pipeline where a final Synthesizer agent writes the concluding Markdown report.
 7. **Built-in Tooling:** Equip the `triage_researcher`, `protagonist`, `antagonist`, `citation_checker`s, and `synthesizer` agents with the `google_search` tool to ensure all analysis, triage, and synthesis are grounded in real-world web data.
@@ -59,9 +59,17 @@ The backend must consist of the following orchestrated ADK components, utilizing
 
 ## 5. Developer Experience (DX) & Non-Functional Requirements (NFR)
 
+### 5.1 Backend & Architecture
 1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
 2. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface without requiring custom frontend harnesses for the MVP.
 3. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
+
+### 5.2 Frontend & Deployment Specifications
+1. **React Frontend with Tailwind CSS v4**: Create a React frontend (using Vite). For styling, strictly use **Tailwind CSS v4** (leveraging zero-config, native CSS nesting, and high performance). This enforces the "Locality of Behavior" principle, making it highly optimized for AI-driven generation ("vibe coding") by preventing global style collisions and the accumulation of orphaned CSS classes.
+2. **Cloud-Ready (Single Container Architecture)**: The setup must be deployable as "Serverless" on Google Cloud Run. A multi-stage `Dockerfile` builds the React bundle and injects it into the Python container, which serves both the API and the website on a single port via static mounts (FastAPI).
+3. **Design (UI)**: The frontend must offer both "Light" and "Dark" mode with a toggle switch. In "Light Mode", bright backgrounds and dark text ensure that the application remains perfectly readable even outdoors in direct sunlight.
+4. **Interactive HITL Triage UI (Phase 1)**: The frontend must accurately visually represent the Phase 1 Human-In-The-Loop (HITL) model. Rather than a generic planning UI, it should display the user's initial thesis, present the 8 proposed epistemic lenses (with descriptions) generated by the triage agent as selectable UI cards, and explicitly capture the user's choice before initiating the main debate pipeline.
+5. **Visual Documentation**: Core concepts must strictly be visualized as Mermaid diagrams (`DIAGRAMS.md`) to enable rapid onboarding for junior developers.
 
 ---
 
@@ -89,4 +97,6 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
 6. **`synthesizer` (The Final Writer):**
    - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension.
    - **Language Constraint:** Must output the entire final report (including section headers) in the dynamically injected `{language}`. Do NOT default to English.
-   - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL QUALITY CHECK" to ensure clarity, lack of jargon, and explicitly forbid inline math mode (e.g. `$Word$`) to prevent the LLM from outputting raw LaTeX variables.
+   - **Rule:** "Zero Placeholders, Maximum Clarity, No Math Formatting." Strictly forbidden from using generic placeholders like `[Insert text here]`. It must execute a "CRITICAL - **`ensure clarity, lack of`** jargon, offer and explicitly forbid inline math mode (e.g. `$Word$`) to prevent the LLM from outputting raw LaTeX variables.
+
+
