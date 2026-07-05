@@ -100,8 +100,15 @@ async def event_generator(session_id: str, message: str):
 
             # Clean up any tags that might leak from the citation checkers into the debaters' text
             if author in ["protagonist", "antagonist"]:
-                text_content = text_content.replace("[STATUS: VERIFIED]", "").strip()
-                text_content = text_content.replace("[DRAFT:", "").strip()
+                # If the model hallucinated the entire citation checker schema, just extract the draft
+                if "[DRAFT:" in text_content.upper():
+                    text_content = re.split(r'(?i)\[DRAFT:', text_content)[-1]
+                
+                # Strip out any lingering STATUS tags (whether VERIFIED or ERROR)
+                text_content = re.sub(r'(?i)\[STATUS:[^\]]*\]?', '', text_content, flags=re.DOTALL)
+                
+                text_content = text_content.strip()
+                # Remove the trailing bracket from the DRAFT tag if it exists
                 if text_content.endswith("]"):
                     text_content = text_content[:-1].strip()
 
