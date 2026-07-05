@@ -64,22 +64,30 @@ async def event_generator(session_id: str, message: str):
             author = getattr(event, "author", "system")
             is_citation_error = False
             
-            if author in ["citation_checker_proto", "citation_checker_anto"] and "[STATUS:" in text_content:
+            if author in ["citation_checker_proto", "citation_checker_anto"]:
                 try:
-                    status_part = text_content.split("[STATUS:")[1].split("[DRAFT:")[0].strip().rstrip("]")
-                    if "NO_CITATIONS" in status_part:
+                    # Drop the draft part
+                    if "[DRAFT:" in text_content.upper():
+                        status_part = re.split(r'(?i)\[DRAFT:', text_content)[0]
+                    else:
+                        # If no DRAFT tag, assume the first paragraph is status
+                        status_part = text_content.split("\n\n")[0]
+                    
+                    # Clean up the STATUS tag if it exists
+                    status_part = re.sub(r'(?i)\[STATUS:', '', status_part).strip().rstrip("]")
+                    
+                    if "NO_CITATIONS" in status_part.upper():
                         text_content = "No citations to check."
-                    elif "VERIFIED" in status_part:
+                    elif "VERIFIED" in status_part.upper():
                         text_content = "Citations verified."
-                    elif "ERROR:" in status_part:
-                        # Extract everything after ERROR:
-                        error_text = status_part.split("ERROR:")[1].strip()
-                        # Format [Text](URL) as Text (URL)
+                    elif "ERROR:" in status_part.upper():
+                        # Remove the word ERROR: and format the links
+                        error_text = re.sub(r'(?i)ERROR:', '', status_part).strip()
                         text_content = re.sub(r'\[(.*?)\]\((.*?)\)', r'\1 (\2)', error_text)
                         is_citation_error = True
                     else:
                         text_content = status_part
-                except IndexError:
+                except Exception:
                     pass
 
             if author == "judge":
