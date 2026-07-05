@@ -54,13 +54,37 @@ Install required packages:
 agents-cli install
 ```
 
-Test the agent with a local web server:
+Test the agent with a local webserver (raw agent only, no UI):
 
 ```bash
 agents-cli playground
 ```
 
-You can also use features from the [ADK](https://adk.dev/) CLI with `uv run adk`.
+### Running the Full Application (Backend + Frontend)
+
+1. **Start the FastAPI Backend:**
+```bash
+uv run fastapi dev app/fast_api_app.py
+```
+
+2. **Start the React Frontend:**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Using the Core ADK CLI
+
+Because this project is built on the Google Agent Development Kit (ADK), you have full access to the underlying `adk` CLI. This allows you to bypass the `agents-cli` wrapper for advanced debugging or database management.
+
+Run it using `uv` to ensure it executes in the correct virtual environment:
+```bash
+uv run adk --help
+```
+*Useful commands include:*
+- `uv run adk run app/agent.py`: Run the agent directly from the command line without the web server.
+- `uv run adk db clear`: Clear the local SQLite database if your local session state gets corrupted or you want a completely fresh start.
 
 ## Commands
 
