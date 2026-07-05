@@ -1,4 +1,4 @@
-# Peer Duel - Specification (MVP)
+# Socratic Duel - Specification (MVP)
 
 This document serves as the central "Source of Truth" for the `epistemic-synth` Capstone project. If the project needs to be recreated, refactored, or scaled, this specification acts as the precise blueprint. It captures the architectural decisions, non-functional requirements, and the distinct *intent* behind the design choices.
 
@@ -7,14 +7,14 @@ This document serves as the central "Source of Truth" for the `epistemic-synth` 
 ## 1. Purpose & Why
 
 **The Problem:** When standard LLMs are asked to analyze complex theses or arguments, they often produce a generic, middle-of-the-road consensus that lacks academic rigor and fails to expose critical blind spots.
-**The Solution:** "Peer Duel" (formerly the Dialectical Epistemic Synthesizer). This system avoids generic consensus by actively forcing a rigorous dialectical debate between highly specialized academic lenses, stress-testing ideas through structured opposition.
+**The Solution:** "Socratic Duel" (formerly the Dialectical Epistemic Synthesizer). This system avoids generic consensus by actively forcing a rigorous dialectical debate between highly specialized academic lenses, stress-testing ideas through structured opposition.
 **The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper. The user provides a thesis, and the system suggests an appropriate epistemic lens (e.g., The Empiricist, The Systems Theorist) while listing all 8 available options. Once the user selects a lens, the system pits a dynamically assigned protagonist against a contrarian in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
 
 ---
 
 ## 2. The Master Prompt (System Architecture & Workflow)
 
-You are an expert Google ADK developer. Please build "Peer Duel" using the following architecture:
+You are an expert Google ADK developer. Please build "Socratic Duel" using the following architecture:
 
 1. Scaffold a new ADK project named `epistemic-synth` using `agents-cli scaffold create epistemic-synth --agent adk --prototype`.
 2. Rewrite `app/agent.py` to implement a multi-agent dialectical pipeline.

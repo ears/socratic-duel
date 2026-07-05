@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import re
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,7 +13,7 @@ from app.agent import app as adk_app
 from google.adk.runners import InMemoryRunner
 from google.genai import types
 
-app = FastAPI(title="Peer Duel API")
+app = FastAPI(title="Socratic Duel API")
 runner = InMemoryRunner(app=adk_app)
 
 # Allow CORS for local dev
@@ -65,7 +66,7 @@ async def event_generator(session_id: str, message: str):
             
             if author in ["citation_checker_proto", "citation_checker_anto"] and "[STATUS:" in text_content:
                 try:
-                    status_part = text_content.split("[STATUS:")[1].split("]")[0].strip()
+                    status_part = text_content.split("[STATUS:")[1].split("[DRAFT:")[0].strip().rstrip("]")
                     if "NO_CITATIONS" in status_part:
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part:
@@ -73,7 +74,8 @@ async def event_generator(session_id: str, message: str):
                     elif "ERROR:" in status_part:
                         # Extract everything after ERROR:
                         error_text = status_part.split("ERROR:")[1].strip()
-                        text_content = error_text
+                        # Format [Text](URL) as Text (URL)
+                        text_content = re.sub(r'\[(.*?)\]\((.*?)\)', r'\1 (\2)', error_text)
                         is_citation_error = True
                     else:
                         text_content = status_part

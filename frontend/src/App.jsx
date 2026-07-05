@@ -92,9 +92,9 @@ function App() {
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white font-bold shadow-lg">
-              PD
+              SD
             </div>
-            <h1 className="text-xl font-bold tracking-tight">Peer Duel</h1>
+            <h1 className="text-xl font-bold tracking-tight">Socratic Duel</h1>
           </div>
           <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition flex items-center justify-center w-10 h-10">
             {theme === 'dark' ? '☀️' : '🌙'}
@@ -201,7 +201,7 @@ function App() {
                 )}
               </div>
               <h2 className="text-3xl font-extrabold">
-                {isTyping ? "Live Dialectical Debate" : "Synthesis Complete"}
+                {isTyping ? "Live Debate" : "Synthesis Complete"}
               </h2>
               {selectedLensIndex !== null && (
                 <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
@@ -264,7 +264,17 @@ function App() {
                             strong: ({node, ...props}) => <strong className="font-semibold text-violet-700 dark:text-violet-400" {...props} />,
                             em: ({node, ...props}) => <em className="italic opacity-90" {...props} />,
                             blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-violet-500/50 pl-4 italic my-4 opacity-80" {...props} />,
-                            a: ({node, ...props}) => <a className="text-blue-600 dark:text-blue-400 hover:underline font-medium" {...props} />
+                            a: ({node, children, ...props}) => (
+                              <a 
+                                className="inline-flex items-center gap-1 px-2 py-0.5 mx-1 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-800/40 text-blue-700 dark:text-blue-300 rounded border border-blue-200 dark:border-blue-700/50 text-sm font-medium transition-colors no-underline" 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                {...props}
+                              >
+                                <span className="opacity-70 text-xs">🔗</span>
+                                <span>{children}</span>
+                              </a>
+                            )
                           }}
                         >
                           {msg.content}
