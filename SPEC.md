@@ -41,7 +41,10 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 ## 4. Architectural Logic (Agent Orchestration)
 
-The backend must consist of the following orchestrated ADK components. Due to API region availability constraints, all agents utilize **`gemini-3.1-flash-lite`** in the `global` region (rather than a Pro/Flash split):
+The backend must consist of the following orchestrated ADK components. To optimize reasoning capabilities while maintaining cost-efficiency and regional stability, the architecture utilizes a Tri-Model approach exclusively in the `global` region via Vertex AI:
+- **`STRONG_MODEL`** (`gemini-3.1-pro-preview`): Used by the Root Orchestrator and Synthesizer for high-level reasoning.
+- **`MID_MODEL`** (`gemini-3.5-flash`): Used by the Semantic Judge.
+- **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid back-and-forth debaters and integrity auditors.
 
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
 - **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
@@ -51,7 +54,7 @@ The backend must consist of the following orchestrated ADK components. Due to AP
       - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
       - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
       - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
-      - **`judge`**: A semantic stopping condition agent that reviews the debate. It is explicitly instructed to be highly lenient and allow multiple rounds of debate before calling the `declare_consensus` tool or outputting `[DECISION: END]`.
+      - **`judge`**: A semantic stopping condition agent that reviews the debate. It skips the first 2 rounds of the debate (via a pre-execution callback) to let arguments develop. When active, it uses a strict grading rubric (checking for strawmen, empirical gaps, and circular rhetoric) to determine if the debate has stagnated, explicitly keeping feedback short, crisp, and actionable. It must be highly lenient and allow multiple rounds of debate before calling the `declare_consensus` tool or outputting `[DECISION: END]`.
       - **`escalator`**: The `BaseAgent` that counts iterations and checks for consensus, stopping the loop at a hard limit of 5 rounds. If the hard limit is reached, it dynamically injects a final system message into the UI stream *as the Judge*, explaining that the iteration limit was triggered.
   2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
 
@@ -95,7 +98,7 @@ The system instructions for the agents in `app/agent.py` must adhere to these st
    - **Intent:** Must scan the text exclusively for URLs. If no URLs exist, instantly declare `[STATUS: NO_CITATIONS]`. If URLs exist, strictly verify them via web search. They must enforce three rules: (1) The URL is not dead or hallucinated. (2) The URL points to a legitimate academic/journalistic source (strictly rejecting Goodreads, Wikipedia, commercial sites, etc.). (3) Content Congruence (the URL's actual content must empirically support the claim).
    - **Strict Constraint:** Must strictly preserve the original text, core arguments, and author's voice without rewriting or critiquing the draft.
 5. **`judge` (The Semantic Referee):**
-   - **Intent:** Evaluate if the debate has stagnated. Must begin its output strictly with an English machine-readable tag (`[DECISION: CONTINUE]` or `[DECISION: END]`) before explaining its reasoning in the user's `{language}`, guaranteeing robustness in multi-lingual debates. It must maintain a strictly neutral, objective, and occasionally critical tone, bluntly pointing out weak or logically flawed arguments.
+   - **Intent:** Evaluate if the debate has stagnated. It must skip early rounds and evaluate strictly against a defined grading rubric (strawmen, gaps, circularity). Must begin its output strictly with an English machine-readable tag (`[DECISION: CONTINUE]` or `[DECISION: END]`) before explicitly providing short, crisp statements and actionable suggestions for the debaters in the user's `{language}`, guaranteeing robustness in multi-lingual debates. It must maintain a strictly neutral, objective, and occasionally critical tone, bluntly pointing out weak or logically flawed arguments.
 6. **`synthesizer` (The Final Writer):**
    - **Intent:** Must not merely summarize; must actively use web search to find meta-analyses or interdisciplinary frameworks that resolve the tension. It must explicitly begin the report with a large H1 Markdown header explicitly declaring the active lens (`# ⚖️ Active Lens: {chosen_lens}`).
    - **Language Constraint:** Must output the entire final report (including section headers) in the dynamically injected `{language}`. Do NOT default to English.

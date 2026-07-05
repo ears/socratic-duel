@@ -9,7 +9,7 @@ See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut
 - **Dynamic Language Support**: The Orchestrator automatically detects the language of your initial input and conducts the entire session (including lens translations) in that language.
 - **Dialectical Debate Loop**: A strictly controlled `LoopAgent` that pits a dynamically assigned protagonist against a contrarian to stress-test your thesis.
 - **Academic Integrity Auditors**: Dedicated fact-checking agents that intercept both the protagonist's and antagonist's drafts, using web search to strictly verify the content congruence and academic rigor of every citation while preserving the original debate text.
-- **Semantic Debate Judge**: An intelligent referee agent that evaluates the debate and dynamically stops the loop early if arguments stagnate.
+- **Semantic Debate Judge**: An intelligent referee agent that skips early rounds to let arguments naturally develop, then evaluates the debate against a rigorous rubric and dynamically stops the loop early if arguments stagnate.
 - **Interdisciplinary Synthesis**: A final Report Composer agent that actively uses web search to find novel meta-arguments and outputs a clear, zero-placeholder Markdown report.
 - **Global Token Tracking**: A custom App-level ADK plugin automatically tallies token usage across all agents (debaters, auditors, judge) and displays the total session cost at the end of the report.
 - **Security Guardrails**: Includes a `before_model_callback` to actively block prompt injections.
