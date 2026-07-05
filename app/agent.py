@@ -347,10 +347,9 @@ Contrarian's view: {antagonist_output}
 You have access to web search and Semantic Scholar. Do not just summarize the debate. Actively use the `search_semantic_scholar` tool to search for peer-reviewed meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table. Include direct links to the papers you find.
 
 Structure the report:
-Begin the report explicitly with a two-line Markdown header formatted exactly like:
+Begin the report explicitly with a large two-line Markdown header formatted exactly like this (but translate 'Socratic Synthesis' and 'Through the Lens of' into {language}):
 # Socratic Synthesis
 ### Through the Lens of: {chosen_lens}
-(Translate both lines into {language} and do NOT add any emojis or icons).
 1. The Epistemic Frame ({chosen_lens})
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
