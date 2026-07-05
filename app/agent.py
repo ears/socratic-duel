@@ -14,8 +14,7 @@
 # limitations under the License.
 
 import warnings
-warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
-warnings.filterwarnings("ignore", message=".*ResumabilityConfig.*")
+warnings.filterwarnings("ignore", message=".*\\[EXPERIMENTAL\\].*")
 
 from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
 from google.adk.apps import App, ResumabilityConfig

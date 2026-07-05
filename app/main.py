@@ -5,8 +5,7 @@ import re
 import warnings
 from dotenv import load_dotenv
 
-warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
-warnings.filterwarnings("ignore", message=".*ResumabilityConfig.*")
+warnings.filterwarnings("ignore", message=".*\\[EXPERIMENTAL\\].*")
 load_dotenv()
 
 from fastapi import FastAPI, Request
