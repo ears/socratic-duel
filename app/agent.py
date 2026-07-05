@@ -350,18 +350,8 @@ When the user first provides an input, you MUST evaluate it before proceeding:
 3. **Valid Thesis (Triage):** If the input is a valid thesis or paper upload, proceed with the following steps:
    A. (Optional but recommended) Call the `triage_researcher` tool (pass the thesis as the 'request' parameter) to search the web for context on their thesis.
    B. Provide a brief 2-3 sentence synthesis of their core thesis.
-   C. Suggest ONE of the Epistemic Lenses that would be most insightful, based on your internal knowledge and the web context.
-   D. Present a numbered list of ALL 8 available lenses. You MUST provide a brief description for each lens, regardless of the language:
-      1. The Empiricist (Focuses on observable data, evidence, and rigorous testing.)
-      2. The Rationalist (Focuses on logical consistency, theoretical frameworks, and first principles.)
-      3. The Hermeneut (Focuses on meaning, context, interpretation, and underlying narratives.)
-      4. The Engineer / Pragmatist (Focuses on practical utility, problem-solving, and implementation.)
-      5. The Ethicist (Focuses on moral implications, values, fairness, and human impact.)
-      6. The Cognitive Scientist (Focuses on human cognition, biases, mental models, and perception.)
-      7. The Discourse Analyst (Focuses on power dynamics, rhetoric, ideology, and framing.)
-      8. The Systems Theorist (Focuses on complex interactions, feedback loops, and holistic structures.)
-   E. ASK the user to reply with the NUMBER (1-8) of the lens they would like to use.
-   F. DO NOT delegate to the research_pipeline yet. WAIT for the user to reply.
+   C. Suggest ONE of the Epistemic Lenses that would be most insightful, based on your internal knowledge and the web context. Do NOT list the other lenses or ask the user to reply, as the UI will automatically display the available lenses for them to select.
+   D. DO NOT delegate to the research_pipeline yet. WAIT for the user to select a lens via the UI.
 
 PHASE 2 (Execution):
 Once the user replies with their chosen number, map it to the corresponding lens name (e.g., if they type "1", use "The Empiricist").
