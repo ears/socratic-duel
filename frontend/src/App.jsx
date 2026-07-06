@@ -324,11 +324,12 @@ function App() {
                   return (
                     <div key={i} className="flex justify-center w-full my-2">
                       {msg.is_citation_error ? (
-                        <div className="inline-flex items-start flex-col gap-2 px-4 py-3 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl text-sm font-medium opacity-80 max-w-2xl shadow-sm">
-                          <div className="flex items-center gap-2">
-                            <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
-                            <span className="text-orange-700 dark:text-orange-400 flex items-center gap-1">🧹 Scrubbed unverified citations.</span>
+                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 p-4 rounded-xl text-red-800 dark:text-red-300 w-full max-w-2xl shadow-sm">
+                          <div className="mb-2 flex items-center gap-2 text-sm font-medium opacity-80">
+                            <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span> 
+                            <span className="flex items-center gap-1">❌ Removed Bad Citations from Draft</span>
                           </div>
+                          <div className="italic text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                         </div>
                       ) : (
                         <div className="inline-flex items-start flex-col gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium opacity-80 max-w-2xl">
