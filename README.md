@@ -70,8 +70,9 @@ agents-cli playground
 
 1. **Start the FastAPI Backend:**
 ```bash
-uv run fastapi dev app/main.py
+uv run uvicorn app.main:app --reload --reload-exclude ".venv"
 ```
+*(Note: We use `uvicorn` with an explicit exclude flag instead of `fastapi dev` to prevent Windows background tasks from triggering endless hot-reload loops by touching the `.venv` directory).*
 
 2. **Start the React Frontend:**
 ```bash
