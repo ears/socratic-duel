@@ -80,9 +80,6 @@ app.title = "epistemic-synth"
 app.description = "API for interacting with the Agent epistemic-synth"
 
 
-
-
-
 @app.post("/feedback")
 def collect_feedback(feedback: Feedback) -> dict[str, str]:
     """Collect and log feedback.

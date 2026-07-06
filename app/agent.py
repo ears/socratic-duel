@@ -14,11 +14,15 @@
 # limitations under the License.
 
 import warnings
+
 warnings.filterwarnings("ignore", message=".*\\[EXPERIMENTAL\\].*")
-warnings.filterwarnings("ignore", message=".*compatible with automatic function calling.*")
+warnings.filterwarnings(
+    "ignore", message=".*compatible with automatic function calling.*"
+)
 warnings.filterwarnings("ignore", message=".*AFC is disabled.*")
 
 import logging
+
 logging.getLogger("google_genai.models").setLevel(logging.ERROR)
 logging.getLogger("google_genai").setLevel(logging.ERROR)
 
@@ -35,22 +39,27 @@ from google.adk.events import Event, EventActions
 from typing import AsyncGenerator
 from google.adk.plugins.base_plugin import BasePlugin
 
+
 class TokenCounterPlugin(BasePlugin):
     async def after_model_callback(self, *, callback_context, llm_response):
         current_tokens = callback_context.session.state.get("total_tokens", 0)
         try:
             if hasattr(llm_response, "usage_metadata") and llm_response.usage_metadata:
-                current_tokens += getattr(llm_response.usage_metadata, "total_token_count", 0)
+                current_tokens += getattr(
+                    llm_response.usage_metadata, "total_token_count", 0
+                )
         except Exception:
             pass
         callback_context.session.state["total_tokens"] = current_tokens
         return None
+
 
 import urllib.request
 import urllib.error
 
 import re
 import io
+
 try:
     from pypdf import PdfReader
 except ImportError:
@@ -60,15 +69,18 @@ try:
 except ImportError:
     BeautifulSoup = None
 
+
 def verify_url_status(url: str) -> str:
     """Strictly verifies if a URL is alive and returns a snippet of its text content to allow the Auditor to perform the Content Congruence check."""
     try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        )
         with urllib.request.urlopen(req, timeout=5) as response:
-            content_type = response.headers.get('Content-Type', '')
-            raw_data = response.read(1024 * 1024) # Read up to 1MB
-            
-            if 'application/pdf' in content_type:
+            content_type = response.headers.get("Content-Type", "")
+            raw_data = response.read(1024 * 1024)  # Read up to 1MB
+
+            if "application/pdf" in content_type:
                 snippet = "No text could be extracted."
                 if PdfReader:
                     try:
@@ -78,16 +90,16 @@ def verify_url_status(url: str) -> str:
                     except Exception:
                         pass
                 return f"STATUS: {response.getcode()} OK - Document: PDF\nContent Snippet: {snippet}..."
-            
-            html = raw_data.decode('utf-8', errors='ignore')
-            title_match = re.search(r'<title>(.*?)</title>', html, re.IGNORECASE)
+
+            html = raw_data.decode("utf-8", errors="ignore")
+            title_match = re.search(r"<title>(.*?)</title>", html, re.IGNORECASE)
             title = title_match.group(1).strip() if title_match else "No Title Found"
-            
+
             snippet = ""
             if BeautifulSoup:
                 soup = BeautifulSoup(html, "html.parser")
                 snippet = soup.get_text(separator=" ", strip=True)[:1500]
-            
+
             return f"STATUS: {response.getcode()} OK - Title: {title}\nContent Snippet: {snippet}..."
     except urllib.error.HTTPError as e:
         if e.code in [403, 401]:
@@ -96,36 +108,51 @@ def verify_url_status(url: str) -> str:
     except Exception as e:
         return f"STATUS: DEAD - {str(e)}"
 
+
 import json
 import urllib.parse
+
+
 def search_semantic_scholar(query: str) -> str:
     """Searches the Semantic Scholar academic database for peer-reviewed papers. Returns paper titles, authors, year, abstract, and URL."""
     try:
         url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={urllib.parse.quote(query)}&limit=3&fields=title,authors,year,url,abstract,citationCount"
-        req = urllib.request.Request(url, headers={'User-Agent': 'SocraticDuelAgent/1.0'})
+        req = urllib.request.Request(
+            url, headers={"User-Agent": "SocraticDuelAgent/1.0"}
+        )
         with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode('utf-8'))
+            data = json.loads(response.read().decode("utf-8"))
             if not data.get("data"):
                 return "No academic papers found for this query."
-            
+
             results = []
             for paper in data["data"]:
-                authors = ", ".join([a.get("name", "") for a in paper.get("authors", [])])
+                authors = ", ".join(
+                    [a.get("name", "") for a in paper.get("authors", [])]
+                )
                 res = f"Title: {paper.get('title')}\nAuthors: {authors}\nYear: {paper.get('year')}\nCitations: {paper.get('citationCount')}\nURL: {paper.get('url')}\nAbstract: {paper.get('abstract')}\n---"
                 results.append(res)
             return "\n".join(results)
     except Exception as e:
         return f"Error searching Semantic Scholar: {str(e)}"
 
+
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
     tokens = callback_context.session.state.get("total_tokens", 0)
     msg = f"**Total Tokens Used in Session:** {tokens}"
     return types.Content(parts=[types.Part(text=msg)])
 
+
 # Tool to save the chosen lens
-async def set_chosen_lens(lens_name: str, thesis: str, language: str, target_audience: str, tool_context: ToolContext) -> dict:
+async def set_chosen_lens(
+    lens_name: str,
+    thesis: str,
+    language: str,
+    target_audience: str,
+    tool_context: ToolContext,
+) -> dict:
     """Saves the user's chosen epistemic lens, thesis, language, and target audience to the state so the debate agents can use it.
-    
+
     Args:
         lens_name: The name of the chosen lens (e.g., 'The Empiricist', 'The Ethicist').
         thesis: The user's original thesis or argument string.
@@ -140,23 +167,42 @@ async def set_chosen_lens(lens_name: str, thesis: str, language: str, target_aud
         "The Ethicist": "⚖️",
         "The Cognitive Scientist": "👁️",
         "The Discourse Analyst": "🗣️",
-        "The Systems Theorist": "🕸️"
+        "The Systems Theorist": "🕸️",
     }
     icon = LENS_ICONS.get(lens_name, "")
-    
+
     tool_context.state["chosen_lens"] = lens_name
     tool_context.state["chosen_lens_icon"] = icon
     tool_context.state["thesis"] = thesis
     tool_context.state["language"] = language
     tool_context.state["target_audience"] = target_audience
-    return {"status": f"Lens successfully set to '{lens_name}'. You may now delegate to the research_pipeline."}
+    return {
+        "status": f"Lens successfully set to '{lens_name}'. You may now delegate to the research_pipeline."
+    }
+
 
 # Guardrail: Prevent Prompt Injection
-async def guardrail_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> LlmResponse | None:
+async def guardrail_callback(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> LlmResponse | None:
     content_str = str(llm_request.contents).lower()
-    if "ignore previous instructions" in content_str or "disregard all previous" in content_str:
-        return LlmResponse(contents=[types.Content(parts=[types.Part(text="Security alert: Prompt injection detected. Request denied.")])])
+    if (
+        "ignore previous instructions" in content_str
+        or "disregard all previous" in content_str
+    ):
+        return LlmResponse(
+            contents=[
+                types.Content(
+                    parts=[
+                        types.Part(
+                            text="Security alert: Prompt injection detected. Request denied."
+                        )
+                    ]
+                )
+            ]
+        )
     return None
+
 
 # Tool for the Judge to stop the debate
 async def declare_consensus(tool_context: ToolContext) -> dict:
@@ -164,38 +210,50 @@ async def declare_consensus(tool_context: ToolContext) -> dict:
     tool_context.state["consensus_reached"] = True
     return {"status": "Consensus declared. The debate loop will now terminate."}
 
+
 class EscalationChecker(BaseAgent):
     """Stops the LoopAgent when maximum iterations are reached or consensus is declared."""
+
     async def _run_async_impl(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         iterations = ctx.session.state.get("loop_iterations", 0)
         iterations += 1
         ctx.session.state["loop_iterations"] = iterations
-        
+
         judge_output = str(ctx.session.state.get("judge_output", "")).upper()
         consensus = ctx.session.state.get("consensus_reached", False)
-        
+
         # Fallback: if the Judge didn't call the tool but output [DECISION: END]
         if judge_output and "[DECISION: END]" in judge_output:
             consensus = True
-        
+
         # Escalate after 5 iterations OR if the Judge declared consensus
         if iterations >= 5 and not consensus:
             # Yield a final message from the Judge explaining the hard limit before escalating
             yield Event(
-                author="judge", 
-                content=types.Content(role="model", parts=[types.Part.from_text(text="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis.")]), 
-                actions=EventActions(escalate=True)
+                author="judge",
+                content=types.Content(
+                    role="model",
+                    parts=[
+                        types.Part.from_text(
+                            text="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis."
+                        )
+                    ],
+                ),
+                actions=EventActions(escalate=True),
             )
         elif consensus:
             yield Event(author=self.name, actions=EventActions(escalate=True))
         else:
             yield Event(author=self.name)
 
+
 async def init_debate_state(callback_context: CallbackContext) -> None:
     if "antagonist_output" not in callback_context.state:
-        callback_context.state["antagonist_output"] = "No feedback yet. This is your first analysis."
+        callback_context.state["antagonist_output"] = (
+            "No feedback yet. This is your first analysis."
+        )
     if "chosen_lens" not in callback_context.state:
         callback_context.state["chosen_lens"] = "The Empiricist (Default Fallback)"
     if "consensus_reached" not in callback_context.state:
@@ -207,15 +265,15 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
     if "target_audience" not in callback_context.state:
         callback_context.state["target_audience"] = "Level 3 (Average Academic)"
 
+
 # Global Model Configuration
-STRONG_MODEL = "gemini-3.5-flash" # "gemini-3.1-pro-preview"
+STRONG_MODEL = "gemini-3.5-flash"  # "gemini-3.1-pro-preview"
 MID_MODEL = "gemini-3.5-flash"
 FAST_MODEL = "gemini-3.1-flash-lite"
 
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
-    timeout=60000, 
-    retry_options=types.HttpRetryOptions(attempts=3)
+    timeout=60000, retry_options=types.HttpRetryOptions(attempts=3)
 )
 default_generation_config = types.GenerateContentConfig(
     automatic_function_calling=types.AutomaticFunctionCallingConfig(
@@ -228,7 +286,7 @@ protagonist = Agent(
     name="protagonist",
     model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the following thesis:
 {thesis}
@@ -255,7 +313,7 @@ citation_checker_proto = Agent(
     name="citation_checker_proto",
     model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following draft by the Protagonist: {protagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
@@ -283,7 +341,7 @@ antagonist = Agent(
     name="antagonist",
     model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
@@ -305,7 +363,7 @@ citation_checker_anto = Agent(
     name="citation_checker_anto",
     model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
@@ -330,19 +388,32 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
 
 # 3. The Judge (Semantic Stopping Condition)
 
-async def skip_early_judge_callback(callback_context: CallbackContext, llm_request: LlmRequest) -> LlmResponse | None:
+
+async def skip_early_judge_callback(
+    callback_context: CallbackContext, llm_request: LlmRequest
+) -> LlmResponse | None:
     """Dynamically escalates the debate by skipping the Judge for the first 2 rounds."""
     count = callback_context.state.get("judge_eval_count", 0)
     callback_context.state["judge_eval_count"] = count + 1
     if count < 2:
-        return LlmResponse(content=types.Content(role="model", parts=[types.Part.from_text(text="[DECISION: CONTINUE]\n[Judge is observing the first two rounds to allow arguments to fully develop before intervening.]")]))
+        return LlmResponse(
+            content=types.Content(
+                role="model",
+                parts=[
+                    types.Part.from_text(
+                        text="[DECISION: CONTINUE]\n[Judge is observing the first two rounds to allow arguments to fully develop before intervening.]"
+                    )
+                ],
+            )
+        )
     return None
+
 
 judge = Agent(
     name="judge",
     model=Gemini(model=MID_MODEL, http_options=default_http_options),
     before_model_callback=skip_early_judge_callback,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Debate Judge.
 Review the latest arguments from the Protagonist and Antagonist:
 Protagonist: {protagonist_output}
@@ -367,7 +438,7 @@ Evaluate the latest arguments using this strict Grading Rubric:
    
 If the debate has stagnated, you MUST also call the `declare_consensus` tool.""",
     tools=[declare_consensus],
-    output_key="judge_output"
+    output_key="judge_output",
 )
 
 # Escalation to break the loop
@@ -376,7 +447,14 @@ escalation_checker = EscalationChecker(name="escalator")
 # Interactive Reflection Loop
 debate_loop = LoopAgent(
     name="debate_loop",
-    sub_agents=[protagonist, citation_checker_proto, antagonist, citation_checker_anto, judge, escalation_checker],
+    sub_agents=[
+        protagonist,
+        citation_checker_proto,
+        antagonist,
+        citation_checker_anto,
+        judge,
+        escalation_checker,
+    ],
     max_iterations=5,
 )
 
@@ -385,7 +463,7 @@ synthesizer = Agent(
     name="synthesizer",
     model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
-    include_contents='none',
+    include_contents="none",
     instruction="""You are the Epistemic Synthesizer for Socratic Duel.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
 Protagonist's view: {protagonist_output}
@@ -416,7 +494,7 @@ CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholder
 research_pipeline = SequentialAgent(
     name="research_pipeline",
     sub_agents=[debate_loop, synthesizer],
-    description="Runs the strict dialectical debate and synthesizes a final report. Call this ONLY after a lens has been chosen and set."
+    description="Runs the strict dialectical debate and synthesizes a final report. Call this ONLY after a lens has been chosen and set.",
 )
 
 # 1.5. Triage Researcher (Sub-Agent for Planner)
@@ -430,7 +508,7 @@ Provide a concise 'Context Brief' summarizing the real-world context of the thes
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
     description="Searches the web to provide real-world context for a thesis.",
-    tools=[google_search]
+    tools=[google_search],
 )
 
 # Root Orchestrator (HITL Gatekeeper)
@@ -462,12 +540,12 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 
 CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis, suggestions, the numbered list of lenses, and your questions—is strictly in that same language. Do NOT default to English if the user speaks German or another language. Translate the descriptions of the 8 lenses if necessary. However, when mapping their numerical choice (1-8) in Phase 2, ensure you always pass the standard English name (e.g., "The Empiricist") to the `set_chosen_lens` tool.""",
     tools=[set_chosen_lens, AgentTool(triage_researcher)],
-    sub_agents=[research_pipeline]
+    sub_agents=[research_pipeline],
 )
 
 app = App(
     root_agent=root_agent,
     name="app",
     plugins=[TokenCounterPlugin(name="token_counter")],
-    resumability_config=ResumabilityConfig(is_resumable=True)
+    resumability_config=ResumabilityConfig(is_resumable=True),
 )

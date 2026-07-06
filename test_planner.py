@@ -1,6 +1,4 @@
 from app.agent import root_agent
-from google.adk.tools.utils import extract_tool_declarations
-from google.adk.utils.variant_utils import GoogleLLMVariant
 
 for t in root_agent.get_all_tools():
     try:

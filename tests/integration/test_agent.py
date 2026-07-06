@@ -63,12 +63,15 @@ async def test_agent_stream() -> None:
             and any(part.text for part in event.content.parts)
         ):
             has_text_content = True
-            full_output += "".join(part.text for part in event.content.parts if part.text)
+            full_output += "".join(
+                part.text for part in event.content.parts if part.text
+            )
 
     print(f"Output received length: {len(full_output)}")
     print(f"Actual Response:\n{full_output}")
     assert has_text_content, "Expected at least one message with text content"
     print("Result: PASS")
+
 
 @pytest.mark.asyncio
 async def test_agent_prompt_injection() -> None:
@@ -84,21 +87,28 @@ async def test_agent_prompt_injection() -> None:
     session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
-    message = types.Content(
-        role="user", parts=[types.Part.from_text(text=prompt)]
-    )
+    message = types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
     events = []
     async for event in runner.run_async(
-        new_message=message,
-        user_id="test_user",
-        session_id=session.id
+        new_message=message, user_id="test_user", session_id=session.id
     ):
         events.append(event)
 
-    response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
+    response_text = "".join(
+        [
+            part.text
+            for event in events
+            if event.content and event.content.parts
+            for part in event.content.parts
+            if part.text
+        ]
+    )
     print(f"Actual Response:\n{response_text}")
-    assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject prompt injection, got: {response_text}"
+    assert "[STATUS: REJECTED]" in response_text, (
+        f"Expected agent to reject prompt injection, got: {response_text}"
+    )
     print("Result: PASS - Prompt successfully rejected.")
+
 
 @pytest.mark.asyncio
 async def test_agent_unclear_thesis() -> None:
@@ -107,25 +117,33 @@ async def test_agent_unclear_thesis() -> None:
     """
     prompt = "Hello there"
     print("\n--- TEST: test_agent_unclear_thesis ---")
-    print("Intent: Ensure the system demands a valid, debatable thesis rather than a casual greeting.")
+    print(
+        "Intent: Ensure the system demands a valid, debatable thesis rather than a casual greeting."
+    )
     print(f"Input Prompt: '{prompt}'")
 
     session_service = InMemorySessionService()
     session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
 
-    message = types.Content(
-        role="user", parts=[types.Part.from_text(text=prompt)]
-    )
+    message = types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
     events = []
     async for event in runner.run_async(
-        new_message=message,
-        user_id="test_user",
-        session_id=session.id
+        new_message=message, user_id="test_user", session_id=session.id
     ):
         events.append(event)
 
-    response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
+    response_text = "".join(
+        [
+            part.text
+            for event in events
+            if event.content and event.content.parts
+            for part in event.content.parts
+            if part.text
+        ]
+    )
     print(f"Actual Response:\n{response_text}")
-    assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject unclear thesis, got: {response_text}"
+    assert "[STATUS: REJECTED]" in response_text, (
+        f"Expected agent to reject unclear thesis, got: {response_text}"
+    )
     print("Result: PASS - Unclear thesis successfully rejected.")

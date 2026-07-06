@@ -30,6 +30,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 async def event_generator(session_id: str, message: str):
     """
     Streams ADK events to the client using Server-Sent Events (SSE).
@@ -37,12 +38,18 @@ async def event_generator(session_id: str, message: str):
     """
     try:
         # Ensure the session exists in memory before attempting to run or resume it
-        session = await runner.session_service.get_session(app_name="app", user_id="default_user", session_id=session_id)
+        session = await runner.session_service.get_session(
+            app_name="app", user_id="default_user", session_id=session_id
+        )
         if not session:
-            await runner.session_service.create_session(app_name="app", user_id="default_user", session_id=session_id)
+            await runner.session_service.create_session(
+                app_name="app", user_id="default_user", session_id=session_id
+            )
 
         content = types.Content(parts=[types.Part.from_text(text=message)], role="user")
-        async for event in runner.run_async(user_id="default_user", session_id=session_id, new_message=content):
+        async for event in runner.run_async(
+            user_id="default_user", session_id=session_id, new_message=content
+        ):
             # Extract basic text content if available
             text_content = ""
             if hasattr(event, "model_response") and event.model_response:
@@ -50,7 +57,11 @@ async def event_generator(session_id: str, message: str):
                     text_content = event.model_response.text or ""
                 except ValueError:
                     pass
-            elif hasattr(event, "content") and event.content and hasattr(event.content, "parts"):
+            elif (
+                hasattr(event, "content")
+                and event.content
+                and hasattr(event.content, "parts")
+            ):
                 for part in event.content.parts:
                     if hasattr(part, "text") and part.text:
                         text_content += part.text
@@ -60,7 +71,11 @@ async def event_generator(session_id: str, message: str):
             if hasattr(event, "tool_calls") and event.tool_calls:
                 for tc in event.tool_calls:
                     tool_calls.append({"name": tc.name, "args": tc.args})
-            elif hasattr(event, "content") and event.content and hasattr(event.content, "parts"):
+            elif (
+                hasattr(event, "content")
+                and event.content
+                and hasattr(event.content, "parts")
+            ):
                 for part in event.content.parts:
                     if hasattr(part, "function_call") and part.function_call:
                         tc = part.function_call
@@ -73,30 +88,43 @@ async def event_generator(session_id: str, message: str):
                 try:
                     # Drop the draft part
                     if "[DRAFT:" in text_content.upper():
-                        status_part = re.split(r'(?i)\[DRAFT:', text_content)[0]
+                        status_part = re.split(r"(?i)\[DRAFT:", text_content)[0]
                     else:
                         # If no DRAFT tag, assume the first paragraph is status
                         status_part = text_content.split("\n\n")[0]
 
                     # Clean up the STATUS tag if it exists
-                    status_part = re.sub(r'(?i)\[STATUS:', '', status_part).strip().rstrip("]")
+                    status_part = (
+                        re.sub(r"(?i)\[STATUS:", "", status_part).strip().rstrip("]")
+                    )
 
                     if "NO_CITATIONS" in status_part.upper():
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part.upper():
-                        matches = re.findall(r'\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\s*Bot Protected\]', text_content, re.IGNORECASE)
+                        matches = re.findall(
+                            r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\s*Bot Protected\]",
+                            text_content,
+                            re.IGNORECASE,
+                        )
                         if matches:
-                            text_content = "Citations verified.\n\n🛡️ Bot Protected:\n" + "\n".join([f"{t} ({u})" for t, u in matches])
+                            text_content = (
+                                "Citations verified.\n\n🛡️ Bot Protected:\n"
+                                + "\n".join([f"{t} ({u})" for t, u in matches])
+                            )
                         else:
                             text_content = "Citations verified."
                     elif "ERROR:" in status_part.upper():
                         # Extract all markdown links, ignoring stray characters like commas
-                        matches = re.findall(r'\[(.*?)\]\((.*?)\)', status_part)
+                        matches = re.findall(r"\[(.*?)\]\((.*?)\)", status_part)
                         if matches:
-                            text_content = "\n".join([f"{text} ({url})" for text, url in matches])
+                            text_content = "\n".join(
+                                [f"{text} ({url})" for text, url in matches]
+                            )
                         else:
                             # Fallback if parsing fails
-                            text_content = re.sub(r'(?i)ERROR:', '', status_part).strip()
+                            text_content = re.sub(
+                                r"(?i)ERROR:", "", status_part
+                            ).strip()
                         is_citation_error = True
                     else:
                         text_content = status_part
@@ -111,10 +139,12 @@ async def event_generator(session_id: str, message: str):
             if author in ["protagonist", "antagonist"]:
                 # If the model hallucinated the entire citation checker schema, just extract the draft
                 if "[DRAFT:" in text_content.upper():
-                    text_content = re.split(r'(?i)\[DRAFT:', text_content)[-1]
+                    text_content = re.split(r"(?i)\[DRAFT:", text_content)[-1]
 
                 # Strip out any lingering STATUS tags (whether VERIFIED or ERROR)
-                text_content = re.sub(r'(?i)\[STATUS:[^\]]*\]?', '', text_content, flags=re.DOTALL)
+                text_content = re.sub(
+                    r"(?i)\[STATUS:[^\]]*\]?", "", text_content, flags=re.DOTALL
+                )
 
                 text_content = text_content.strip()
                 # Remove the trailing bracket from the DRAFT tag if it exists
@@ -126,7 +156,7 @@ async def event_generator(session_id: str, message: str):
                 "author": author,
                 "content": text_content,
                 "tool_calls": tool_calls,
-                "is_citation_error": is_citation_error
+                "is_citation_error": is_citation_error,
             }
 
             yield f"data: {json.dumps(payload)}\n\n"
@@ -137,19 +167,26 @@ async def event_generator(session_id: str, message: str):
     except Exception as e:
         yield f"data: {json.dumps({'author': 'system', 'error': str(e)})}\n\n"
 
+
 @app.get("/api/chat")
 async def chat_endpoint(session_id: str, message: str):
     """
     Initiates a chat stream with the ADK app.
     Usage: EventSource(`/api/chat?session_id=123&message=Hello`)
     """
-    return StreamingResponse(event_generator(session_id, message), media_type="text/event-stream")
+    return StreamingResponse(
+        event_generator(session_id, message), media_type="text/event-stream"
+    )
+
 
 # Mount the static Vite build. This serves both the API and the website on a single port.
 frontend_path = os.path.join(os.getcwd(), "frontend", "dist")
 if os.path.exists(frontend_path):
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
 else:
+
     @app.get("/")
     def no_frontend():
-        return {"message": "Frontend not built yet. Run 'npm run build' in the frontend directory."}
+        return {
+            "message": "Frontend not built yet. Run 'npm run build' in the frontend directory."
+        }

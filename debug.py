@@ -1,6 +1,9 @@
 import asyncio
-from app.agent import app
+
 from google.adk.runners import InMemoryRunner
+
+from app.agent import app
+
 
 async def main():
     runner = InMemoryRunner(app=app)
@@ -12,5 +15,6 @@ async def main():
             print(t._get_declaration().model_dump_json(indent=2))
         except Exception as e:
             print("Could not dump schema:", e)
+
 
 asyncio.run(main())
