@@ -25,15 +25,14 @@ Standard LLMs suffer from **consensus bias**. When evaluating complex arguments,
 See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut/scientific-synthesizer/epistemic-synth/SPEC.md).
 
 
-## Features
-- **Human-In-The-Loop Triage**: An orchestrator agent that triages the thesis (aided by a dedicated web-searching `triage_researcher` sub-agent) and lets you dynamically choose from 8 epistemic lenses (e.g., The Systems Theorist, The Ethicist).
-- **Dynamic Language Support**: The Orchestrator automatically detects the language of your initial input and conducts the entire session (including lens translations) in that language.
-- **Dialectical Debate Loop**: A strictly controlled `LoopAgent` that pits a dynamically assigned protagonist against a contrarian to stress-test your thesis. They are also strictly constrained from outputting raw LaTeX math formatting to ensure seamless frontend rendering.
-- **Academic Integrity Auditors**: Dedicated fact-checking agents that intercept both the protagonist's and antagonist's drafts, using web search to strictly verify the content congruence and academic rigor of every citation while preserving the original debate text. Any links shielded by bot protection are visibly tagged inline so you know exactly where they occur.
-- **Semantic Debate Judge**: An intelligent referee agent that skips early rounds to let arguments naturally develop, then evaluates the debate against a rigorous rubric and dynamically stops the loop early if arguments stagnate.
-- **Interdisciplinary Synthesis**: A final Report Composer agent that actively uses web search to find novel meta-arguments and outputs a clear, zero-placeholder Markdown report complete with a comprehensive Glossary of all abbreviations used.
-- **Global Token Tracking**: A custom App-level ADK plugin automatically tallies token usage across all agents (debaters, auditors, judge) and displays the total session cost at the end of the report.
-- **Security Guardrails**: Includes a `before_model_callback` to actively block prompt injections.
+## 🚀 Core Features & Agentic Architecture
+- **Tri-Model Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.1-pro-preview` for the high-level debaters, `3.5-flash` for semantic judging, and parallel `flash-lite` models for rapid citation auditing.
+- **Radical Hallucination Mitigation:** "Academic Integrity Auditors" intercept drafts and actively scrape every cited URL in real-time. If a link is dead, hallucinated, or empirically incorrect, the auditor silently scrubs it before the user ever sees it.
+- **Dynamic Cognitive Profiling:** Automatically adapts the debate's vocabulary, tone, and conceptual depth based on a defined "Target Audience" complexity level (from 15-year-old to PhD).
+- **Human-In-The-Loop Triage:** An Interactive Planner orchestrator that triages the thesis, strictly blocks prompt injections via ADK callbacks, and halts execution until you select 1 of 8 epistemic lenses (e.g., *The Ethicist*).
+- **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
+- **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
+- **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
 
 ## Project Structure
 
