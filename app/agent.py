@@ -300,7 +300,7 @@ It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a ve
 
 CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
     tools=[google_search, search_semantic_scholar],
@@ -331,7 +331,7 @@ Review the following draft by the Protagonist: {protagonist_draft}
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[google_search, verify_url_status],
@@ -354,7 +354,7 @@ It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a ve
 
 CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
     tools=[google_search, search_semantic_scholar],
@@ -384,7 +384,7 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 
-CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
+CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[google_search, verify_url_status],

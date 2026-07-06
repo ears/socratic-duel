@@ -88,10 +88,11 @@ async def event_generator(session_id: str, message: str):
                 draft_part = ""
                 try:
                     # Drop the draft part
-                    if "---DRAFT---" in text_content.upper() or "[DRAFT:" in text_content.upper():
+                    draft_match = re.search(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)
+                    if draft_match or "[DRAFT:" in text_content.upper():
                         # Try the new bulletproof separator first
-                        if "---DRAFT---" in text_content.upper():
-                            split_res = re.split(r"(?i)---DRAFT---", text_content)
+                        if draft_match:
+                            split_res = re.split(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)
                             status_part = split_res[0]
                             if len(split_res) > 1:
                                 draft_part = split_res[1].strip()
@@ -155,8 +156,8 @@ async def event_generator(session_id: str, message: str):
             # Clean up any tags that might leak from the citation checkers into the debaters' text
             if author in ["protagonist", "antagonist"]:
                 # If the model hallucinated the entire citation checker schema, just extract the draft
-                if "---DRAFT---" in text_content.upper():
-                    text_content = re.split(r"(?i)---DRAFT---", text_content)[-1]
+                if re.search(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content):
+                    text_content = re.split(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)[-1]
                 elif "[DRAFT:" in text_content.upper():
                     text_content = re.split(r"(?i)\[DRAFT:", text_content)[-1]
 
