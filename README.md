@@ -46,7 +46,24 @@ Before you begin, ensure you have:
 - **Google Cloud SDK**: For GCP services - [Installation Instructions](https://cloud.google.com/sdk/docs/install)
 
 
-## Quick Start
+## Quick Start with Make (optional, but convenient)
+
+If you want to automate installation, running both servers simultaneously, and deploying, you can use `make`. 
+**Note:** `make` is completely optional. It's built for convenience but requires `make` to be installed on your system.
+
+**Installing `make`:**
+- **Windows (Chocolatey):** `choco install make` ([link](https://community.chocolatey.org/packages/make))
+- **Windows (GnuWin32):** Download from [SourceForge](http://gnuwin32.sourceforge.net/packages/make.htm) or use `winget install GnuWin32.Make`
+- **Linux (Ubuntu/Debian):** `sudo apt install make`
+- **macOS:** Built-in, or install via `xcode-select --install`
+
+**Available Make Commands:**
+- `make install`: Installs both Python (`uv`) and Node (`npm`) dependencies.
+- `make run`: Starts both the backend and frontend simultaneously.
+- `make deploy`: Automatically builds and deploys the Socratic Duel app to Google Cloud Run.
+- `make undeploy`: Tears down the Google Cloud Run service.
+
+## Quick Start (for the rest of us)
 
 Install `agents-cli` and its skills if not already installed:
 
@@ -80,23 +97,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-### Running with Make (Optional, but convenient!)
-
-If you want to automate installation, running both servers simultaneously, and deploying, you can use `make`. 
-**Note:** `make` is completely optional. It's built for convenience but requires `make` to be installed on your system.
-
-**Installing `make`:**
-- **Windows (Chocolatey):** `choco install make` ([link](https://community.chocolatey.org/packages/make))
-- **Windows (GnuWin32):** Download from [SourceForge](http://gnuwin32.sourceforge.net/packages/make.htm) or use `winget install GnuWin32.Make`
-- **Linux (Ubuntu/Debian):** `sudo apt install make`
-- **macOS:** Built-in, or install via `xcode-select --install`
-
-**Available Make Commands:**
-- `make install`: Installs both Python (`uv`) and Node (`npm`) dependencies.
-- `make run`: Starts both the backend and frontend simultaneously.
-- `make deploy`: Automatically builds and deploys the Socratic Duel app to Google Cloud Run.
-- `make undeploy`: Tears down the Google Cloud Run service.
 
 ### Using the Core ADK CLI
 
