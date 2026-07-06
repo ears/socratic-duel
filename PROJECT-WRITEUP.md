@@ -2,8 +2,9 @@
 
 **Track:** Freestyle  
 **Team Members:** Hartmut Goetze  
-**Project Link:** https://github.com/ears/socratic-duel  
-**Video Pitch:** [Link to 5-minute video]  
+**Project Link (GitHub):** https://github.com/ears/socratic-duel 
+**Deployed Socratic Duel:** https://epistemic-synth-480141850179.us-east1.run.app 
+**Video Pitch:** https://youtu.be/SEuxW6CN5HI
 
 ---
 

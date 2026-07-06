@@ -268,7 +268,7 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 
 
 # Global Model Configuration
-STRONG_MODEL = "gemini-3.5-flash"  # "gemini-3.1-pro-preview"
+STRONG_MODEL = "gemini-3.1-pro-preview"
 MID_MODEL = "gemini-3.5-flash"
 FAST_MODEL = "gemini-3.1-flash-lite"
 
