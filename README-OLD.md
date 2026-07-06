@@ -1,29 +1,8 @@
-# Socratic Duel
-*A multi-agent framework built with Google ADK to stress-test academic theses through structured friction.*
+# Socratic Duel (Dialectical Epistemic Synthesizer)
 
----
-
-## The Problem
-Standard LLMs suffer from **consensus bias**. When evaluating complex arguments, they default to generic, middle-of-the-road summaries that lack academic rigor and leave critical blind spots completely unchallenged.
-
-## The Solution
-**Socratic Duel** replaces passive agreement with adversarial debate. Instead of blending viewpoints, it forces specialized academic lenses into a structured dialectical conflict to ruthlessly expose flaws, biases, and gaps in a thesis.
-
----
-
-## How It Works
-
-```
-[ Thesis Input ] ➔ [ Lens Selection (1 of 8) ] ➔ [ Protagonist vs. Contrarian Duel ] ➔ [ Synthesis Report ]
-```
-
-* **1. Lens Selection:** You provide a thesis. The system presents **8 distinct epistemic lenses** (e.g., *The Empiricist*, *The Systems Theorist*) and recommends the optimal framework for your argument.
-* **2. The Adversarial Loop:** A dynamically assigned **Protagonist** and **Contrarian** agent lock into an interactive reflection loop, aggressively debating your thesis from opposing academic strongholds.
-* **3. The Synthesis:** A final **Synthesizer** agent distills the clash into a comprehensive, interdisciplinary report—mapping out your argument's methodological integrity alongside its deepest blind spots.
-
+A multi-agent system designed to rigorously analyze theses using highly specialized academic lenses. Built with Google ADK for the AI Agents Intensive Vibe Coding Project.
 
 See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut/scientific-synthesizer/epistemic-synth/SPEC.md).
-
 
 ## Features
 - **Human-In-The-Loop Triage**: An orchestrator agent that triages the thesis (aided by a dedicated web-searching `triage_researcher` sub-agent) and lets you dynamically choose from 8 epistemic lenses (e.g., The Systems Theorist, The Ethicist).
@@ -53,6 +32,8 @@ epistemic-synth/
 ├── Dockerfile                 # Multi-stage container deployment
 └── pyproject.toml             # Python project dependencies
 ```
+
+> 💡 **Tip:** Use [Antigravity CLI](https://antigravity.google/) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
 
 ## Requirements
 
@@ -136,12 +117,51 @@ npm install
 npm run dev
 ```
 
+### Using the Core ADK CLI
+
+Because this project is built on the Google Agent Development Kit (ADK), you have full access to the underlying `adk` CLI. This allows you to bypass the `agents-cli` wrapper for advanced debugging or database management.
+
+Run it using `uv` to ensure it executes in the correct virtual environment:
+```bash
+uv run adk --help
+```
+*Useful commands include:*
+- `uv run adk run app/agent.py`: Run the agent directly from the command line without the web server.
+- `uv run adk db clear`: Clear the local SQLite database (`app/.adk/session.db`—where ADK automatically saves all conversation history and agent state) if your session gets corrupted or you want a completely fresh start.
+
+## Commands
+
+| Command              | Description                                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `agents-cli install` | Install dependencies using uv                                                         |
+| `agents-cli playground` | Launch local development environment                                                  |
+| `agents-cli lint`    | Run code quality checks                                                               |
+| `agents-cli eval`    | Evaluate agent behavior (generate, grade, analyze, and more — see `agents-cli eval --help`) |
+| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        || [A2A Inspector](https://github.com/a2aproject/a2a-inspector) | Launch A2A Protocol Inspector                                                        |
+
+## 🛠️ Project Management
+
+| Command | What It Does |
+|---------|--------------|
+| `agents-cli scaffold enhance` | Add CI/CD pipelines and Terraform infrastructure |
+| `agents-cli infra cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
+| `agents-cli scaffold upgrade` | Auto-upgrade to latest version while preserving customizations |
+
+---
+
+## Development
+
+Edit your agent logic in `app/agent.py` and test with `agents-cli playground` - it auto-reloads on save.
+
 ## Deployment
 
 ```bash
 gcloud config set project <your-project-id>
 agents-cli deploy
 ```
+
+To add CI/CD and Terraform, run `agents-cli scaffold enhance`.
+To set up your production infrastructure, run `agents-cli infra cicd`.
 
 ## Observability
 
