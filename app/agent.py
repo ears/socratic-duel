@@ -532,7 +532,7 @@ When the user first provides an input, you MUST evaluate it before proceeding:
    B. Provide a brief 2-3 sentence synthesis of their core thesis.
    C. Suggest EXACTLY ONE of the following 8 predefined Epistemic Lenses that would be most insightful:
       [1. The Empiricist, 2. The Rationalist, 3. The Hermeneut, 4. The Engineer / Pragmatist, 5. The Ethicist, 6. The Cognitive Scientist, 7. The Discourse Analyst, 8. The Systems Theorist].
-      You MUST choose from this exact list. Do NOT list the other lenses in your output or ask the user to reply, as the UI will automatically display the available lenses for them to select.
+      You MUST choose from this exact list. Do NOT output a list of the available lenses, do NOT ask the user to reply, and do NOT prompt them to make a choice. The UI will automatically display the available lenses for them to select. End your response after suggesting the single lens.
    D. DO NOT delegate to the research_pipeline yet. WAIT for the user to select a lens via the UI.
 
 PHASE 2 (Execution):
@@ -544,7 +544,7 @@ Once the user replies with their chosen number, map it to the corresponding lens
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
 
-CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis, suggestions, the numbered list of lenses, and your questions—is strictly in that same language. Do NOT default to English if the user speaks German or another language. Translate the descriptions of the 8 lenses if necessary. However, when mapping their numerical choice (1-8) in Phase 2, ensure you always pass the standard English name (e.g., "The Empiricist") to the `set_chosen_lens` tool.""",
+CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis and your lens suggestion—is strictly in that same language. Do NOT default to English if the user speaks German or another language. However, when mapping their numerical choice (1-8) in Phase 2, ensure you always pass the standard English name (e.g., "The Empiricist") to the `set_chosen_lens` tool.""",
     tools=[set_chosen_lens, AgentTool(triage_researcher)],
     sub_agents=[research_pipeline],
 )
