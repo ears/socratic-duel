@@ -300,9 +300,17 @@ function App() {
                 </p>
               )}
               {selectedLensIndex !== null && (
-                <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                  <span className="text-3xl drop-shadow-sm">{LENSES[selectedLensIndex]?.icon}</span>
-                  <span>Active Lens: {LENSES[selectedLensIndex]?.name}</span>
+                <div className="flex flex-col items-center gap-3">
+                  <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <span className="text-3xl drop-shadow-sm">{LENSES[selectedLensIndex]?.icon}</span>
+                    <span>Active Lens: {LENSES[selectedLensIndex]?.name}</span>
+                  </div>
+                  {targetAudience && (
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--card-bg)] border border-[var(--border-color)] opacity-80 rounded-full text-sm font-semibold shadow-sm transition-opacity hover:opacity-100">
+                      <span className="text-lg">🎯</span>
+                      <span>Target Audience: {targetAudience}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
