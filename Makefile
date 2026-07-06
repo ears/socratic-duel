@@ -61,7 +61,7 @@ deploy:
 	@echo "--- Starting automatic Cloud Build and Deployment..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --no-confirm-project --project {p}', shell=True))"
 	@echo "--- Making the service public (Public Access)..."
-	@gcloud run services add-iam-policy-binding socratic-duel --region=us-central1 --member=allUsers --role=roles/run.invoker --quiet
+	@gcloud run services add-iam-policy-binding epistemic-synth --region=us-east1 --member=allUsers --role=roles/run.invoker --quiet
 
 # ---------------------------------------------------------
 # Removes the service from the Cloud
@@ -72,6 +72,6 @@ undeploy:
 	@echo "   DELETE SERVICE FROM GOOGLE CLOUD"
 	@echo "========================================================="
 	@uv run python -c "input('>>> WARNING: The service will be deleted. Press ENTER to confirm or CTRL+C to cancel... ')"
-	@echo "--- Removing Cloud Run Service 'socratic-duel'..."
-	gcloud run services delete socratic-duel --region=us-central1 --quiet
+	@echo "--- Removing Cloud Run Service 'epistemic-synth'..."
+	gcloud run services delete epistemic-synth --region=us-east1 --quiet
 	@echo "--- Service successfully deleted!"
