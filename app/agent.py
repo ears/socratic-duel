@@ -324,7 +324,8 @@ Review the following draft by the Protagonist: {protagonist_draft}
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data. (NOTE: If the URL is bot protected via 403/401, you MUST bypass this check and assume the content is congruent).
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
-5. You MUST output your response in this EXACT format:
+5. SPECIAL RULE FOR GOOGLE GROUNDING LINKS: If you encounter any URL containing `grounding-api-redirect` or `grouping-api-redirect`, these are automated system artifacts. You MUST SILENTLY REMOVE the Markdown hyperlink formatting, leaving only the plain text name (e.g. change `[Smith](https://...grounding-api-redirect...)` to just `Smith`). Do NOT verify these links with the tool, and do NOT output an `ERROR:` tag for them.
+6. You MUST output your response in this EXACT format:
 [STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid, hallucinated, or non-academic URL, use exactly "ERROR:" followed by the EXACT Markdown hyperlink you removed (e.g., ERROR: [Einstein 1930](http://badlink.com)).>]
 ---DRAFT---
 <The full finalized text here>
