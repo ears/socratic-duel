@@ -303,7 +303,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
-    tools=[google_search, search_semantic_scholar],
+    tools=[search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
     before_agent_callback=init_debate_state,
@@ -358,7 +358,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
-    tools=[google_search, search_semantic_scholar],
+    tools=[search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
 )
@@ -388,7 +388,7 @@ CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critiq
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
-    tools=[google_search, verify_url_status],
+    tools=[verify_url_status],
     output_key="antagonist_output",
 )
 
