@@ -18,13 +18,19 @@ See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut
 
 ```
 epistemic-synth/
-├── app/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── fast_api_app.py        # FastAPI Backend server
+├── app/                       # Core Python backend
+│   ├── agent.py               # Main agent logic & prompts
+│   ├── fast_api_app.py        # FastAPI server entrypoint
+│   ├── main.py                # App routing & middleware logic
 │   └── app_utils/             # App utilities and helpers
+├── frontend/                  # React + Vite frontend UI
 ├── tests/                     # Unit, integration, and load tests
+├── SPEC.md                    # Formal architecture & agent rules
+├── ROADMAP.md                 # Project roadmap and milestones
+├── DIAGRAMS.md                # System architecture visual diagrams
 ├── GEMINI.md                  # AI-assisted development guide
-└── pyproject.toml             # Project dependencies
+├── Dockerfile                 # Multi-stage container deployment
+└── pyproject.toml             # Python project dependencies
 ```
 
 > 💡 **Tip:** Use [Antigravity CLI](https://antigravity.google/) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
