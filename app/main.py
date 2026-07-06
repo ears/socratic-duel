@@ -165,7 +165,10 @@ async def event_generator(session_id: str, message: str):
             await asyncio.sleep(0.01)
 
     except Exception as e:
-        yield f"data: {json.dumps({'author': 'system', 'error': str(e)})}\n\n"
+        error_msg = str(e)
+        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
+            error_msg = "The AI model is currently experiencing high demand and we hit a rate limit. Please wait a moment and try again."
+        yield f"data: {json.dumps({'author': 'system', 'error': error_msg})}\n\n"
 
 
 @app.get("/api/chat")
