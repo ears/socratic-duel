@@ -45,6 +45,25 @@ Before you begin, ensure you have:
 - **agents-cli**: Agents CLI - Install with `uv tool install google-agents-cli`
 - **Google Cloud SDK**: For GCP services - [Installation Instructions](https://cloud.google.com/sdk/docs/install)
 
+### Authentication Setup
+
+Before running the application, you must configure your environment variables by copying `.env.example` to a new `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure your authentication using one of two methods:
+
+- **Option A: Google Cloud / Vertex AI (Recommended)**
+  - Ensure `GOOGLE_GENAI_USE_VERTEXAI=true` is set.
+  - Fill in your `GOOGLE_CLOUD_PROJECT`.
+  - Authenticate locally by running: `gcloud auth application-default login`
+  
+- **Option B: Google AI Studio API Key**
+  - Comment out the Vertex AI settings in `.env`.
+  - Uncomment the `GEMINI_API_KEY` line and paste your API key.
+
 
 ## Quick Start with Make (optional, but convenient)
 
