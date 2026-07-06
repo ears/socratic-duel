@@ -208,3 +208,6 @@ tools/a2a-inspector/
 *.pem
 *-key.json
 credentials*.json
+
+# Writeups
+PROJECT-WRITEUP.md
