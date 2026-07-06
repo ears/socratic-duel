@@ -1,17 +1,26 @@
 # Socratic Duel
-*A multi-agent framework to stress-test a thesss through fierce debate.*
+*Two intellectual black belts, managed by their corners, stress-test your thesis in a disciplined debate.*
 
 ---
 
 ## The Problem
-Standard LLMs suffer from **consensus bias**. When evaluating complex arguments, they default to generic, middle-of-the-road summaries that lack academic rigor and leave critical blind spots completely unchallenged.
+Standard Large Language Models (LLMs) suffer from **consensus bias**. When asked to evaluate complex arguments or theses, they typically default to generic, **middle-of-the-road summaries**. They blend viewpoints rather than testing them, producing output that **lacks academic rigor** and leaves critical methodological or empirical blind spots unchallenged. In addition to a tendency for **sycophancy**.
 
 ## The Solution
-**Socratic Duel** replaces passive agreement with adversarial debate. Instead of blending viewpoints, it forces specialized academic lenses into a structured dialectical conflict to ruthlessly expose flaws, biases, and gaps in a thesis.
+Socratic Duel is a multi-agent framework that replaces passive compliance with **adversarial debate**. Instead of defaulting to a safe consensus, it locks **specialized academic lenses**—such as The Empiricist or The Systems Theorist—into intellectual sparring. This friction ruthlessly exposes hidden biases, logical flaws, and empirical gaps, delivering a raw, **stress-tested audit** of your thesis.
+
+## Core Values
+* **Ground-Truth Anchoring:** Forces LLMs to argue from a chosen, unyielding worldview rather than defaulting to sycophantic, middle-of-the-road personas.
+* **Zero-Trust Citation Auditing:** Deploys dedicated integrity agents to intercept drafts in real-time, verifying every URL, quote, and source citation to permanently purge hallucinations.
+* **Cognitive Depth Attunement:** Automatically calibrates vocabulary, tone, and conceptual complexity to match a defined target audience—scaling seamlessly from a 15-year-old to a PhD-level researcher.
+* **Stagnation Circuit-Breakers:** Employs a Semantic Judge to monitor the debate in real-time, killing the run the instant arguments stall or loop to eliminate token waste.
 
 ---
 
 ## How It Works
+
+### High-Level Triage & Debate Pipeline
+This diagram shows the end-to-end flow from the user's initial input to the final synthesized report, highlighting the Human-in-the-Loop (HITL) step.
 
 ```mermaid
 graph TD
@@ -42,20 +51,9 @@ graph TD
 * **2. The Adversarial Loop:** A dynamically assigned **Protagonist** and **Contrarian** agent lock into an interactive reflection loop, aggressively debating your thesis from opposing academic strongholds.
 * **3. The Synthesis:** A final **Synthesizer** agent distills the clash into a comprehensive, interdisciplinary report—mapping out your argument's methodological integrity alongside its deepest blind spots.
 
+### Debate Loop (The Engine)
+This diagram details the internal mechanics of the `LoopAgent`.
 
-See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut/scientific-synthesizer/epistemic-synth/SPEC.md).
-
-
-## 🚀 Core Features & Agentic Architecture
-- **Tri-Model Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.1-pro-preview` for the high-level debaters, `3.5-flash` for semantic judging, and parallel `flash-lite` models for rapid citation auditing.
-- **Radical Hallucination Mitigation:** "Academic Integrity Auditors" intercept drafts and actively scrape every cited URL in real-time. If a link is dead, hallucinated, or empirically incorrect, the auditor silently scrubs it before the user ever sees it.
-- **Dynamic Cognitive Profiling:** Automatically adapts the debate's vocabulary, tone, and conceptual depth based on a defined "Target Audience" complexity level (from 15-year-old to PhD).
-- **Human-In-The-Loop Triage:** An Interactive Planner orchestrator that triages the thesis, strictly blocks prompt injections via ADK callbacks, and halts execution until you select 1 of 8 epistemic lenses (e.g., *The Ethicist*).
-- **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
-- **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
-- **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
-
-### The Dialectical Engine
 ```mermaid
 graph TD
     Start((Loop Start)) --> Protagonist
@@ -91,6 +89,14 @@ graph TD
     LoopBack -.-> Start
 ```
 
+### Key Components & Agent Roles
+
+* **The Match Commissioner (Interactive Planner):** Acts as the system orchestrator. Validates user input, deploys prompt injection defenses, triages the thesis via web search, and enforces a strict two-phase Human-In-The-Loop (HITL) protocol.
+* **The Intellectual Black Belts (Adversarial Debaters):** Two highly specialized agents locked in a symmetric, multi-turn `LoopAgent` execution. To maintain absolute dialectical rigor, they are forced to validate every theoretical assertion with real-world, peer-reviewed data using the `search_semantic_scholar` tool.
+* **The Cornermen (Citation Auditors):** Regulatory agents that intercept the Black Belts' drafts *before* they are committed to the transcript. Using the `verify_url_status` tool, they ping and parse every cited link. If a link is dead, hallucinated, or irrelevant, they reject the draft and trigger an error-correction loop, forcing the debater to find valid evidence or abandon the claim.
+* **The Referee (Semantic Judge):** Oversees the entire bout. Evaluates the textual exchange against a strict logical grading rubric, dynamically tracks token state to prevent circular rhetoric, and exercises the authority to call a halt to the debate once a technical consensus or definitive breaking point is achieved.
+* **The Cutman (Synthesizer):** Processes the raw, finalized debate transcript. Conducts meta-research on the interaction to author a mathematically clean, highly structured Markdown report, complete with an automated, dynamically generated Glossary of terms.
+
 ### Tri-Model Model Allocation
 ```mermaid
 pie title "Agent Model Allocation (Vertex AI: Global)"
@@ -99,7 +105,18 @@ pie title "Agent Model Allocation (Vertex AI: Global)"
     "gemini-3.1-pro-preview (Orchestrator, Debaters, Synthesizer)" : 4
 ```
 
+## 🚀 Core Features & Agentic Architecture
+- **Tri-Model Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.1-pro-preview` for the high-level debaters, `3.5-flash` for semantic judging, and parallel `flash-lite` models for rapid citation auditing.
+- **Radical Hallucination Mitigation:** "Academic Integrity Auditors" intercept drafts and actively scrape every cited URL in real-time. If a link is dead, hallucinated, or empirically incorrect, the auditor silently scrubs it before the user ever sees it.
+- **Dynamic Cognitive Profiling:** Automatically adapts the debate's vocabulary, tone, and conceptual depth based on a defined "Target Audience" complexity level (from 15-year-old to PhD).
+- **Human-In-The-Loop Triage:** An Interactive Planner orchestrator that triages the thesis, strictly blocks prompt injections via ADK callbacks, and halts execution until you select 1 of 8 epistemic lenses (e.g., *The Ethicist*).
+- **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
+- **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
+- **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
+
 ## Project Structure
+
+See the formal architecture and rule blueprint in [SPEC.md](SPEC.md).
 
 ```
 epistemic-synth/
@@ -201,6 +218,14 @@ npm run dev
 ```
 
 ## Deployment
+
+You can deploy the application using the included Make target:
+
+```bash
+make deploy
+```
+
+Alternatively, you can deploy manually using `agents-cli`:
 
 ```bash
 gcloud config set project <your-project-id>
