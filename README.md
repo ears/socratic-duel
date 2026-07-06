@@ -81,6 +81,23 @@ npm install
 npm run dev
 ```
 
+### Running with Make (Optional, but convenient!)
+
+If you want to automate installation, running both servers simultaneously, and deploying, you can use `make`. 
+**Note:** `make` is completely optional. It's built for convenience but requires `make` to be installed on your system.
+
+**Installing `make`:**
+- **Windows (Chocolatey):** `choco install make` ([link](https://community.chocolatey.org/packages/make))
+- **Windows (GnuWin32):** Download from [SourceForge](http://gnuwin32.sourceforge.net/packages/make.htm) or use `winget install GnuWin32.Make`
+- **Linux (Ubuntu/Debian):** `sudo apt install make`
+- **macOS:** Built-in, or install via `xcode-select --install`
+
+**Available Make Commands:**
+- `make install`: Installs both Python (`uv`) and Node (`npm`) dependencies.
+- `make run`: Starts both the backend and frontend simultaneously.
+- `make deploy`: Automatically builds and deploys the Socratic Duel app to Google Cloud Run.
+- `make undeploy`: Tears down the Google Cloud Run service.
+
 ### Using the Core ADK CLI
 
 Because this project is built on the Google Agent Development Kit (ADK), you have full access to the underlying `adk` CLI. This allows you to bypass the `agents-cli` wrapper for advanced debugging or database management.
