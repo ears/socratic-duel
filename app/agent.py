@@ -303,7 +303,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
-    tools=[search_semantic_scholar],
+    tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
     before_agent_callback=init_debate_state,
@@ -317,9 +317,9 @@ citation_checker_proto = Agent(
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following draft by the Protagonist: {protagonist_draft}
-1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
-2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, strictly verify each URL. You must verify three things:
+1. Scan the text exclusively for direct URLs/hyperlinks. 
+2. SPECIAL RULE FOR GROUNDING LINKS: The Gemini API may automatically append raw URLs, DOIs, or internal tracking links (like `grounding-api-redirect`) to the end of the text. You MUST SILENTLY DELETE all raw, unformatted URLs, standalone DOIs, and tracking links from the text. Do NOT verify them, and do NOT output an `ERROR:` tag for them.
+3. You must ONLY verify URLs that are formatted as proper inline Markdown links (e.g., `[Text](http://...)`). For these:
    - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the text `[🛡️ Bot Protected]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data. (NOTE: If the URL is bot protected via 403/401, you MUST bypass this check and assume the content is congruent).
@@ -358,7 +358,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
-    tools=[search_semantic_scholar],
+    tools=[google_search, search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
 )
@@ -371,9 +371,9 @@ citation_checker_anto = Agent(
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
-1. Scan the text exclusively for direct URLs/hyperlinks (e.g., http:// or https://). Do NOT extract general text claims or names.
-2. If the text contains ZERO URLs, you MUST immediately output [STATUS: NO_CITATIONS] and leave the text unmodified.
-3. Otherwise, strictly verify each URL. You must verify three things:
+1. Scan the text exclusively for direct URLs/hyperlinks. 
+2. SPECIAL RULE FOR GROUNDING LINKS: The Gemini API may automatically append raw URLs, DOIs, or internal tracking links (like `grounding-api-redirect`) to the end of the text. You MUST SILENTLY DELETE all raw, unformatted URLs, standalone DOIs, and tracking links from the text. Do NOT verify them, and do NOT output an `ERROR:` tag for them.
+3. You must ONLY verify URLs that are formatted as proper inline Markdown links (e.g., `[Text](http://...)`). For these:
    - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the text `[🛡️ Bot Protected]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data. (NOTE: If the URL is bot protected via 403/401, you MUST bypass this check and assume the content is congruent).
