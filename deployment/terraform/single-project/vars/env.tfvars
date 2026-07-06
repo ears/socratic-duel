@@ -1,5 +1,5 @@
 # Project name used for resource naming
-project_name = "epistemic-synth"
+project_name = "socratic-duel-demo"
 
 # Your Google Cloud project id
 project_id = "api-project-480141850179"
