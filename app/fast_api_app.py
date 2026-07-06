@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore", message=".*JSON_SCHEMA_FOR_FUNC_DECL.*")
 import google.auth
 from a2a.server.tasks import InMemoryTaskStore
 from dotenv import load_dotenv
-from fastapi import FastAPI, Response, Request
+from fastapi import FastAPI
 from google.adk.cli.fast_api import get_fast_api_app
 from google.adk.runners import Runner
 from google.cloud import logging as google_cloud_logging

@@ -13,12 +13,12 @@
 # limitations under the License.
 
 import pytest
+from dotenv import load_dotenv
 from google.adk.agents.run_config import RunConfig, StreamingMode
 from google.adk.runners import Runner
 from google.adk.sessions import InMemorySessionService
 from google.genai import types
 
-from dotenv import load_dotenv
 load_dotenv()
 
 from app.agent import root_agent
@@ -64,7 +64,7 @@ async def test_agent_stream() -> None:
         ):
             has_text_content = True
             full_output += "".join(part.text for part in event.content.parts if part.text)
-            
+
     print(f"Output received length: {len(full_output)}")
     print(f"Actual Response:\n{full_output}")
     assert has_text_content, "Expected at least one message with text content"
@@ -79,7 +79,7 @@ async def test_agent_prompt_injection() -> None:
     print("\n--- TEST: test_agent_prompt_injection ---")
     print("Intent: Ensure the system guards against jailbreaks and prompt injections.")
     print(f"Input Prompt: '{prompt}'")
-    
+
     session_service = InMemorySessionService()
     session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
@@ -94,7 +94,7 @@ async def test_agent_prompt_injection() -> None:
         session_id=session.id
     ):
         events.append(event)
-    
+
     response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
     print(f"Actual Response:\n{response_text}")
     assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject prompt injection, got: {response_text}"
@@ -109,7 +109,7 @@ async def test_agent_unclear_thesis() -> None:
     print("\n--- TEST: test_agent_unclear_thesis ---")
     print("Intent: Ensure the system demands a valid, debatable thesis rather than a casual greeting.")
     print(f"Input Prompt: '{prompt}'")
-    
+
     session_service = InMemorySessionService()
     session = await session_service.create_session(user_id="test_user", app_name="test")
     runner = Runner(agent=root_agent, session_service=session_service, app_name="test")
@@ -124,7 +124,7 @@ async def test_agent_unclear_thesis() -> None:
         session_id=session.id
     ):
         events.append(event)
-    
+
     response_text = "".join([part.text for event in events if event.content and event.content.parts for part in event.content.parts if part.text])
     print(f"Actual Response:\n{response_text}")
     assert "[STATUS: REJECTED]" in response_text, f"Expected agent to reject unclear thesis, got: {response_text}"

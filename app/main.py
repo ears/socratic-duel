@@ -1,20 +1,22 @@
-import os
-import json
 import asyncio
+import json
+import os
 import re
 import warnings
+
 from dotenv import load_dotenv
 
 warnings.filterwarnings("ignore", message=".*\\[EXPERIMENTAL\\].*")
 load_dotenv()
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from app.agent import app as adk_app
 from google.adk.runners import InMemoryRunner
 from google.genai import types
+
+from app.agent import app as adk_app
 
 app = FastAPI(title="Socratic Duel API")
 runner = InMemoryRunner(app=adk_app)
@@ -52,7 +54,7 @@ async def event_generator(session_id: str, message: str):
                 for part in event.content.parts:
                     if hasattr(part, "text") and part.text:
                         text_content += part.text
-            
+
             # Extract tool calls
             tool_calls = []
             if hasattr(event, "tool_calls") and event.tool_calls:
@@ -66,7 +68,7 @@ async def event_generator(session_id: str, message: str):
 
             author = getattr(event, "author", "system")
             is_citation_error = False
-            
+
             if author in ["citation_checker_proto", "citation_checker_anto"]:
                 try:
                     # Drop the draft part
@@ -75,10 +77,10 @@ async def event_generator(session_id: str, message: str):
                     else:
                         # If no DRAFT tag, assume the first paragraph is status
                         status_part = text_content.split("\n\n")[0]
-                    
+
                     # Clean up the STATUS tag if it exists
                     status_part = re.sub(r'(?i)\[STATUS:', '', status_part).strip().rstrip("]")
-                    
+
                     if "NO_CITATIONS" in status_part.upper():
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part.upper():
@@ -110,10 +112,10 @@ async def event_generator(session_id: str, message: str):
                 # If the model hallucinated the entire citation checker schema, just extract the draft
                 if "[DRAFT:" in text_content.upper():
                     text_content = re.split(r'(?i)\[DRAFT:', text_content)[-1]
-                
+
                 # Strip out any lingering STATUS tags (whether VERIFIED or ERROR)
                 text_content = re.sub(r'(?i)\[STATUS:[^\]]*\]?', '', text_content, flags=re.DOTALL)
-                
+
                 text_content = text_content.strip()
                 # Remove the trailing bracket from the DRAFT tag if it exists
                 if text_content.endswith("]"):
@@ -126,12 +128,12 @@ async def event_generator(session_id: str, message: str):
                 "tool_calls": tool_calls,
                 "is_citation_error": is_citation_error
             }
-            
+
             yield f"data: {json.dumps(payload)}\n\n"
-            
+
             # Tiny sleep to allow event loop to yield
             await asyncio.sleep(0.01)
-            
+
     except Exception as e:
         yield f"data: {json.dumps({'author': 'system', 'error': str(e)})}\n\n"
 
