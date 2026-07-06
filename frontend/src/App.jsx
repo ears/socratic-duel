@@ -204,7 +204,7 @@ function App() {
              <h2 className="text-3xl font-extrabold">Triaging Thesis...</h2>
              <p className="text-lg opacity-70">The Orchestrator is analyzing your thesis and establishing context via Google Search.</p>
              <p className="text-md font-semibold text-violet-600 dark:text-violet-400 mt-6 animate-pulse">
-               A little patience, please. Gemini's frontier model is working for you...
+               A little patience, please. Gemini’s gears are turning for you...
              </p>
           </div>
         )}
@@ -296,7 +296,7 @@ function App() {
               </h2>
               {isTyping && (
                 <p className="text-md font-semibold text-violet-600 dark:text-violet-400 animate-pulse mt-2">
-                  A little patience, please. Gemini's frontier model is working for you...
+                  A little patience, please. Gemini’s gears are turning for you...
                 </p>
               )}
               {selectedLensIndex !== null && (
