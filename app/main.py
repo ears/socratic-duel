@@ -85,13 +85,20 @@ async def event_generator(session_id: str, message: str):
             is_citation_error = False
 
             if author in ["citation_checker_proto", "citation_checker_anto"]:
+                draft_part = ""
                 try:
                     # Drop the draft part
                     if "[DRAFT:" in text_content.upper():
-                        status_part = re.split(r"(?i)\[DRAFT:", text_content)[0]
+                        split_res = re.split(r"(?i)\[DRAFT:", text_content)
+                        status_part = split_res[0]
+                        if len(split_res) > 1:
+                            draft_part = split_res[1].strip()
+                            if draft_part.endswith("]"):
+                                draft_part = draft_part[:-1].strip()
                     else:
                         # If no DRAFT tag, assume the first paragraph is status
                         status_part = text_content.split("\n\n")[0]
+                        draft_part = text_content[len(status_part):].strip()
 
                     # Clean up the STATUS tag if it exists
                     status_part = (
@@ -158,6 +165,8 @@ async def event_generator(session_id: str, message: str):
                 "tool_calls": tool_calls,
                 "is_citation_error": is_citation_error,
             }
+            if author in ["citation_checker_proto", "citation_checker_anto"]:
+                payload["updated_draft"] = draft_part
 
             yield f"data: {json.dumps(payload)}\n\n"
 

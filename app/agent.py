@@ -297,7 +297,7 @@ STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
 It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST use the `search_semantic_scholar` tool to find real peer-reviewed papers to support your arguments BEFORE drafting your response. Do not hallucinate papers or URLs. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
 
-CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text.
+CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
@@ -349,6 +349,8 @@ Highlight methodological vulnerabilities, implicit assumptions, and blind spots 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
 It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST use the `search_semantic_scholar` tool to find real peer-reviewed papers to support your arguments BEFORE drafting your response. Do not hallucinate papers or URLs. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
+
+CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERIFIED] or [DRAFT: ] in your response. Just write the natural text. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
@@ -479,6 +481,7 @@ Begin the report explicitly with a large two-line Markdown header formatted exac
 2. Methodological Integrity & Blind Spots
 3. The Disciplinary Contrarian View
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
+5. Glossary (Abbreviations & Key Terms) - You MUST define any acronyms or abbreviations used anywhere in the report (e.g. "VO2max", "AHA", etc.) here.
 
 COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.
 

@@ -95,7 +95,20 @@ function App() {
           return;
       }
       if (data.content && data.content.trim() !== "") {
-        setMessages(prev => [...prev, data]);
+        setMessages(prev => {
+          if (data.updated_draft) {
+            const targetAuthor = data.author === 'citation_checker_proto' ? 'protagonist' : 'antagonist';
+            const newMessages = [...prev];
+            for (let i = newMessages.length - 1; i >= 0; i--) {
+              if (newMessages[i].author === targetAuthor) {
+                newMessages[i] = { ...newMessages[i], content: data.updated_draft };
+                break;
+              }
+            }
+            return [...newMessages, data];
+          }
+          return [...prev, data];
+        });
       }
     };
 
@@ -311,14 +324,17 @@ function App() {
                           <div className="italic text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                         </div>
                       ) : (
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-sm font-medium opacity-80">
-                          <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
-                          {msg.content === "No citations to check." ? (
-                            <span className="text-gray-500 dark:text-gray-400">No citations to check.</span>
-                          ) : msg.content === "Citations verified." ? (
-                            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ Citations verified.</span>
-                          ) : (
-                            <span>{msg.content}</span>
+                        <div className="inline-flex items-start flex-col gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium opacity-80 max-w-2xl">
+                          <div className="flex items-center gap-2">
+                            <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
+                            {msg.content === "No citations to check." ? (
+                              <span className="text-gray-500 dark:text-gray-400">No citations to check.</span>
+                            ) : msg.content === "Citations verified." ? (
+                              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ Citations verified.</span>
+                            ) : null}
+                          </div>
+                          {msg.content !== "No citations to check." && msg.content !== "Citations verified." && (
+                            <span className="text-emerald-600 dark:text-emerald-400 whitespace-pre-wrap leading-relaxed">{msg.content.replace("Citations verified.\n\n", "✓ Citations verified.\n\n")}</span>
                           )}
                         </div>
                       )}
