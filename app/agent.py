@@ -326,7 +326,8 @@ Review the following draft by the Protagonist: {protagonist_draft}
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
 [STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid, hallucinated, or non-academic URL, use exactly "ERROR:" followed by the EXACT Markdown hyperlink you removed (e.g., ERROR: [Einstein 1930](http://badlink.com)).>]
-[DRAFT: <The full finalized text here>]
+---DRAFT---
+<The full finalized text here>
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 
@@ -378,7 +379,8 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
 5. You MUST output your response in this EXACT format:
 [STATUS: <Use exactly "NO_CITATIONS" if there are no URLs to verify. Use exactly "VERIFIED" if all URLs were successfully verified. If you removed an invalid, hallucinated, or non-academic URL, use exactly "ERROR:" followed by the EXACT Markdown hyperlink you removed (e.g., ERROR: [Einstein 1930](http://badlink.com)).>]
-[DRAFT: <The full finalized text here>]
+---DRAFT---
+<The full finalized text here>
 
 CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
 

@@ -88,13 +88,23 @@ async def event_generator(session_id: str, message: str):
                 draft_part = ""
                 try:
                     # Drop the draft part
-                    if "[DRAFT:" in text_content.upper():
-                        split_res = re.split(r"(?i)\[DRAFT:", text_content)
-                        status_part = split_res[0]
-                        if len(split_res) > 1:
-                            draft_part = split_res[1].strip()
-                            if draft_part.endswith("]"):
-                                draft_part = draft_part[:-1].strip()
+                    if "---DRAFT---" in text_content.upper() or "[DRAFT:" in text_content.upper():
+                        # Try the new bulletproof separator first
+                        if "---DRAFT---" in text_content.upper():
+                            split_res = re.split(r"(?i)---DRAFT---", text_content)
+                            status_part = split_res[0]
+                            if len(split_res) > 1:
+                                draft_part = split_res[1].strip()
+                        else:
+                            # Fallback to the legacy bracket wrapper
+                            split_res = re.split(r"(?i)\[DRAFT:", text_content)
+                            status_part = split_res[0]
+                            if len(split_res) > 1:
+                                draft_part = split_res[1].strip()
+                                # ONLY strip the closing bracket if it's literally alone at the end, 
+                                # avoiding stripping the Bot Protected tag's bracket.
+                                if draft_part.endswith("]") and not draft_part.endswith(" Bot Protected]"):
+                                    draft_part = draft_part[:-1].strip()
                     else:
                         # If no DRAFT tag, assume the first paragraph is status
                         status_part = text_content.split("\n\n")[0]
@@ -145,7 +155,9 @@ async def event_generator(session_id: str, message: str):
             # Clean up any tags that might leak from the citation checkers into the debaters' text
             if author in ["protagonist", "antagonist"]:
                 # If the model hallucinated the entire citation checker schema, just extract the draft
-                if "[DRAFT:" in text_content.upper():
+                if "---DRAFT---" in text_content.upper():
+                    text_content = re.split(r"(?i)---DRAFT---", text_content)[-1]
+                elif "[DRAFT:" in text_content.upper():
                     text_content = re.split(r"(?i)\[DRAFT:", text_content)[-1]
 
                 # Strip out any lingering STATUS tags (whether VERIFIED or ERROR)
