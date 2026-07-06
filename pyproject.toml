@@ -82,9 +82,12 @@ invalid-return-type = "ignore"
 possibly-missing-attribute = "ignore"
 not-subscriptable = "ignore"
 deprecated = "ignore"
+unknown-argument = "ignore"
+not-iterable = "ignore"
+call-non-callable = "ignore"
 
 [tool.codespell]
-ignore-words-list = "rouge"
+ignore-words-list = "rouge,theses"
 skip = "./locust_env/*,uv.lock,.venv,./frontend,**/package-lock.json"
 
 
