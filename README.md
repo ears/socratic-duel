@@ -1,5 +1,5 @@
 # Socratic Duel
-*A multi-agent framework built with Google ADK to stress-test academic theses through structured friction.*
+*A multi-agent framework to stress-test a thesss through fierce debate.*
 
 ---
 
