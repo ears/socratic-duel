@@ -329,12 +329,12 @@ Review the following draft by the Protagonist: {protagonist_draft}
 ---DRAFT---
 <The full finalized text here>
 
-CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
+CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations. You are STRICTLY FORBIDDEN from adding new text, new citations, or trying to "fix" dead URLs by searching for replacements.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
-    tools=[google_search, verify_url_status],
+    tools=[verify_url_status],
     output_key="protagonist_output",
 )
 
