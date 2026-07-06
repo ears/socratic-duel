@@ -70,7 +70,7 @@ agents-cli playground
 
 1. **Start the FastAPI Backend:**
 ```bash
-uv run fastapi dev app/fast_api_app.py
+uv run fastapi dev app/main.py
 ```
 
 2. **Start the React Frontend:**
