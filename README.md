@@ -13,8 +13,29 @@ Standard LLMs suffer from **consensus bias**. When evaluating complex arguments,
 
 ## How It Works
 
-```
-[ Thesis Input ] ➔ [ Lens Selection (1 of 8) ] ➔ [ Protagonist vs. Contrarian Duel ] ➔ [ Synthesis Report ]
+```mermaid
+graph TD
+    User(["User Input: Thesis"]) --> Orchestrator["Interactive Planner (Root)"]
+    
+    Orchestrator -->|Input Invalid| Reject["Output: [STATUS: REJECTED]"]
+    Reject -.->|UI shows Error| User
+    
+    Orchestrator -->|Input Valid| TriageResearcher[Triage Researcher]
+    TriageResearcher -->|Web Search & Context| Orchestrator
+    
+    Orchestrator -->|Presents 8 Lenses| UI[HITL: User selects Lens]
+    UI -->|Choice 1-8| Orchestrator
+    Orchestrator -->|Routes Task| Pipeline[Research Pipeline]
+    
+    subgraph Pipeline [Sequential Pipeline]
+        direction TB
+        DebateLoop[Dialectical Debate Loop]
+        Synthesizer[Synthesizer]
+        
+        DebateLoop -->|Final Debate Transcript| Synthesizer
+    end
+    
+    Synthesizer -->|Outputs Markdown| FinalReport(["Final Interdisciplinary Report"])
 ```
 
 * **1. Lens Selection:** You provide a thesis. The system presents **8 distinct epistemic lenses** (e.g., *The Empiricist*, *The Systems Theorist*) and recommends the optimal framework for your argument.
@@ -33,6 +54,50 @@ See the formal architecture and rule blueprint in [SPEC.md](file:///home/hartmut
 - **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
 - **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
 - **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
+
+### The Dialectical Engine
+```mermaid
+graph TD
+    Start((Loop Start)) --> Protagonist
+    
+    subgraph Protagonist Block
+        Protagonist[Protagonist] -->|Drafts Argument| CheckerP[Citation Checker]
+        CheckerP -->|Audits URLs| CheckedP[Verified Protagonist Argument]
+    end
+    
+    CheckedP --> Antagonist
+    
+    subgraph Antagonist Block
+        Antagonist[Antagonist] -->|Critiques Argument| CheckerA[Citation Checker]
+        CheckerA -->|Audits URLs| CheckedA[Verified Antagonist Critique]
+    end
+    
+    CheckedA --> Judge{Semantic Judge}
+    
+    Judge -->|Rounds < 2| Continue1[Sleep / Continue]
+    Judge -->|Rounds >= 2 & Active Debate| Continue2[DECISION: CONTINUE]
+    Judge -->|Stagnation| End1[DECISION: END / Consensus]
+    
+    Continue1 --> Escalator
+    Continue2 --> Escalator
+    
+    Escalator{Escalation Checker}
+    Escalator -->|Iterations < 5| LoopBack((Next Round))
+    Escalator -->|Iterations >= 5| End2[Hard Limit Escalate]
+    
+    End1 --> LoopEnd((Loop Terminates))
+    End2 --> LoopEnd
+    
+    LoopBack -.-> Start
+```
+
+### Tri-Model Model Allocation
+```mermaid
+pie title "Agent Model Allocation (Vertex AI: Global)"
+    "gemini-3.1-flash-lite (Checkers)" : 2
+    "gemini-3.5-flash (Judge, Triage)" : 2
+    "gemini-3.1-pro-preview (Orchestrator, Debaters, Synthesizer)" : 4
+```
 
 ## Project Structure
 
