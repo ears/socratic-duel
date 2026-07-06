@@ -25,6 +25,7 @@ import logging
 
 logging.getLogger("google_genai.models").setLevel(logging.ERROR)
 logging.getLogger("google_genai").setLevel(logging.ERROR)
+logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 from google.adk.agents import Agent, SequentialAgent, LoopAgent, BaseAgent
 from google.adk.apps import App, ResumabilityConfig
