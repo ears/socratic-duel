@@ -287,9 +287,8 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 
 
 # Global Model Configuration
-# STRONG_MODEL = "gemini-3.1-pro-preview"
+STRONG_MODEL = "gemini-3.1-pro-preview"
 MID_MODEL = "gemini-3.5-flash"
-STRONG_MODEL = MID_MODEL
 FAST_MODEL = "gemini-3.1-flash-lite"
 
 # Resiliency defaults for Vertex AI
