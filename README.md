@@ -15,7 +15,15 @@ Socratic Duel is a multi-agent framework that replaces passive compliance with *
 * **Cognitive Depth Attunement:** Automatically calibrates vocabulary, tone, and conceptual complexity to match a defined target audience—scaling seamlessly from a 15-year-old to a PhD-level researcher.
 * **Stagnation Circuit-Breakers:** Employs a Semantic Judge to monitor the debate in real-time, killing the run the instant arguments stall or loop to eliminate token waste.
 
----
+<br>
+<div align="center">
+<sub><i>Click the preview to watch the video on YouTube.</i></sub>
+</div>
+<p align="center">
+        <a href="https://youtu.be/QCPbSbsgjVU">
+          <img src="https://img.youtube.com/vi/QCPbSbsgjVU/maxresdefault.jpg" width="600" alt="Click to play video">
+  </a>
+</p>
 
 ## How It Works
 
