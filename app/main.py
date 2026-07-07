@@ -104,7 +104,7 @@ async def event_generator(session_id: str, message: str):
                                 draft_part = split_res[1].strip()
                                 # ONLY strip the closing bracket if it's literally alone at the end, 
                                 # avoiding stripping the Bot Protected tag's bracket.
-                                if draft_part.endswith("]") and not draft_part.endswith(" Bot Protected]"):
+                                if draft_part.endswith("]") and not draft_part.endswith("[🛡️]"):
                                     draft_part = draft_part[:-1].strip()
                     else:
                         # If no DRAFT tag, assume the first paragraph is status
@@ -120,7 +120,7 @@ async def event_generator(session_id: str, message: str):
                         text_content = "No citations to check."
                     elif "VERIFIED" in status_part.upper():
                         matches = re.findall(
-                            r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\s*Bot Protected\]",
+                            r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\]",
                             text_content,
                             re.IGNORECASE,
                         )
