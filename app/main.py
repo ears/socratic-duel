@@ -127,7 +127,7 @@ async def event_generator(session_id: str, message: str):
                         if matches:
                             text_content = (
                                 "Citations verified.\n\n🛡️ Bot Protected:\n"
-                                + "\n".join([f"{t} ({u[:50]}...)" if len(u) > 50 else f"{t} ({u})" for t, u in matches])
+                                + "\n".join([f"- {t}" for t, u in matches])
                             )
                         else:
                             text_content = "Citations verified."
@@ -136,7 +136,7 @@ async def event_generator(session_id: str, message: str):
                         matches = re.findall(r"\[(.*?)\]\((.*?)\)", status_part)
                         if matches:
                             text_content = "\n".join(
-                                [f"{text} ({url[:50]}...)" if len(url) > 50 else f"{text} ({url})" for text, url in matches]
+                                [f"- {text}" for text, url in matches]
                             )
                         else:
                             # Fallback if parsing fails
