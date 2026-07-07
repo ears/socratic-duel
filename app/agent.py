@@ -250,7 +250,26 @@ class EscalationChecker(BaseAgent):
             yield Event(author=self.name)
 
 
+async def append_proto_transcript(callback_context: CallbackContext) -> None:
+    transcript = callback_context.state.get("full_transcript", "")
+    output = str(callback_context.state.get("protagonist_output", ""))
+    if "---DRAFT---" in output:
+        output = output.split("---DRAFT---", 1)[-1].strip()
+    callback_context.state["full_transcript"] = transcript + "\n\n### Protagonist:\n" + output
+    callback_context.state["protagonist_output"] = output
+
+async def append_anto_transcript(callback_context: CallbackContext) -> None:
+    transcript = callback_context.state.get("full_transcript", "")
+    output = str(callback_context.state.get("antagonist_output", ""))
+    if "---DRAFT---" in output:
+        output = output.split("---DRAFT---", 1)[-1].strip()
+    callback_context.state["full_transcript"] = transcript + "\n\n### Antagonist:\n" + output
+    callback_context.state["antagonist_output"] = output
+
+
 async def init_debate_state(callback_context: CallbackContext) -> None:
+    if "full_transcript" not in callback_context.state:
+        callback_context.state["full_transcript"] = ""
     if "antagonist_output" not in callback_context.state:
         callback_context.state["antagonist_output"] = (
             "No feedback yet. This is your first analysis."
@@ -268,7 +287,7 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 
 
 # Global Model Configuration
-STRONG_MODEL = "gemini-3.5-flash" # "gemini-3.1-pro-preview"
+STRONG_MODEL = "gemini-3.1-pro-preview"
 MID_MODEL = "gemini-3.5-flash"
 FAST_MODEL = "gemini-3.1-flash-lite"
 
@@ -302,7 +321,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.""",
     tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=guardrail_callback,
@@ -337,6 +356,7 @@ CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[verify_url_status],
     output_key="protagonist_output",
+    after_agent_callback=append_proto_transcript,
 )
 
 # 2. Antagonist (Contrarian)
@@ -357,7 +377,7 @@ CRITICAL FORMATTING RULE: You must NEVER include backend tags like [STATUS: VERI
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.""",
     tools=[google_search, search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=guardrail_callback,
@@ -390,6 +410,7 @@ CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
     tools=[verify_url_status],
     output_key="antagonist_output",
+    after_agent_callback=append_anto_transcript,
 )
 
 # 3. The Judge (Semantic Stopping Condition)
@@ -421,17 +442,20 @@ judge = Agent(
     before_model_callback=skip_early_judge_callback,
     include_contents="none",
     instruction="""You are the Debate Judge.
-Review the latest arguments from the Protagonist and Antagonist:
-Protagonist: {protagonist_output}
-Antagonist: {antagonist_output}
+Original Thesis: {thesis}
+Target Audience: {target_audience}
 
-Evaluate if the debate has completely stagnated or if they have reached a consensus.
+Review the full debate transcript to detect circular rhetoric and analyze the latest arguments:
+{full_transcript}
+
+Evaluate if the debate has completely stagnated or if they have reached a consensus. Keep the Original Thesis in mind to check if they have drifted too far from the main topic.
 CRITICAL INSTRUCTION: You must allow the debate to naturally unfold. Generally, allow the debate to CONTINUE for multiple rounds to encourage deep dialectical exploration. ONLY declare END if they are literally repeating the exact same points with absolutely no new nuance or empirical data.
 
 Evaluate the latest arguments using this strict Grading Rubric:
 1. Is the Antagonist attacking the core premise or just a strawman?
-2. Are there empirical gaps in the latest argument?
+2. Are there empirical gaps in the latest argument (relative to the target audience's expected rigor)?
 3. Is the rhetoric becoming circular?
+4. AUDIENCE CHECK: Are the expression AND concepts appropriate for the '{target_audience}'? If they are too complex or too simplistic, you MUST explicitly point this out and tell them to adjust.
 
 1. You MUST begin your response with a strict system tag (in English):
    If the debate should continue, write exactly: [DECISION: CONTINUE]
@@ -472,8 +496,10 @@ synthesizer = Agent(
     include_contents="none",
     instruction="""You are the Epistemic Synthesizer for Socratic Duel.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
-Protagonist's view: {protagonist_output}
-Contrarian's view: {antagonist_output}
+Original Thesis: {thesis}
+
+Full Debate Transcript:
+{full_transcript}
 
 You have access to web search and Semantic Scholar. Do not just summarize the debate. Actively use the `search_semantic_scholar` tool to search for peer-reviewed meta-analyses, interdisciplinary frameworks, or overarching arguments that resolve the tension between the two sides—especially concepts that both the Protagonist and Antagonist failed to bring to the table. Include direct links to the papers you find.
 
@@ -487,7 +513,7 @@ Begin the report explicitly with a large two-line Markdown header formatted exac
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 5. Glossary (Abbreviations & Key Terms) - You MUST define any acronyms or abbreviations used anywhere in the report (e.g. "VO2max", "AHA", etc.) here.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}.
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including your section headers) in {language}. Do NOT default to English.
 
@@ -543,7 +569,7 @@ Once the user replies with their chosen number, map it to the corresponding lens
 3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
 4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.
+COMMUNICATION STYLE: You must extract the target audience from the "[Target Audience: ...]" prefix in the input. You MUST adapt your own vocabulary, conceptual complexity, and tone strictly to this target audience when providing your synthesis and lens suggestions. Ensure both your expression AND the concepts you introduce are perfectly tailored to this level.
 
 CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis and your lens suggestion—is strictly in that same language. Do NOT default to English if the user speaks German or another language. However, when mapping their numerical choice (1-8) in Phase 2, ensure you always pass the standard English name (e.g., "The Empiricist") to the `set_chosen_lens` tool.""",
     tools=[set_chosen_lens, AgentTool(triage_researcher)],

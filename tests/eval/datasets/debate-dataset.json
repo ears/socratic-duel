@@ -1,0 +1,42 @@
+{
+  "eval_cases": [
+    {
+      "eval_case_id": "debate_test",
+      "agent_data": {
+        "turns": [
+          {
+            "turn_index": 0,
+            "events": [
+              {
+                "author": "user",
+                "content": {
+                  "role": "user",
+                  "parts": [{"text": "[Target Audience: Level 3 (Average Academic)] The development of superintelligent AI is the greatest existential threat to humanity, as we cannot mathematically guarantee that its goals will remain aligned with human survival once it exceeds our cognitive capacity."}]
+                }
+              },
+              {
+                "author": "interactive_planner",
+                "content": {
+                  "role": "model",
+                  "parts": [{"text": "I understand your thesis. Which of these lenses would you like to use for the debate?\n1. The Empiricist\n2. The Rationalist\n3. The Hermeneut\n4. The Engineer / Pragmatist\n5. The Ethicist\n6. The Cognitive Scientist\n7. The Discourse Analyst\n8. The Systems Theorist"}]
+                }
+              }
+            ]
+          },
+          {
+            "turn_index": 1,
+            "events": [
+              {
+                "author": "user",
+                "content": {
+                  "role": "user",
+                  "parts": [{"text": "1"}]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
