@@ -159,7 +159,7 @@ function App() {
               </div>
               <h2 className="text-5xl font-extrabold tracking-tight">Propose your Thesis</h2>
               <p className="text-xl opacity-70 leading-relaxed">
-                Enter an argument to be rigorously stress-tested by a specialized AI dialectic loop.
+                Enter an argument to be rigorously stress-tested by two intellectual black belts.
               </p>
             </div>
             
