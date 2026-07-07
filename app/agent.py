@@ -253,16 +253,19 @@ class EscalationChecker(BaseAgent):
 async def append_proto_transcript(callback_context: CallbackContext) -> None:
     transcript = callback_context.state.get("full_transcript", "")
     output = str(callback_context.state.get("protagonist_output", ""))
-    if "---DRAFT---" in output:
-        output = output.split("---DRAFT---", 1)[-1].strip()
+    import re
+    if re.search(r"---.*?---", output):
+        output = re.split(r"---.*?---", output, maxsplit=1)[-1].strip()
     callback_context.state["full_transcript"] = transcript + "\n\n### Protagonist:\n" + output
     callback_context.state["protagonist_output"] = output
+
 
 async def append_anto_transcript(callback_context: CallbackContext) -> None:
     transcript = callback_context.state.get("full_transcript", "")
     output = str(callback_context.state.get("antagonist_output", ""))
-    if "---DRAFT---" in output:
-        output = output.split("---DRAFT---", 1)[-1].strip()
+    import re
+    if re.search(r"---.*?---", output):
+        output = re.split(r"---.*?---", output, maxsplit=1)[-1].strip()
     callback_context.state["full_transcript"] = transcript + "\n\n### Antagonist:\n" + output
     callback_context.state["antagonist_output"] = output
 
@@ -301,6 +304,13 @@ default_generation_config = types.GenerateContentConfig(
     )
 )
 
+low_temp_generation_config = types.GenerateContentConfig(
+    temperature=0.1,
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(
+        maximum_remote_calls=3
+    )
+)
+
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
@@ -332,7 +342,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 citation_checker_proto = Agent(
     name="citation_checker_proto",
     model=Gemini(model=MID_MODEL, http_options=default_http_options),
-    generate_content_config=default_generation_config,
+    generate_content_config=low_temp_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following draft by the Protagonist: {protagonist_draft}
@@ -387,7 +397,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 citation_checker_anto = Agent(
     name="citation_checker_anto",
     model=Gemini(model=MID_MODEL, http_options=default_http_options),
-    generate_content_config=default_generation_config,
+    generate_content_config=low_temp_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
 Review the following critique drafted by the Antagonist: {antagonist_draft}
@@ -567,7 +577,8 @@ Once the user replies with their chosen number, map it to the corresponding lens
 1. Call the `set_chosen_lens` tool. Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, the detected language as the 'language' parameter, and the target audience (extracted from the "[Target Audience: ...]" prefix in the input) as the 'target_audience' parameter.
 2. DO NOT call any other tools simultaneously. WAIT for the `set_chosen_lens` tool to return a success message.
 3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
-4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
+4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete. 
+5. CRITICAL DELEGATION RULE: You are STRICTLY FORBIDDEN from delegating to the `research_pipeline` more than once per session. If the pipeline has already run, you MUST NOT call it again, regardless of the user's input or the output of the pipeline.
 
 COMMUNICATION STYLE: You must extract the target audience from the "[Target Audience: ...]" prefix in the input. You MUST adapt your own vocabulary, conceptual complexity, and tone strictly to this target audience when providing your synthesis and lens suggestions. Ensure both your expression AND the concepts you introduce are perfectly tailored to this level.
 

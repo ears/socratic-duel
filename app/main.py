@@ -46,7 +46,10 @@ async def event_generator(session_id: str, message: str):
                 app_name="app", user_id="default_user", session_id=session_id
             )
 
-        content = types.Content(parts=[types.Part.from_text(text=message)], role="user")
+        content = None
+        if message and message.strip() != "":
+            content = types.Content(parts=[types.Part.from_text(text=message)], role="user")
+            
         queue = asyncio.Queue()
 
         async def run_model():
@@ -61,13 +64,18 @@ async def event_generator(session_id: str, message: str):
 
         task = asyncio.create_task(run_model())
 
-        while True:
-            try:
-                event = await asyncio.wait_for(queue.get(), timeout=15.0)
-                if event is None:
-                    break
-                if isinstance(event, Exception):
-                    raise event
+        try:
+            while True:
+                try:
+                    event = await asyncio.wait_for(queue.get(), timeout=15.0)
+                    if event is None:
+                        break
+                    if isinstance(event, Exception):
+                        raise event
+                except asyncio.TimeoutError:
+                    yield f"data: {json.dumps({'keepalive': True})}\n\n"
+                    continue
+                    
                 # Extract basic text content if available
                 text_content = ""
                 if hasattr(event, "model_response") and event.model_response:
@@ -106,11 +114,11 @@ async def event_generator(session_id: str, message: str):
                     draft_part = ""
                     try:
                         # Drop the draft part
-                        draft_match = re.search(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)
+                        draft_match = re.search(r"---.*?---", text_content)
                         if draft_match or "[DRAFT:" in text_content.upper():
                             # Try the new bulletproof separator first
                             if draft_match:
-                                split_res = re.split(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)
+                                split_res = re.split(r"---.*?---", text_content, maxsplit=1)
                                 status_part = split_res[0]
                                 if len(split_res) > 1:
                                     draft_part = split_res[1].strip()
@@ -174,14 +182,14 @@ async def event_generator(session_id: str, message: str):
                 # Clean up any tags that might leak from the citation checkers into the debaters' text
                 if author in ["protagonist", "antagonist"]:
                     # If the model hallucinated the entire citation checker schema, just extract the draft
-                    if re.search(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content):
-                        text_content = re.split(r"(?i)---(?:DRAFT|ENTWURF).*?---", text_content)[-1]
+                    if re.search(r"---.*?---", text_content):
+                        text_content = re.split(r"---.*?---", text_content, maxsplit=1)[-1]
                     elif "[DRAFT:" in text_content.upper():
                         text_content = re.split(r"(?i)\[DRAFT:", text_content)[-1]
 
                     # Strip out any lingering STATUS tags (whether VERIFIED or ERROR)
                     text_content = re.sub(
-                        r"(?i)\[STATUS:[^\]]*\]?", "", text_content, flags=re.DOTALL
+                        r"(?i)\[STATUS:.*?\]", "", text_content, flags=re.DOTALL
                     )
 
                     text_content = text_content.strip()
@@ -204,9 +212,9 @@ async def event_generator(session_id: str, message: str):
                 # Tiny sleep to allow event loop to yield
                 await asyncio.sleep(0.01)
 
-            except asyncio.TimeoutError:
-                yield ": keepalive\n\n"
-                continue
+        finally:
+            if not task.done():
+                task.cancel()
     except Exception as e:
         error_msg = str(e)
         if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:

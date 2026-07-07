@@ -16,12 +16,13 @@ const LENSES = [
 function App() {
   const [theme, setTheme] = useState('light');
   const [thesis, setThesis] = useState('');
-  const [targetAudience, setTargetAudience] = useState('Level 3 (Average Academic)');
+  const [targetAudience, setTargetAudience] = useState('Level 1 (15-year-old)');
   const [phase, setPhase] = useState('input'); // input -> triage_loading -> triage -> debate
   const [selectedLensIndex, setSelectedLensIndex] = useState(null);
   const [sessionId, setSessionId] = useState(() => Math.random().toString(36).substring(7));
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [currentActivity, setCurrentActivity] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [triageResultText, setTriageResultText] = useState("");
   const [triageRejected, setTriageRejected] = useState(false);
@@ -72,18 +73,19 @@ function App() {
     };
   };
 
-  const startDebate = (lensIndex) => {
+  const startDebate = (lensIndex, isResume = false) => {
     const targetIndex = lensIndex !== undefined ? lensIndex : selectedLensIndex;
     if (targetIndex === null) return;
     
     setSelectedLensIndex(targetIndex);
     setPhase('debate');
     setIsTyping(true);
+    setCurrentActivity(isResume ? 'Resuming connection...' : 'Initializing debate...');
     setErrorMessage(null);
     
-    // Send the chosen number (1-8) to the backend to resume the session
-    const choiceNumber = targetIndex + 1;
-    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${choiceNumber}`);
+    // Send the chosen number (1-8) to the backend to start, OR empty string if resuming connection
+    const payload = isResume ? "" : (targetIndex + 1);
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${payload}`);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {
@@ -94,6 +96,37 @@ function App() {
           es.close();
           return;
       }
+
+      if (data.keepalive) {
+        const statuses = [
+          "Still thinking...",
+          "Connecting synapses...",
+          "Consulting the digital oracle...",
+          "Brewing some coffee...",
+          "Reticulating splines...",
+          "Pondering the infinite...",
+          "Cross-referencing human history...",
+          "Navigating the latent space..."
+        ];
+        setCurrentActivity(statuses[Math.floor(Math.random() * statuses.length)]);
+        return;
+      }
+      
+      if (data.author) {
+        let statusText = "Thinking...";
+        if (data.author === 'protagonist') statusText = "Formulating argument...";
+        if (data.author === 'antagonist') statusText = "Preparing counter-argument...";
+        if (data.author === 'judge') statusText = "Evaluating debate progress...";
+        if (data.author.startsWith('citation_checker')) statusText = "Verifying citations...";
+        if (data.author === 'synthesizer') statusText = "Synthesizing final report...";
+        if (data.tool_calls && data.tool_calls.length > 0) {
+          const tool = data.tool_calls[0].name;
+          if (tool === 'search_semantic_scholar') statusText = "Searching academic papers...";
+          if (tool === 'verify_url_status') statusText = "Checking reference link...";
+        }
+        setCurrentActivity(statusText);
+      }
+
       if (data.content && data.content.trim() !== "") {
         setMessages(prev => {
           if (data.updated_draft) {
@@ -113,8 +146,11 @@ function App() {
     };
 
     es.onerror = () => {
-      setIsTyping(false);
       es.close();
+      setErrorMessage("Connection lost. Automatically reconnecting in 5 seconds...");
+      setTimeout(() => {
+        startDebate(targetIndex, true);
+      }, 5000);
     };
   };
 
@@ -146,8 +182,16 @@ function App() {
       <main className="max-w-6xl mx-auto px-6 py-16">
         
         {errorMessage && (
-          <div className="max-w-3xl mx-auto mb-8 p-6 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 font-bold shadow-lg">
-            🚨 Backend Error: {errorMessage}
+          <div className="max-w-3xl mx-auto mb-8 p-6 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 font-bold shadow-lg flex justify-between items-center">
+            <div>🚨 Backend Error: {errorMessage}</div>
+            {phase === 'debate' && !errorMessage.includes('Automatically reconnecting') && (
+              <button 
+                onClick={() => startDebate(selectedLensIndex, true)} 
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition whitespace-nowrap ml-4 shadow"
+              >
+                Resume Connection
+              </button>
+            )}
           </div>
         )}
         
@@ -181,7 +225,7 @@ function App() {
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
                 >
-                  <option value="Level 1 (15-year old)">Level 1 (15-year old)</option>
+                  <option value="Level 1 (15-year-old)">Level 1 (15-year-old)</option>
                   <option value="Level 2 (Average Adult)">Level 2 (Average Adult)</option>
                   <option value="Level 3 (Average Academic)">Level 3 (Average Academic)</option>
                   <option value="Level 4 (PhD-Level)">Level 4 (PhD-Level)</option>
@@ -407,13 +451,27 @@ function App() {
                     ⏳
                   </div>
                   <div className="space-y-2">
-                    <div className="font-bold text-sm">Agents are thinking...</div>
+                    <div className="font-bold text-sm text-violet-600 dark:text-violet-400 mb-1">{currentActivity}</div>
                     <div className="p-4 rounded-2xl rounded-tl-none bg-gray-100 dark:bg-gray-800 flex gap-1.5 items-center w-16 h-12">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="mt-8 p-6 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-2xl text-red-700 dark:text-red-400 font-bold shadow-lg flex justify-between items-center">
+                  <div>🚨 Backend Error: {errorMessage}</div>
+                  {phase === 'debate' && !errorMessage.includes('Automatically reconnecting') && (
+                    <button 
+                      onClick={() => startDebate(selectedLensIndex, true)} 
+                      className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition whitespace-nowrap ml-4 shadow"
+                    >
+                      Resume Connection
+                    </button>
+                  )}
                 </div>
               )}
 
