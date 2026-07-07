@@ -331,26 +331,19 @@ function App() {
                 const authorName = isCitationChecker ? 'Citation Checker' : msg.author.toUpperCase();
                 
                 if (isCitationChecker) {
+                  if (msg.is_citation_error) return null;
+
                   return (
                     <div key={i} className="flex justify-center w-full my-2">
-                      {msg.is_citation_error ? (
-                        <div className="bg-red-50 dark:bg-red-900/20 border border-red-300 dark:border-red-800 p-4 rounded-xl text-red-800 dark:text-red-300 w-full max-w-2xl shadow-sm">
-                          <div className="mb-2 flex items-center gap-2 text-sm font-medium opacity-80">
-                            <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span> 
-                            <span className="flex items-center gap-1">❌ Removed Bad Citations from Draft</span>
-                          </div>
-                          <div className="italic text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
+                      <div className="inline-flex items-start flex-col gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium opacity-80 max-w-2xl">
+                        <div className="flex items-center gap-2">
+                          <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
+                          {msg.content === "No citations to check." ? (
+                            <span className="text-gray-500 dark:text-gray-400">No citations to check.</span>
+                          ) : msg.content === "Citations verified." ? (
+                            <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ Citations verified.</span>
+                          ) : null}
                         </div>
-                      ) : (
-                        <div className="inline-flex items-start flex-col gap-2 px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-xl text-sm font-medium opacity-80 max-w-2xl">
-                          <div className="flex items-center gap-2">
-                            <span className="opacity-70 text-xs uppercase tracking-wider">{authorName}:</span>
-                            {msg.content === "No citations to check." ? (
-                              <span className="text-gray-500 dark:text-gray-400">No citations to check.</span>
-                            ) : msg.content === "Citations verified." ? (
-                              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">✓ Citations verified.</span>
-                            ) : null}
-                          </div>
                           {msg.content !== "No citations to check." && msg.content !== "Citations verified." && (
                             <span className="text-emerald-600 dark:text-emerald-400 whitespace-pre-wrap leading-relaxed">{msg.content.replace("Citations verified.\n\n", "✓ Citations verified.\n\n")}</span>
                           )}
