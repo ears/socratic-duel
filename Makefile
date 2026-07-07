@@ -60,6 +60,8 @@ deploy:
 	@uv run python -c "input('>>> If all prerequisites are met, press ENTER for deployment... ')"
 	@echo "--- Starting automatic Cloud Build and Deployment..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --no-confirm-project --project {p}', shell=True))"
+	@echo "--- Increasing Cloud Run timeout to 60 minutes to support long debates..."
+	@gcloud run services update socratic-duel-live --timeout=3600 --region=us-east1 --quiet
 	@echo "--- Making the service public (Public Access)..."
 	@gcloud run services add-iam-policy-binding socratic-duel-live --region=us-east1 --member=allUsers --role=roles/run.invoker --quiet
 
