@@ -348,7 +348,6 @@ function App() {
                             <span className="text-emerald-600 dark:text-emerald-400 whitespace-pre-wrap leading-relaxed">{msg.content.replace("Citations verified.\n\n", "✓ Citations verified.\n\n")}</span>
                           )}
                         </div>
-                      )}
                     </div>
                   );
                 }
