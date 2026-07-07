@@ -331,7 +331,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 # 1.5. Protagonist Citation Auditor
 citation_checker_proto = Agent(
     name="citation_checker_proto",
-    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
+    model=Gemini(model=MID_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
@@ -339,7 +339,7 @@ Review the following draft by the Protagonist: {protagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks. 
 2. SPECIAL RULE FOR GROUNDING LINKS: The Gemini API may automatically append raw URLs, DOIs, or internal tracking links (like `grounding-api-redirect`) to the end of the text. You MUST SILENTLY DELETE all raw, unformatted URLs, standalone DOIs, and tracking links from the text. Do NOT verify them, and do NOT output an `ERROR:` tag for them.
 3. You must ONLY verify URLs that are formatted as proper inline Markdown links (e.g., `[Text](http://...)`). For these:
-   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the shield emoji `[🛡️]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
+   - The URL is not dead or hallucinated. NEVER assume a URL is valid based on its appearance. You are STRICTLY FORBIDDEN from verifying a URL without physically pinging it. You MUST explicitly call the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the shield emoji `[🛡️]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data. (NOTE: If the URL is bot protected via 403/401, you MUST bypass this check and assume the content is congruent).
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
@@ -386,7 +386,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 # 2.5. Antagonist Citation Auditor
 citation_checker_anto = Agent(
     name="citation_checker_anto",
-    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
+    model=Gemini(model=MID_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
@@ -394,7 +394,7 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 1. Scan the text exclusively for direct URLs/hyperlinks. 
 2. SPECIAL RULE FOR GROUNDING LINKS: The Gemini API may automatically append raw URLs, DOIs, or internal tracking links (like `grounding-api-redirect`) to the end of the text. You MUST SILENTLY DELETE all raw, unformatted URLs, standalone DOIs, and tracking links from the text. Do NOT verify them, and do NOT output an `ERROR:` tag for them.
 3. You must ONLY verify URLs that are formatted as proper inline Markdown links (e.g., `[Text](http://...)`). For these:
-   - The URL is not dead or hallucinated. You MUST use the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the shield emoji `[🛡️]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
+   - The URL is not dead or hallucinated. NEVER assume a URL is valid based on its appearance. You are STRICTLY FORBIDDEN from verifying a URL without physically pinging it. You MUST explicitly call the `verify_url_status` tool to check every single URL. If it returns 404, or if the returned Title indicates a missing page, a login wall, or a bot check (e.g., "Verification required", "Not Found", "Page Unavailable"), you MUST REJECT it as a dead link. However, if the tool returns 403 or 401 with "(Bot Protection Active...)", DO NOT automatically reject the link, because many real academic publishers block bots; in that case, assume the URL is alive, but you MUST append the shield emoji `[🛡️]` immediately after the Markdown hyperlink in the draft to transparently inform the user.
    - The URL points to a legitimate, high-quality academic or journalistic source (e.g., university domains, DOIs, recognized journals, major news outlets). STRICTLY REJECT links to commercial bookstores, Wikipedia, Goodreads, Amazon, or user-generated blogs.
    - Content Congruence: The actual content found at the URL must align with and empirically support the specific claim made in the text. Reject the citation if the source is real but irrelevant or misrepresents the data. (NOTE: If the URL is bot protected via 403/401, you MUST bypass this check and assume the content is congruent).
 4. If a URL is dead, hallucinated, or non-academic (like Goodreads), remove the URL and the immediate claim from the text, gently adjusting the sentence.
