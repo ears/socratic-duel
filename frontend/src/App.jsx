@@ -311,6 +311,16 @@ function App() {
                       <span>Target Audience: {targetAudience}</span>
                     </div>
                   )}
+                  {thesis && (
+                    <div className="mt-4 w-full max-w-3xl text-left bg-[var(--card-bg)] border border-[var(--border-color)] rounded-2xl p-5 shadow-sm">
+                      <div className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-bold mb-2 flex items-center gap-2">
+                        <span>📝</span> Original Thesis
+                      </div>
+                      <div className="text-lg font-medium italic opacity-90">
+                        "{thesis}"
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
