@@ -33,7 +33,7 @@ run:
 
 backend:
 	@echo "--- Starting Uvicorn API Server..."
-	uv run uvicorn app.main:app --reload --reload-dir app
+	uv run python -m uvicorn app.main:app --reload --reload-dir app
 
 frontend:
 	@echo "--- Starting Vite Development Server..."
