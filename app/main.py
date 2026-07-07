@@ -121,7 +121,7 @@ async def event_generator(session_id: str, message: str):
                     elif "VERIFIED" in status_part.upper():
                         matches = re.findall(
                             r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\]",
-                            text_content,
+                            draft_part,
                             re.IGNORECASE,
                         )
                         if matches:
