@@ -240,8 +240,8 @@ async def event_generator(session_id: str, message: str):
             pass
     except Exception as e:
         error_msg = str(e)
-        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
-            error_msg = "The AI model is currently experiencing high demand and we hit a rate limit. Please wait a moment and try again."
+        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "503" in error_msg or "UNAVAILABLE" in error_msg:
+            error_msg = "Google's AI service is currently overloaded by high demand. Please wait a moment, refresh the page, and try again!"
         yield f"data: {json.dumps({'author': 'system', 'error': error_msg})}\n\n"
 
 

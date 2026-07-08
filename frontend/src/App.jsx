@@ -153,10 +153,8 @@ function App() {
 
     es.onerror = () => {
       es.close();
-      setErrorMessage("Connection lost. Automatically reconnecting in 5 seconds...");
-      setTimeout(() => {
-        startDebate(targetIndex, true);
-      }, 5000);
+      setErrorMessage("Google's AI service is currently overloaded by high demand. Please refresh the page and try again!");
+      setIsTyping(false);
     };
   };
 
