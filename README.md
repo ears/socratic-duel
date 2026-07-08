@@ -122,6 +122,7 @@ pie title "Agent Model Allocation (Vertex AI: Global)"
 - **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
 - **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
 - **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
+- **Persistent Serverless Memory:** Deploys a Google Cloud SQL (PostgreSQL) database via automated ADK Terraform to provide fault-tolerant persistent debate transcripts, allowing the UI to seamlessly "Resume" long-running debates even if the Cloud Run backend container restarts.
 
 ## Project Structure
 
