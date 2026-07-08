@@ -13,23 +13,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService, VertexAiSessionService
+from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 from app.agent import app as adk_app
 from app.agent import demo_mode_ctx
 
 app = FastAPI(title="Socratic Duel API")
-
-# Smart Environment Detection: Use persistent Vertex AI Sessions in Cloud Run (K_SERVICE),
-# otherwise default to blazing fast in-memory sessions for local dev and tests.
-if os.environ.get("K_SERVICE"):
-    session_service = VertexAiSessionService()
-else:
-    session_service = InMemorySessionService()
-
-runner = Runner(app=adk_app, session_service=session_service)
+runner = InMemoryRunner(app=adk_app)
 
 # Allow CORS for local dev
 app.add_middleware(
