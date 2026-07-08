@@ -190,6 +190,7 @@ If you want to automate installation, running both servers simultaneously, and d
 - `make run`: Starts both the backend and frontend simultaneously.
 - `make backend`: Starts only the FastAPI Python backend (useful for debugging in a dedicated terminal).
 - `make frontend`: Starts only the React UI development server (useful for debugging in a dedicated terminal).
+- `make test`: Runs all unit and integration tests cleanly.
 - `make deploy`: Automatically builds and deploys the Socratic Duel app to Google Cloud Run.
 - `make undeploy`: Tears down the Google Cloud Run service.
 
