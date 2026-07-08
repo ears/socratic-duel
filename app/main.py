@@ -31,6 +31,8 @@ app.add_middleware(
 )
 
 
+active_sessions = {}
+
 async def event_generator(session_id: str, message: str):
     """
     Streams ADK events to the client using Server-Sent Events (SSE).
@@ -47,30 +49,47 @@ async def event_generator(session_id: str, message: str):
             )
 
         content = None
+        is_reconnect = False
         if message and message.strip() != "":
             content = types.Content(parts=[types.Part.from_text(text=message)], role="user")
+        else:
+            is_reconnect = True
             
-        queue = asyncio.Queue()
+        if is_reconnect and session_id in active_sessions:
+            queue = active_sessions[session_id]
+        else:
+            queue = asyncio.Queue()
+            active_sessions[session_id] = queue
 
-        async def run_model():
-            try:
-                async for event in runner.run_async(
-                    user_id="default_user", session_id=session_id, new_message=content
-                ):
-                    await queue.put(event)
-                await queue.put(None)
-            except Exception as e:
-                await queue.put(e)
+            async def run_model():
+                try:
+                    async for event in runner.run_async(
+                        user_id="default_user", session_id=session_id, new_message=content
+                    ):
+                        await queue.put(event)
+                    await queue.put(None)
+                except Exception as e:
+                    await queue.put(e)
+                finally:
+                    async def delayed_cleanup():
+                        await asyncio.sleep(3600)
+                        if active_sessions.get(session_id) is queue:
+                            del active_sessions[session_id]
+                    asyncio.create_task(delayed_cleanup())
 
-        task = asyncio.create_task(run_model())
+            asyncio.create_task(run_model())
 
         try:
             while True:
                 try:
                     event = await asyncio.wait_for(queue.get(), timeout=15.0)
                     if event is None:
+                        if active_sessions.get(session_id) is queue:
+                            del active_sessions[session_id]
                         break
                     if isinstance(event, Exception):
+                        if active_sessions.get(session_id) is queue:
+                            del active_sessions[session_id]
                         raise event
                 except asyncio.TimeoutError:
                     yield f"data: {json.dumps({'keepalive': True})}\n\n"
@@ -152,7 +171,7 @@ async def event_generator(session_id: str, message: str):
                             )
                             if matches:
                                 text_content = (
-                                    "Citations verified.\n\n🛡️ Bot Protected:\n"
+                                    "Citations verified.\n\n🛡️ bot-protected:\n"
                                     + "\n".join([f"- {t}" for t, u in matches])
                                 )
                             else:
@@ -216,8 +235,9 @@ async def event_generator(session_id: str, message: str):
             yield f"data: {json.dumps({'status': 'complete'})}\n\n"
 
         finally:
-            if not task.done():
-                task.cancel()
+            # We do NOT cancel the model task here so it can continue running in the background.
+            # This allows mobile browsers to successfully reconnect and resume receiving events.
+            pass
     except Exception as e:
         error_msg = str(e)
         if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg:
