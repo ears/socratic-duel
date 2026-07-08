@@ -66,7 +66,7 @@ function App() {
         const data = await response.json();
         if (data.messages && data.messages.length > 0) {
           setMessages(data.messages);
-          setPhase('debate');
+          startDebate(null, true);
         }
       } catch (err) {
         console.error("Failed to fetch session history:", err);
@@ -115,9 +115,9 @@ function App() {
 
   const startDebate = (lensIndex, isResume = false) => {
     const targetIndex = lensIndex !== undefined ? lensIndex : selectedLensIndex;
-    if (targetIndex === null) return;
+    if (targetIndex === null && !isResume) return;
     
-    setSelectedLensIndex(targetIndex);
+    if (!isResume) setSelectedLensIndex(targetIndex);
     setPhase('debate');
     setIsTyping(true);
     setCurrentActivity(isResume ? 'Resuming connection...' : 'Initializing debate...');
