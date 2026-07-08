@@ -68,3 +68,28 @@ def test_api_chat_start_debate():
             pass
             
     assert has_protagonist_response, "The protagonist did not produce an initial argument."
+
+def test_api_chat_rejected_thesis():
+    """Test that Triage and analyze properly rejects an invalid/short thesis."""
+    response = client.get("/api/chat?message=bad&session_id=test_reject_session&demo_mode=true")
+    assert response.status_code == 200
+    
+    events = []
+    for line in response.iter_lines():
+        if line and isinstance(line, str) and line.startswith("data: "):
+            events.append(line)
+            
+    has_rejection = False
+    for event_str in events:
+        event_json_str = event_str[6:]
+        if event_json_str.strip() == "": continue
+        
+        try:
+            event = json.loads(event_json_str)
+            if event.get("author") == "interactive_planner" and "[STATUS: REJECTED]" in event.get("content", ""):
+                has_rejection = True
+                break
+        except json.JSONDecodeError:
+            pass
+            
+    assert has_rejection, "The analysis phase did not successfully reject a bad thesis."
