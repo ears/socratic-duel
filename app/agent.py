@@ -230,21 +230,7 @@ class EscalationChecker(BaseAgent):
             consensus = True
 
         # Escalate after 5 iterations OR if the Judge declared consensus
-        if iterations >= 5 and not consensus:
-            # Yield a final message from the Judge explaining the hard limit before escalating
-            yield Event(
-                author="judge",
-                content=types.Content(
-                    role="model",
-                    parts=[
-                        types.Part.from_text(
-                            text="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis."
-                        )
-                    ],
-                ),
-                actions=EventActions(escalate=True),
-            )
-        elif consensus:
+        if iterations >= 5 or consensus:
             yield Event(author=self.name, actions=EventActions(escalate=True))
         else:
             yield Event(author=self.name)
