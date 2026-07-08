@@ -209,3 +209,5 @@ tools/a2a-inspector/
 *-key.json
 credentials*.json
 
+*.tfstate
+*.tfstate.*
