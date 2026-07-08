@@ -323,6 +323,7 @@ async def append_proto_transcript(callback_context: CallbackContext) -> None:
     import re
     if re.search(r"---.*?---", output):
         output = re.split(r"---.*?---", output, maxsplit=1)[-1].strip()
+    output = re.sub(r"(?i)\[STATUS:.*?\]", "", output, flags=re.DOTALL).strip()
     callback_context.state["full_transcript"] = transcript + "\n\n### Protagonist:\n" + output
     callback_context.state["protagonist_output"] = output
     callback_context.state["current_step"] = "proto_check_done"
@@ -334,6 +335,7 @@ async def append_anto_transcript(callback_context: CallbackContext) -> None:
     import re
     if re.search(r"---.*?---", output):
         output = re.split(r"---.*?---", output, maxsplit=1)[-1].strip()
+    output = re.sub(r"(?i)\[STATUS:.*?\]", "", output, flags=re.DOTALL).strip()
     callback_context.state["full_transcript"] = transcript + "\n\n### Antagonist:\n" + output
     callback_context.state["antagonist_output"] = output
     callback_context.state["current_step"] = "anto_check_done"
