@@ -7,7 +7,7 @@ generated_at: '2026-07-04T10:12:42.345436+00:00'
 language: python
 create_params:
   deployment_target: cloud_run
-  session_type: in_memory
+  session_type: cloud_sql
   cicd_runner: skip
   is_a2a: true
   agent_guidance_filename: GEMINI.md

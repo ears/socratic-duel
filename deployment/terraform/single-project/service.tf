@@ -12,6 +12,70 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Generate a random password for the database user
+resource "random_password" "db_password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+# Cloud SQL Instance
+resource "google_sql_database_instance" "session_db" {
+  project          = var.project_id
+  name             = "${var.project_name}-db"
+  database_version = "POSTGRES_15"
+  region           = var.region
+  deletion_protection = false
+
+  settings {
+    tier = "db-custom-1-3840"
+
+    backup_configuration {
+      enabled = false
+    }
+    
+    # Enable IAM authentication
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = "on"
+    }
+  }
+
+  depends_on = [resource.google_project_service.services]
+}
+
+# Cloud SQL Database
+resource "google_sql_database" "database" {
+  project  = var.project_id
+  name     = "${var.project_name}" # Use project name for DB to avoid conflict with default 'postgres'
+  instance = google_sql_database_instance.session_db.name
+}
+
+# Cloud SQL User
+resource "google_sql_user" "db_user" {
+  project  = var.project_id
+  name     = "${var.project_name}" # Use project name for user to avoid conflict with default 'postgres'
+  instance = google_sql_database_instance.session_db.name
+  password = google_secret_manager_secret_version.db_password.secret_data
+}
+
+# Store the password in Secret Manager
+resource "google_secret_manager_secret" "db_password" {
+  project   = var.project_id
+  secret_id = "${var.project_name}-db-password"
+
+  replication {
+    auto {}
+  }
+
+  depends_on = [resource.google_project_service.services]
+}
+
+resource "google_secret_manager_secret_version" "db_password" {
+  secret      = google_secret_manager_secret.db_password.id
+  secret_data = random_password.db_password.result
+}
+
 
 resource "google_cloud_run_v2_service" "app" {
   name                = var.project_name
@@ -53,6 +117,37 @@ resource "google_cloud_run_v2_service" "app" {
           memory = "4Gi"
         }
       }
+      # Mount the volume
+      volume_mounts {
+        name       = "cloudsql"
+        mount_path = "/cloudsql"
+      }
+
+      # Environment variables
+      env {
+        name  = "INSTANCE_CONNECTION_NAME"
+        value = google_sql_database_instance.session_db.connection_name
+      }
+
+      env {
+        name = "DB_PASS"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.db_password.secret_id
+            version = "latest"
+          }
+        }
+      }
+
+      env {
+        name  = "DB_NAME"
+        value = "${var.project_name}"
+      }
+
+      env {
+        name  = "DB_USER"
+        value = "${var.project_name}"
+      }
 
       env {
         name  = "LOGS_BUCKET_NAME"
@@ -74,6 +169,13 @@ resource "google_cloud_run_v2_service" "app" {
     }
 
     session_affinity = true
+    # Cloud SQL volume
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [google_sql_database_instance.session_db.connection_name]
+      }
+    }
   }
 
   traffic {
@@ -92,5 +194,7 @@ resource "google_cloud_run_v2_service" "app" {
   # Make dependencies conditional to avoid errors.
   depends_on = [
     resource.google_project_service.services,
+    google_sql_user.db_user,
+    google_secret_manager_secret_version.db_password,
   ]
 }
