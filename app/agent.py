@@ -46,7 +46,7 @@ demo_mode_ctx = ContextVar('demo_mode_ctx', default=True)
 class DynamicGemini(Gemini):
     async def generate_content_async(self, llm_request, stream=False, **kwargs):
         demo_mode = demo_mode_ctx.get()
-        selected_model = "gemini-3.5-flash" if demo_mode else "gemini-3.1-pro-preview"
+        selected_model = "gemini-3.5-flash" if demo_mode else self.model
         temp_model = self.model_copy(update={'model': selected_model}) if hasattr(self, 'model_copy') else self.copy(update={'model': selected_model})
         temp_model.__class__ = Gemini
         async for chunk in temp_model.generate_content_async(llm_request, stream=stream, **kwargs):
