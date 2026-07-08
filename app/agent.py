@@ -212,6 +212,32 @@ async def declare_consensus(tool_context: ToolContext) -> dict:
     return {"status": "Consensus declared. The debate loop will now terminate."}
 
 
+class PreJudgeChecker(BaseAgent):
+    """Intercepts the final round before the judge runs."""
+
+    async def _run_async_impl(
+        self, ctx: InvocationContext
+    ) -> AsyncGenerator[Event, None]:
+        iterations = ctx.session.state.get("loop_iterations", 0)
+        
+        # If it's the 5th iteration (0-indexed 4), skip the judge and escalate
+        if iterations >= 4:
+            yield Event(
+                author="judge",
+                content=types.Content(
+                    role="model",
+                    parts=[
+                        types.Part.from_text(
+                            text="[DECISION: END] The debate has reached the maximum allowed rounds (5). I am stepping in to formally conclude the dialogue so we can proceed to final synthesis."
+                        )
+                    ],
+                ),
+                actions=EventActions(escalate=True),
+            )
+        else:
+            yield Event(author=self.name)
+
+
 class EscalationChecker(BaseAgent):
     """Stops the LoopAgent when maximum iterations are reached or consensus is declared."""
 
@@ -468,6 +494,7 @@ If the debate has stagnated, you MUST also call the `declare_consensus` tool."""
 )
 
 # Escalation to break the loop
+pre_judge_checker = PreJudgeChecker(name="pre_judge_checker")
 escalation_checker = EscalationChecker(name="escalator")
 
 # Interactive Reflection Loop
@@ -478,6 +505,7 @@ debate_loop = LoopAgent(
         citation_checker_proto,
         antagonist,
         citation_checker_anto,
+        pre_judge_checker,
         judge,
         escalation_checker,
     ],
