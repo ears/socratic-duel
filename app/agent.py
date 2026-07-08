@@ -69,10 +69,9 @@ class DynamicGemini(Gemini):
 class TokenCounterPlugin(BasePlugin):
     async def before_model_callback(self, *, callback_context, llm_request, **kwargs):
         try:
-            agent_name = getattr(callback_context, "agent_name", "Unknown Agent")
-            # If the model is DynamicGemini, the actual runtime model is printed by DynamicGemini itself.
-            # But we can still log the baseline model here.
-            model_obj = getattr(callback_context.agent, "model", None)
+            node = getattr(callback_context, "node", None)
+            agent_name = getattr(node, "name", "Unknown Agent")
+            model_obj = getattr(node, "model", None)
             model_name = getattr(model_obj, "model", "Unknown Model")
             print(f"[DEBUG - LLM CALL] Agent: '{agent_name}' initiated call. Base model config: {model_name}")
         except Exception:
