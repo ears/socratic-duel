@@ -244,9 +244,6 @@ function App() {
         {phase === 'input' && (
           <div className="max-w-3xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="text-center space-y-4">
-              <div className="inline-block px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium text-sm mb-4">
-                Phase 1: Thesis Triage
-              </div>
               <h2 className="text-5xl font-extrabold tracking-tight">Propose your Thesis</h2>
               <p className="text-xl opacity-70 leading-relaxed">
                 Enter an argument to be rigorously stress-tested by two intellectual black belts.
