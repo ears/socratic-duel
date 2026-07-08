@@ -17,6 +17,7 @@ from google.adk.runners import InMemoryRunner
 from google.genai import types
 
 from app.agent import app as adk_app
+from app.agent import demo_mode_ctx
 
 app = FastAPI(title="Socratic Duel API")
 runner = InMemoryRunner(app=adk_app)
@@ -33,7 +34,7 @@ app.add_middleware(
 
 active_sessions = {}
 
-async def event_generator(session_id: str, message: str):
+async def event_generator(session_id: str, message: str, demo_mode: bool = True):
     """
     Streams ADK events to the client using Server-Sent Events (SSE).
     This enables the 'Live Dialectical Debate UI' (Phase 3) where the user can 'read along'.
@@ -44,9 +45,12 @@ async def event_generator(session_id: str, message: str):
             app_name="app", user_id="default_user", session_id=session_id
         )
         if not session:
-            await runner.session_service.create_session(
+            session = await runner.session_service.create_session(
                 app_name="app", user_id="default_user", session_id=session_id
             )
+        
+        session.state["demo_mode"] = demo_mode
+        await runner.session_service.save_session(session)
 
         content = None
         is_reconnect = False
@@ -62,6 +66,7 @@ async def event_generator(session_id: str, message: str):
             active_sessions[session_id] = queue
 
             async def run_model():
+                demo_mode_ctx.set(demo_mode)
                 try:
                     async for event in runner.run_async(
                         user_id="default_user", session_id=session_id, new_message=content
@@ -246,13 +251,13 @@ async def event_generator(session_id: str, message: str):
 
 
 @app.get("/api/chat")
-async def chat_endpoint(session_id: str, message: str):
+async def chat_endpoint(session_id: str, message: str, demo_mode: str = "true"):
     """
     Initiates a chat stream with the ADK app.
     Usage: EventSource(`/api/chat?session_id=123&message=Hello`)
     """
     return StreamingResponse(
-        event_generator(session_id, message), media_type="text/event-stream"
+        event_generator(session_id, message, demo_mode.lower() == "true"), media_type="text/event-stream"
     )
 
 

@@ -19,6 +19,7 @@ function App() {
   const [targetAudience, setTargetAudience] = useState('Level 1 (15-year-old)');
   const [phase, setPhase] = useState('input'); // input -> triage_loading -> triage -> debate
   const [selectedLensIndex, setSelectedLensIndex] = useState(null);
+  const [demoMode, setDemoMode] = useState(true);
   const [sessionId, setSessionId] = useState(() => Math.random().toString(36).substring(7));
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -46,7 +47,7 @@ function App() {
     
     // Call backend to trigger Phase 1 Triage
     const payload = `[Target Audience: ${targetAudience}]\n\n${thesis}`;
-    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(payload)}`);
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${encodeURIComponent(payload)}&demo_mode=${demoMode}`);
     eventSourceRef.current = es;
     
     es.onmessage = (event) => {
@@ -85,7 +86,7 @@ function App() {
     
     // Send the chosen number (1-8) to the backend to start, OR empty string if resuming connection
     const payload = isResume ? "" : (targetIndex + 1);
-    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${payload}`);
+    const es = new EventSource(`/api/chat?session_id=${sessionId}&message=${payload}&demo_mode=${demoMode}`);
     eventSourceRef.current = es;
 
     es.onmessage = (event) => {
@@ -235,6 +236,21 @@ function App() {
                   <option value="Level 4 (PhD-Level)">Level 4 (PhD-Level)</option>
                 </select>
               </div>
+              <div className="flex items-center gap-3">
+                <label className="text-sm font-semibold opacity-70 whitespace-nowrap cursor-pointer" onClick={() => setDemoMode(!demoMode)}>
+                  Demo Mode
+                  <span className="block text-xs font-normal opacity-60">faster, less costly</span>
+                </label>
+                <button 
+                  onClick={() => setDemoMode(!demoMode)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-violet-500 ${demoMode ? 'bg-violet-600' : 'bg-gray-400 dark:bg-gray-600'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${demoMode ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-6">
               <button 
                 onClick={analyzeTriage}
                 disabled={!thesis.trim()}
@@ -351,7 +367,7 @@ function App() {
                 <div className="flex flex-col items-center gap-3">
                   <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-violet-100 to-indigo-100 dark:from-violet-900/40 dark:to-indigo-900/40 border border-violet-200 dark:border-violet-800/50 text-violet-900 dark:text-violet-100 rounded-full font-extrabold text-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
                     <span className="text-3xl drop-shadow-sm">{LENSES[selectedLensIndex]?.icon}</span>
-                    <span>Active Lens: {LENSES[selectedLensIndex]?.name}</span>
+                    <span>Active Lens: {LENSES[selectedLensIndex]?.name} {demoMode && <span className="opacity-70 text-sm font-normal">(Demo Mode)</span>}</span>
                   </div>
                   {targetAudience && (
                     <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-[var(--card-bg)] border border-[var(--border-color)] opacity-80 rounded-full text-sm font-semibold shadow-sm transition-opacity hover:opacity-100">

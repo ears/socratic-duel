@@ -39,7 +39,21 @@ from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events import Event, EventActions
 from typing import AsyncGenerator
 from google.adk.plugins.base_plugin import BasePlugin
+from contextvars import ContextVar
 
+demo_mode_ctx = ContextVar('demo_mode_ctx', default=True)
+
+class DynamicGemini(Gemini):
+    async def generate_content_async(self, llm_request, stream=False, **kwargs):
+        demo_mode = demo_mode_ctx.get()
+        selected_model = "gemini-3.5-flash" if demo_mode else "gemini-3.1-pro-preview"
+        temp_model = Gemini(
+            model=selected_model, 
+            http_options=self.http_options, 
+            generate_content_config=self.generate_content_config
+        )
+        async for chunk in temp_model.generate_content_async(llm_request, stream=stream, **kwargs):
+            yield chunk
 
 class TokenCounterPlugin(BasePlugin):
     async def after_model_callback(self, *, callback_context, llm_response):
@@ -394,7 +408,7 @@ low_temp_generation_config = types.GenerateContentConfig(
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
-    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents="none",
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
@@ -473,7 +487,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
 # 2. Antagonist (Contrarian)
 antagonist = Agent(
     name="antagonist",
-    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents="none",
 instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
@@ -621,7 +635,7 @@ debate_loop = LoopAgent(
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
-    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     include_contents="none",
     instruction="""You are the Epistemic Synthesizer for Socratic Duel.
@@ -705,7 +719,7 @@ CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial
 # Root Orchestrator (HITL Gatekeeper)
 root_agent = Agent(
     name="interactive_planner",
-    model=Gemini(model=STRONG_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
     before_agent_callback=set_planner_phase,
     instruction="""You are the Orchestrator for Socratic Duel.
 
