@@ -58,6 +58,23 @@ function App() {
 
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
+  // Attempt to restore session history on load
+  useEffect(() => {
+    async function fetchHistory() {
+      try {
+        const response = await fetch(`/api/history?session_id=${sessionId}`);
+        const data = await response.json();
+        if (data.messages && data.messages.length > 0) {
+          setMessages(data.messages);
+          setPhase('debate');
+        }
+      } catch (err) {
+        console.error("Failed to fetch session history:", err);
+      }
+    }
+    fetchHistory();
+  }, [sessionId]);
+
   const analyzeTriage = () => {
     if (!thesis.trim()) return;
     setPhase('triage_loading');
