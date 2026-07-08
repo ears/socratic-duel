@@ -13,14 +13,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from google.adk.runners import InMemoryRunner
+from google.adk.runners import Runner
+from app.app_utils import services
 from google.genai import types
 
 from app.agent import app as adk_app
 from app.agent import demo_mode_ctx
 
 app = FastAPI(title="Socratic Duel API")
-runner = InMemoryRunner(app=adk_app)
+runner = Runner(
+    app=adk_app,
+    session_service=services.get_session_service()
+)
 
 # Allow CORS for local dev
 app.add_middleware(

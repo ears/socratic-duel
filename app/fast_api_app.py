@@ -34,9 +34,15 @@ from app.app_utils.typing import Feedback
 
 load_dotenv()
 setup_telemetry()
-_, project_id = google.auth.default()
-logging_client = google_cloud_logging.Client()
-logger = logging_client.logger(__name__)
+import logging
+logger = logging.getLogger(__name__)
+
+try:
+    _, project_id = google.auth.default()
+    logging_client = google_cloud_logging.Client()
+    logger = logging_client.logger(__name__)
+except Exception as e:
+    logger.warning(f"Google Cloud Auth failed, falling back to standard logger. ({e})")
 allow_origins = (
     os.getenv("ALLOW_ORIGINS", "").split(",") if os.getenv("ALLOW_ORIGINS") else None
 )
