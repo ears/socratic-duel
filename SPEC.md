@@ -45,7 +45,7 @@ The backend must consist of the following orchestrated ADK components. To optimi
 - **`STRONG_MODEL`** (`gemini-3.1-pro-preview`): Used by the Root Orchestrator, Debaters, and Synthesizer for high-level reasoning.
 - **`MID_MODEL`** (`gemini-3.5-flash`): Used by the Semantic Judge and Triage Researcher.
 - **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid integrity auditors.
-- **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper overrides `STRONG_MODEL` assignments, routing the heavy agents to `gemini-3.5-flash` to optimize speed and cost during testing or casual use.
+- **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper cascades models: overriding `STRONG_MODEL` assignments to `gemini-3.5-flash` and `MID_MODEL` assignments to `gemini-2.5-flash` to optimize speed and cost during testing or casual use.
 
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
 - **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
