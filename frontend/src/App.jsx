@@ -20,7 +20,29 @@ function App() {
   const [phase, setPhase] = useState('input'); // input -> triage_loading -> triage -> debate
   const [selectedLensIndex, setSelectedLensIndex] = useState(null);
   const [demoMode, setDemoMode] = useState(true);
-  const [sessionId, setSessionId] = useState(() => Math.random().toString(36).substring(7));
+  const [sessionId, setSessionId] = useState(() => {
+    // 1. Check URL parameters for a shared link
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('session')) {
+      const sid = params.get('session');
+      localStorage.setItem('socratic_session', sid);
+      return sid;
+    }
+    // 2. Check localStorage for an existing session
+    const saved = localStorage.getItem('socratic_session');
+    if (saved) return saved;
+    // 3. Generate a new session and save it
+    const newSession = Math.random().toString(36).substring(7);
+    localStorage.setItem('socratic_session', newSession);
+    return newSession;
+  });
+
+  // Keep URL in sync with the current session ID so they can bookmark it
+  useEffect(() => {
+    const url = new URL(window.location);
+    url.searchParams.set('session', sessionId);
+    window.history.replaceState({}, '', url);
+  }, [sessionId]);
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [currentActivity, setCurrentActivity] = useState('');
@@ -169,7 +191,9 @@ function App() {
               setThesis('');
               setSelectedLensIndex(null);
               setMessages([]);
-              setSessionId(Math.random().toString(36).substring(7));
+              const newSid = Math.random().toString(36).substring(7);
+              setSessionId(newSid);
+              localStorage.setItem('socratic_session', newSid);
             }}
             className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer text-left"
           >
