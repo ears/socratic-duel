@@ -46,7 +46,13 @@ demo_mode_ctx = ContextVar('demo_mode_ctx', default=True)
 class DynamicGemini(Gemini):
     async def generate_content_async(self, llm_request, stream=False, **kwargs):
         demo_mode = demo_mode_ctx.get()
-        selected_model = "gemini-3.5-flash" if demo_mode else self.model
+        selected_model = self.model
+        if demo_mode:
+            if self.model == STRONG_MODEL:
+                selected_model = "gemini-3.5-flash"
+            elif self.model == MID_MODEL:
+                selected_model = "gemini-2.5-flash"
+                
         temp_model = self.model_copy(update={'model': selected_model}) if hasattr(self, 'model_copy') else self.copy(update={'model': selected_model})
         temp_model.__class__ = Gemini
         async for chunk in temp_model.generate_content_async(llm_request, stream=stream, **kwargs):
@@ -585,7 +591,7 @@ async def skip_early_judge_callback(
 
 judge = Agent(
     name="judge",
-    model=Gemini(model=MID_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=MID_MODEL, http_options=default_http_options),
     before_model_callback=skip_early_judge_callback,
     after_agent_callback=append_judge_transcript,
     include_contents="none",
@@ -680,7 +686,7 @@ research_pipeline = SequentialAgent(
 # 1.5. Triage Researcher (Sub-Agent for Planner)
 triage_researcher = Agent(
     name="triage_researcher",
-    model=Gemini(model=MID_MODEL, http_options=default_http_options),
+    model=DynamicGemini(model=MID_MODEL, http_options=default_http_options),
     generate_content_config=default_generation_config,
     instruction="""You are a research assistant. The Orchestrator will give you a user's thesis.
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
