@@ -629,6 +629,10 @@ debate_loop = LoopAgent(
     max_iterations=5,
 )
 
+async def mark_synthesis_complete(callback_context: CallbackContext) -> None:
+    callback_context.state["synthesis_complete"] = True
+    await append_token_count(callback_context)
+
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
@@ -661,7 +665,7 @@ CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including 
 CRITICAL QUALITY CHECK: You MUST verify that there are absolutely NO placeholders, missing variables, or generic "[Insert text here]" brackets in your final output. Resolve all dynamic content using the provided context. Finally, ensure the text is free of raw LaTeX or math formatting artifacts. You are STRICTLY FORBIDDEN from using inline math mode, dollar signs for formatting, or LaTeX macros (e.g., `$\\approx -0,17\\text{ mmol/L}$ (ca. $5\\%$)` or `$Macht/keine Macht$`). You must convert all such instances into plain, readable unicode text (e.g., 'approx. -0.17 mmol/L (ca. 5%)' or '(Macht/keine Macht)').""",
     tools=[google_search, search_semantic_scholar],
     output_key="final_report",
-    after_agent_callback=append_token_count,
+    after_agent_callback=mark_synthesis_complete,
 )
 
 # Sequential Pipeline
@@ -686,14 +690,19 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid d
 )
 
 async def set_planner_phase(callback_context: CallbackContext) -> None:
-    if "chosen_lens" in callback_context.state:
+    if callback_context.state.get("synthesis_complete"):
+        callback_context.state["phase_instructions"] = """PHASE 3 (Complete):
+The research pipeline and synthesis are fully complete.
+DO NOT call any tools. DO NOT summarize the report.
+Simply output a brief message indicating that the synthesis is complete."""
+    elif "chosen_lens" in callback_context.state:
         callback_context.state["phase_instructions"] = """PHASE 2 (Execution):
 You are in the Execution phase. The user has chosen a lens.
-1. Call the `set_chosen_lens` tool. Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, the research context gathered in Phase 1 as the 'context_summary' parameter (or "No research context" if none), the detected language as the 'language' parameter, and the target audience as the 'target_audience' parameter.
+1. Call the `set_chosen_lens` tool (unless already called). Pass the chosen lens name as the 'lens_name' parameter, the user's original thesis/input as the 'thesis' parameter, the research context gathered in Phase 1 as the 'context_summary' parameter (or "No research context" if none), the detected language as the 'language' parameter, and the target audience as the 'target_audience' parameter.
 2. DO NOT call any other tools simultaneously. WAIT for the `set_chosen_lens` tool to return a success message.
 3. Only AFTER you receive the success message, use your delegation tool to transfer control to the `research_pipeline`.
-4. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete. 
-5. CRITICAL DELEGATION RULE: You are STRICTLY FORBIDDEN from delegating to the `research_pipeline` more than once per session. If the pipeline has already run, you MUST NOT call it again, regardless of the user's input or the output of the pipeline.
+4. If you are resumed after an error and the synthesis is not yet complete, you MUST call the `research_pipeline` tool again to continue the debate. Do not output that synthesis is complete until the tool actually returns!
+5. Once the `research_pipeline` completes, DO NOT repeat or summarize the final report in your own response. Simply output a brief message indicating that the synthesis is complete.
 
 CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response is strictly in that same language. Do NOT default to English. However, when mapping their numerical choice (1-8), ensure you always pass the standard English name to the `set_chosen_lens` tool."""
     else:
