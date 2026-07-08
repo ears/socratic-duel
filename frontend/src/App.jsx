@@ -443,7 +443,24 @@ function App() {
                             )
                           }}
                         >
-                          {msg.content}
+                          {(() => {
+                            let txt = msg.content;
+                            if (msg.author === 'judge') {
+                              try {
+                                const parsed = JSON.parse(msg.content);
+                                let output = parsed.reasoning || '';
+                                if (parsed.audience_feedback) {
+                                  output += `\n\n**Audience Check:** ${parsed.audience_feedback}`;
+                                }
+                                txt = output;
+                              } catch (e) {
+                                txt = msg.content.replace(/\[DECISION: (CONTINUE|END)\]\s*/gi, '');
+                              }
+                            }
+                            // Strip raw LaTeX math mode $...$ formatting if it leaked through
+                            txt = txt.replace(/\$([^\$]+)\$/g, '$1');
+                            return txt;
+                          })()}
                         </ReactMarkdown>
                       </div>
                     </div>
