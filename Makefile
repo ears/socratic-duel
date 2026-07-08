@@ -54,10 +54,21 @@ deploy:
 	@echo "    - Cloud Build API    (cloudbuild.googleapis.com)"
 	@echo "    - Cloud Run API      (run.googleapis.com)"
 	@echo "    - Secret Manager API (secretmanager.googleapis.com)"
+	@echo "    - Service Usage API  (serviceusage.googleapis.com)"
+	@echo "    - Cloud SQL Admin    (sqladmin.googleapis.com)"
 	@echo " 5. BILLING: The project must have an active billing account."
+	@echo " 6. TERRAFORM: The 'terraform' CLI must be installed on your machine to provision the Cloud SQL database."
 	@echo "========================================================="
 	@echo ""
 	@uv run python -c "input('>>> If all prerequisites are met, press ENTER for deployment... ')"
+	@echo "--- Checking for Terraform..."
+	@if ! command -v terraform &> /dev/null; then \
+		echo "ERROR: Terraform is not installed or not in PATH."; \
+		echo "To install Terraform, visit: https://developer.hashicorp.com/terraform/downloads"; \
+		exit 1; \
+	fi
+	@echo "--- Provisioning infrastructure (Cloud SQL) via Terraform..."
+	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli infra single-project --project {p} --apply', shell=True))"
 	@echo "--- Starting automatic Cloud Build and Deployment..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --no-confirm-project --project {p}', shell=True))"
 	@echo "--- Increasing Cloud Run timeout to 60 minutes to support long debates..."
