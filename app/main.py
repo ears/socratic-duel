@@ -212,6 +212,9 @@ async def event_generator(session_id: str, message: str):
                 # Tiny sleep to allow event loop to yield
                 await asyncio.sleep(0.01)
 
+            # Explicit completion signal to tell the frontend to close the connection gracefully
+            yield f"data: {json.dumps({'status': 'complete'})}\n\n"
+
         finally:
             if not task.done():
                 task.cancel()

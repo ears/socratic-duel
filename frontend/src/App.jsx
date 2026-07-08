@@ -112,6 +112,12 @@ function App() {
         return;
       }
       
+      if (data.status === 'complete') {
+        setIsTyping(false);
+        es.close();
+        return;
+      }
+      
       if (data.author) {
         let statusText = "Thinking...";
         if (data.author === 'protagonist') statusText = "Formulating argument...";
