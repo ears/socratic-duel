@@ -302,9 +302,11 @@ async def init_debate_state(callback_context: CallbackContext) -> None:
 
 
 # Global Model Configuration
-STRONG_MODEL = "gemini-3.1-pro-preview"
-MID_MODEL = "gemini-3.5-flash"
+FAST_TESTING = False  # Set to True to use FAST_MODEL for all agents
+
 FAST_MODEL = "gemini-3.1-flash-lite"
+MID_MODEL = FAST_MODEL if FAST_TESTING else "gemini-3.5-flash"
+STRONG_MODEL = FAST_MODEL if FAST_TESTING else "gemini-3.1-pro-preview"
 
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
