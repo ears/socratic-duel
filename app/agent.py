@@ -47,7 +47,20 @@ class DynamicGemini(Gemini):
     async def generate_content_async(self, llm_request, stream=False, **kwargs):
         demo_mode = demo_mode_ctx.get()
         selected_model = "gemini-3.5-flash" if demo_mode else self.model
-        print(f"\n[DEBUG - MODEL ROUTING] DynamicGemini is routing to: {selected_model} (Demo Mode: {demo_mode})")
+        
+        query_preview = ""
+        try:
+            if getattr(llm_request, "contents", None):
+                last_content = llm_request.contents[-1]
+                if getattr(last_content, "parts", None) and len(last_content.parts) > 0:
+                    text = getattr(last_content.parts[0], "text", "")
+                    if text:
+                        query_preview = "\\n".join(text.splitlines()[:3])
+        except Exception:
+            query_preview = "<Could not parse query>"
+            
+        print(f"\n[DEBUG - MODEL ROUTING] DynamicGemini is routing to: {selected_model} (Demo Mode: {demo_mode})\nQuery Preview:\n{query_preview}\n---")
+
         temp_model = self.model_copy(update={'model': selected_model}) if hasattr(self, 'model_copy') else self.copy(update={'model': selected_model})
         temp_model.__class__ = Gemini
         async for chunk in temp_model.generate_content_async(llm_request, stream=stream, **kwargs):
