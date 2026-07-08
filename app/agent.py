@@ -477,7 +477,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 # 1.5. Protagonist Citation Auditor
 citation_checker_proto = Agent(
     name="citation_checker_proto",
-    model=Gemini(model=MID_MODEL, http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=low_temp_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
@@ -555,7 +555,7 @@ COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly 
 # 2.5. Antagonist Citation Auditor
 citation_checker_anto = Agent(
     name="citation_checker_anto",
-    model=Gemini(model=MID_MODEL, http_options=default_http_options),
+    model=Gemini(model=FAST_MODEL, http_options=default_http_options),
     generate_content_config=low_temp_generation_config,
     include_contents="none",
     instruction="""You are the Academic Integrity Auditor. 
