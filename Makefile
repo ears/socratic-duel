@@ -77,3 +77,10 @@ undeploy:
 	@echo "--- Removing Cloud Run Service 'socratic-duel-live'..."
 	gcloud run services delete socratic-duel-live --region=us-east1 --quiet
 	@echo "--- Service successfully deleted!"
+
+# ---------------------------------------------------------
+# Run Tests
+# ---------------------------------------------------------
+test:
+	@echo "--- Running Unit and Integration Tests..."
+	uv run pytest tests/unit tests/integration
