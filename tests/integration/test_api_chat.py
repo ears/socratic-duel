@@ -35,3 +35,36 @@ def test_api_chat_demo_mode():
             pass
             
     assert has_analysis, "The analysis phase did not successfully complete and return a valid triage analysis."
+
+def test_api_chat_start_debate():
+    """Test that selecting a lens starts the debate and the protagonist responds."""
+    # Step 1: Initialize the session with a valid thesis
+    session_id = "test_debate_start_session"
+    res1 = client.get(f"/api/chat?message=Artificial%20intelligence%20will%20inevitably%20lead%20to%20the%20obsolescence%20of%20human%20creativity&session_id={session_id}&demo_mode=true")
+    assert res1.status_code == 200
+    
+    # We must consume the stream to let the background tasks finish their turn
+    list(res1.iter_lines())
+    
+    # Step 2: Send the lens choice (e.g., "1" for Empiricist) to start the debate
+    res2 = client.get(f"/api/chat?message=1&session_id={session_id}&demo_mode=true")
+    assert res2.status_code == 200
+    
+    events = []
+    for line in res2.iter_lines():
+        if line and isinstance(line, str) and line.startswith("data: "):
+            events.append(line)
+            
+    has_protagonist_response = False
+    for event_str in events:
+        event_json_str = event_str[6:]
+        if event_json_str.strip() == "": continue
+        try:
+            event = json.loads(event_json_str)
+            if event.get("author") == "protagonist" and event.get("content", "").strip() != "":
+                has_protagonist_response = True
+                break
+        except json.JSONDecodeError:
+            pass
+            
+    assert has_protagonist_response, "The protagonist did not produce an initial argument."
