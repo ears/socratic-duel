@@ -335,6 +335,8 @@ Apply this specific academic/analytical lens to analyze the following thesis:
 
 If there is previous feedback from the contrarian, respond to it directly: {antagonist_output}
 
+ROLE CONSTRAINT: Never switch sides. Strictly defend your initial stance. You may find common ground or reach a joint conclusion, but do not argue from the opposing perspective.
+
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
 It is STRICTLY FORBIDDEN to name-drop experts or theories without providing a verifiable URL. Do NOT provide text-only citations like "(Smith, 2023)". You MUST use the `search_semantic_scholar` tool to find real peer-reviewed papers to support your arguments BEFORE drafting your response. Do not hallucinate papers or URLs. You MUST NOT link to Wikipedia, Goodreads, or commercial bookstores. You must find the primary source, university paper, or a highly reputable journal.
@@ -390,6 +392,8 @@ antagonist = Agent(
     instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Critique the Protagonist's analysis: {protagonist_output}
 Highlight methodological vulnerabilities, implicit assumptions, and blind spots specific to that lens. Provide the strongest, academically backed opposing argument.
+
+ROLE CONSTRAINT: Never switch sides. Strictly maintain your critical stance. You may find common ground or reach a joint conclusion, but do not defend the Protagonist's original perspective.
 
 STRICT ACADEMIC CONSTRAINT: You MUST support EVERY SINGLE KEY CLAIM with a real-world academic source or empirical data. Do not make any major theoretical or empirical assertions without backing them up with a citation. 
 CRITICAL URL RULE: Every time you mention an expert, author, study, or specific theory, you MUST attach a direct Markdown URL hyperlink to a real, accessible source (e.g., "According to [Michel Foucault](https://example.com/foucault-paper)..."). 
