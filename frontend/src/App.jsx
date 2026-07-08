@@ -459,6 +459,8 @@ function App() {
                             }
                             // Strip raw LaTeX math mode $...$ formatting if it leaked through
                             txt = txt.replace(/\$([^\$]+)\$/g, '$1');
+                            // Strip hallucinated Gemini Search Grounding artifacts (e.g., "3]. 3]. 3].")
+                            txt = txt.replace(/\s*\[?\d+\]\./g, '');
                             return txt;
                           })()}
                         </ReactMarkdown>
