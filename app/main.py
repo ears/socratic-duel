@@ -50,7 +50,6 @@ async def event_generator(session_id: str, message: str, demo_mode: bool = True)
             )
         
         session.state["demo_mode"] = demo_mode
-        await runner.session_service.save_session(session)
 
         content = None
         is_reconnect = False
