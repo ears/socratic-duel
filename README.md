@@ -170,9 +170,10 @@ Open `.env` and configure your authentication using one of two methods:
   - Fill in your `GOOGLE_CLOUD_PROJECT`.
   - Authenticate locally by running: `gcloud auth application-default login`
   
-- **Option B: Google AI Studio API Key**
+- **Option B: Google AI Studio API Key (Local Testing Without GCP)**
   - Comment out the Vertex AI settings in `.env`.
   - Uncomment the `GEMINI_API_KEY` line and paste your API key.
+  - *Note: You do not need a Google Cloud account for this! The backend will gracefully detect the missing credentials and automatically fall back to standard Python logging and blazing-fast in-memory RAM for the session database.*
 
 
 ## Quick Start with Make (optional, but convenient)
