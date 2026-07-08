@@ -133,26 +133,33 @@ import urllib.parse
 
 def search_semantic_scholar(query: str) -> str:
     """Searches the Semantic Scholar academic database for peer-reviewed papers. Returns paper titles, authors, year, abstract, and URL."""
-    try:
-        url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={urllib.parse.quote(query)}&limit=3&fields=title,authors,year,url,abstract,citationCount"
-        req = urllib.request.Request(
-            url, headers={"User-Agent": "SocraticDuelAgent/1.0"}
-        )
-        with urllib.request.urlopen(req, timeout=10) as response:
-            data = json.loads(response.read().decode("utf-8"))
-            if not data.get("data"):
-                return "No academic papers found for this query."
+    import time
+    for attempt in range(3):
+        try:
+            url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={urllib.parse.quote(query)}&limit=3&fields=title,authors,year,url,abstract,citationCount"
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "SocraticDuelAgent/1.0"}
+            )
+            with urllib.request.urlopen(req, timeout=5) as response:
+                data = json.loads(response.read().decode("utf-8"))
+                if not data.get("data"):
+                    return "No academic papers found for this query."
 
-            results = []
-            for paper in data["data"]:
-                authors = ", ".join(
-                    [a.get("name", "") for a in paper.get("authors", [])]
-                )
-                res = f"Title: {paper.get('title')}\nAuthors: {authors}\nYear: {paper.get('year')}\nCitations: {paper.get('citationCount')}\nURL: {paper.get('url')}\nAbstract: {paper.get('abstract')}\n---"
-                results.append(res)
-            return "\n".join(results)
-    except Exception as e:
-        return f"Error searching Semantic Scholar: {str(e)}"
+                results = []
+                for paper in data["data"]:
+                    authors = ", ".join(
+                        [a.get("name", "") for a in paper.get("authors", [])]
+                    )
+                    res = f"Title: {paper.get('title')}\nAuthors: {authors}\nYear: {paper.get('year')}\nCitations: {paper.get('citationCount')}\nURL: {paper.get('url')}\nAbstract: {paper.get('abstract')}\n---"
+                    results.append(res)
+                return "\n".join(results)
+        except urllib.error.URLError as e:
+            if attempt < 2:
+                time.sleep(1)
+                continue
+            return f"Error searching Semantic Scholar after retries: {str(e)}"
+        except Exception as e:
+            return f"Error searching Semantic Scholar: {str(e)}"
 
 
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
@@ -634,7 +641,7 @@ debate_loop = LoopAgent(
         judge,
         escalation_checker,
     ],
-    max_iterations=5,
+    max_iterations=3,
 )
 
 async def mark_synthesis_complete(callback_context: CallbackContext) -> None:
