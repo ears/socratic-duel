@@ -45,6 +45,7 @@ The backend must consist of the following orchestrated ADK components. To optimi
 - **`STRONG_MODEL`** (`gemini-3.1-pro-preview`): Used by the Root Orchestrator, Debaters, and Synthesizer for high-level reasoning.
 - **`MID_MODEL`** (`gemini-3.5-flash`): Used by the Semantic Judge and Triage Researcher.
 - **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid integrity auditors.
+- **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper overrides `STRONG_MODEL` assignments, routing the heavy agents to `gemini-3.5-flash` to optimize speed and cost during testing or casual use.
 
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
 - **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
@@ -64,7 +65,7 @@ The backend must consist of the following orchestrated ADK components. To optimi
 
 ### 5.1 Backend & Architecture
 1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
-2. **Stateful Loop Resumability:** Because ADK's `LoopAgent` natively restarts the iteration block from the first sub-agent upon resuming from a crash (e.g. an API 503 Overload), custom `before_resume_callback`s must intercept each sub-agent request. By tracking `current_step` in `ctx.session.state`, the backend instantly yields cached drafts for already-executed sub-agents and fast-forwards to the exact agent whose turn it was, ensuring redundant tasks aren't re-run.
+2. **Stateful Loop Resumability:** Because ADK's `LoopAgent` natively restarts the iteration block from the first sub-agent upon resuming from a crash (e.g. an API 503 Overload), custom `before_resume_callback`s must intercept each sub-agent request. By tracking `current_step` in `ctx.session.state`, the backend instantly yields cached drafts for already-executed sub-agents and fast-forwards to the exact agent whose turn it was, ensuring redundant tasks aren't re-run. Furthermore, the `interactive_planner` relies on a `synthesis_complete` flag set ONLY by the `synthesizer`'s `after_agent_callback`. This prevents the planner from hallucinating that synthesis is complete upon resume.
 3. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface.
 4. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 5. **Hot-Reloading:** The development server must support hot-reloading. Changes to core logic (like swapping `STRONG_MODEL` in `agent.py`) must instantly trigger a backend restart without manual intervention when running via `agents-cli playground` or `uvicorn --reload`.
