@@ -61,6 +61,8 @@ deploy:
 	@uv run python -c "input('>>> If all prerequisites are met, press ENTER for deployment... ')"
 	@echo "--- Building and deploying application code to Cloud Run..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --service-name socratic-duel-live --min-instances 0 --no-confirm-project --project {p}', shell=True))"
+	@echo "--- Enabling CPU throttling (saving costs)..."
+	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'gcloud run services update socratic-duel-live --cpu-throttling --region=us-east1 --project {p}', shell=True))"
 	@echo "--- Making the service public (Public Access)..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'gcloud run services add-iam-policy-binding socratic-duel-live --region=us-east1 --member=allUsers --role=roles/run.invoker --project {p}', shell=True))"
 	@echo "========================================================="
