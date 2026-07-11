@@ -47,6 +47,13 @@ The backend must consist of the following orchestrated ADK components. To optimi
 - **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid integrity auditors.
 - **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper cascades models: overriding `STRONG_MODEL` assignments to `gemini-3.5-flash` and `MID_MODEL` assignments to `gemini-2.5-flash` to optimize speed and cost during testing or casual use.
 
+- **Thinking Configuration (`types.ThinkingConfig`) Strategy**:
+  - **Debaters (`protagonist`, `antagonist`)**: Moderate-to-high thinking budget to ensure deep, logical arguments in real-time without stalling loop latency.
+  - **Evaluators (`synthesizer`)**: High thinking budget. Dictates the final outcome and evaluates the full context, requiring maximum reasoning power.
+  - **Judge (`judge`)**: Medium thinking budget. Needs sufficient oversight for loop conditions without bottlenecking the debate loop latency.
+  - **Orchestrator (`interactive_planner`)**: Low-to-moderate thinking budget to accurately parse intent and establish the initial debate lens.
+  - **Utility / Verifiers (`citation_checker_proto`, `citation_checker_anto`, `triage_researcher`)**: Disabled (Standard generation). Optimized for speed during straightforward retrieval and fact extraction.
+
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
 - **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
