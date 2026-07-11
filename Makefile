@@ -67,10 +67,10 @@ deploy:
 		echo "To install Terraform, visit: https://developer.hashicorp.com/terraform/downloads"; \
 		exit 1; \
 	fi
-	@echo "--- Provisioning infrastructure (Cloud SQL) via Terraform..."
+	@echo "--- Provisioning infrastructure via Terraform..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli infra single-project --project {p} --apply', shell=True))"
 	@echo "--- Building and deploying application code to Cloud Run..."
-	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --service-name epistemic-synth --no-confirm-project --project {p}', shell=True))"
+	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'uvx google-agents-cli deploy --service-name epistemic-synth --min-instances 0 --no-confirm-project --project {p}', shell=True))"
 	@echo "--- Making the service public (Public Access)..."
 	@uv run python -c "import subprocess, sys; p = subprocess.check_output('gcloud config get-value project', shell=True, text=True).strip(); sys.exit(subprocess.call(f'gcloud run services add-iam-policy-binding epistemic-synth --region=us-east1 --member=allUsers --role=roles/run.invoker --project {p}', shell=True))"
 	@echo "========================================================="
@@ -94,4 +94,4 @@ undeploy:
 # ---------------------------------------------------------
 test:
 	@echo "--- Running Unit and Integration Tests..."
-	uv run pytest tests/unit tests/integration
+	uv run pytest tests/unit tests/integration --html=report.html --self-contained-html

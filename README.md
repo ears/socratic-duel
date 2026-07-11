@@ -105,24 +105,23 @@ graph TD
 * **The Referee (Semantic Judge):** Oversees the entire bout. Evaluates the textual exchange against a strict logical grading rubric, dynamically tracks token state to prevent circular rhetoric, and exercises the authority to call a halt to the debate once a technical consensus or definitive breaking point is achieved.
 * **The Cutman (Synthesizer):** Processes the raw, finalized debate transcript. Conducts meta-research on the interaction to author a mathematically clean, highly structured Markdown report, complete with an automated, dynamically generated Glossary of terms.
 
-### Tri-Model Model Allocation
+### Flash-First Model Allocation
 ```mermaid
 pie title "Agent Model Allocation (Vertex AI: Global)"
     "gemini-3.1-flash-lite (Checkers)" : 2
-    "gemini-3.5-flash (Judge, Triage)" : 2
-    "gemini-3.1-pro-preview (Orchestrator, Debaters, Synthesizer)" : 4
+    "gemini-3.5-flash (Orchestrator, Debaters, Synthesizer, Judge, Triage)" : 6
 ```
 
 ## 🚀 Core Features & Agentic Architecture
-- **Tri-Model Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.1-pro-preview` for the high-level debaters, `3.5-flash` for semantic judging, and parallel `flash-lite` models for rapid citation auditing.
+- **Flash-First Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.5-flash` for the heavy lifters (debaters, judge, orchestrator, synthesizer) and parallel `gemini-3.1-flash-lite` models for rapid citation auditing.
 - **Radical Hallucination Mitigation:** "Academic Integrity Auditors" intercept drafts and actively scrape every cited URL in real-time. If a link is dead, hallucinated, or empirically incorrect, the auditor silently scrubs it before the user ever sees it.
 - **Dynamic Cognitive Profiling:** Automatically adapts the debate's vocabulary, tone, and conceptual depth based on a defined "Target Audience" complexity level (from 15-year-old to PhD).
-- **Demo Mode:** An optional frontend toggle switch ("faster, less costly"). When enabled, the `DynamicGemini` model wrapper dynamically cascades models: `STRONG_MODEL` assignments route to `gemini-3.5-flash`, and `MID_MODEL` assignments route to `gemini-2.5-flash`, drastically cutting costs during testing.
+- **Demo Mode:** An optional frontend toggle switch ("faster, less costly"). When enabled, the `DynamicGemini` model wrapper dynamically cascades the heavy lifter models down to `gemini-2.5-flash`, drastically cutting costs during testing or casual use.
 - **Human-In-The-Loop Triage:** An Interactive Planner orchestrator that triages the thesis, strictly blocks prompt injections via ADK callbacks, and halts execution until you select 1 of 8 epistemic lenses (e.g., *The Ethicist*).
 - **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
 - **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
 - **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
-- **Persistent Serverless Memory:** Deploys a Google Cloud SQL (PostgreSQL) database via automated ADK Terraform to provide fault-tolerant persistent debate transcripts, allowing the UI to seamlessly "Resume" long-running debates even if the Cloud Run backend container restarts.
+
 
 ## Project Structure
 
@@ -173,7 +172,7 @@ Open `.env` and configure your authentication using one of two methods:
 - **Option B: Google AI Studio API Key (Local Testing Without GCP)**
   - Comment out the Vertex AI settings in `.env`.
   - Uncomment the `GEMINI_API_KEY` line and paste your API key.
-  - *Note: You do not need a Google Cloud account for this! The backend will gracefully detect the missing credentials and automatically fall back to standard Python logging and blazing-fast in-memory RAM for the session database.*
+  - *Note: You do not need a Google Cloud account for this! The backend will gracefully detect the missing credentials and automatically fall back to standard Python logging and in-memory session state.*
 
 
 ## Quick Start with Make (optional, but convenient)
@@ -192,7 +191,7 @@ If you want to automate installation, running both servers simultaneously, and d
 - `make run`: Starts both the backend and frontend simultaneously.
 - `make backend`: Starts only the FastAPI Python backend (useful for debugging in a dedicated terminal).
 - `make frontend`: Starts only the React UI development server (useful for debugging in a dedicated terminal).
-- `make test`: Runs all unit and integration tests cleanly.
+- `make test`: Runs all unit and integration tests cleanly and generates a self-contained `report.html` file.
 - `make deploy`: Automatically builds and deploys the Socratic Duel app to Google Cloud Run.
 - `make undeploy`: Tears down the Google Cloud Run service.
 

@@ -41,11 +41,10 @@ The architecture must include robust protections to prevent runaway costs and ma
 
 ## 4. Architectural Logic (Agent Orchestration)
 
-The backend must consist of the following orchestrated ADK components. To optimize reasoning capabilities while maintaining cost-efficiency and regional stability, the architecture utilizes a Tri-Model approach exclusively in the `global` region via Vertex AI:
-- **`STRONG_MODEL`** (`gemini-3.1-pro-preview`): Used by the Root Orchestrator, Debaters, and Synthesizer for high-level reasoning.
-- **`MID_MODEL`** (`gemini-3.5-flash`): Used by the Semantic Judge and Triage Researcher.
-- **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid integrity auditors.
-- **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper cascades models: overriding `STRONG_MODEL` assignments to `gemini-3.5-flash` and `MID_MODEL` assignments to `gemini-2.5-flash` to optimize speed and cost during testing or casual use.
+The backend must consist of the following orchestrated ADK components. To optimize reasoning capabilities while maintaining cost-efficiency and a snappy interactive loop, the architecture utilizes a "Flash-First" model approach exclusively in the `global` region via Vertex AI:
+- **`STRONG_MODEL`** & **`MID_MODEL`** (`gemini-3.5-flash`): Used by the Root Orchestrator, Debaters, Synthesizer, Semantic Judge, and Triage Researcher. Provides the best balance of intellectual depth and loop latency.
+- **`FAST_MODEL`** (`gemini-3.1-flash-lite`): Used by the rapid integrity auditors to squeeze out maximum speed and minimum cost for URL verification.
+- **`Demo Mode`**: A feature toggled from the UI ("faster, less costly"). When active, a custom `DynamicGemini` model wrapper cascades the heavy lifters (STRONG and MID models) down to `gemini-2.5-flash` to optimize speed and cost during testing or casual use. The utility/verifiers remain on `gemini-3.1-flash-lite`.
 
 - **Thinking Configuration (`types.ThinkingConfig`) Strategy**:
   - **Debaters (`protagonist`, `antagonist`)**: Moderate-to-high thinking budget to ensure deep, logical arguments in real-time without stalling loop latency.
@@ -72,7 +71,7 @@ The backend must consist of the following orchestrated ADK components. To optimi
 
 ### 5.1 Backend & Architecture
 1. **State Initialization & Custom Tools:** To prevent "Context variable not found" crashes, the protagonist agent must include a `before_agent_callback` (`init_debate_state`) that injects default placeholders. Custom tools (`set_chosen_lens`, `declare_consensus`) enable agents to write selections and stopping flags directly into state memory.
-2. **Stateful Loop Resumability & Persistent Database:** The application uses a Cloud SQL PostgreSQL database via ADK's `DatabaseSessionService` to persist transcripts and memory across serverless restarts. Because ADK's `LoopAgent` natively restarts the iteration block from the first sub-agent upon resuming from a crash (e.g. an API 503 Overload), custom `before_resume_callback`s must intercept each sub-agent request. By tracking `current_step` in `ctx.session.state`, the backend instantly yields cached drafts for already-executed sub-agents and fast-forwards to the exact agent whose turn it was, ensuring redundant tasks aren't re-run. Furthermore, the `interactive_planner` relies on a `synthesis_complete` flag set ONLY by the `synthesizer`'s `after_agent_callback`. This prevents the planner from hallucinating that synthesis is complete upon resume.
+2. **Stateful Loop Resumability:** The application uses ADK's `InMemorySessionService` to track transcripts and memory during execution. Because ADK's `LoopAgent` natively restarts the iteration block from the first sub-agent upon resuming from a crash (e.g. an API 503 Overload), custom `before_resume_callback`s must intercept each sub-agent request. By tracking `current_step` in `ctx.session.state`, the backend instantly yields cached drafts for already-executed sub-agents and fast-forwards to the exact agent whose turn it was, ensuring redundant tasks aren't re-run. Furthermore, the `interactive_planner` relies on a `synthesis_complete` flag set ONLY by the `synthesizer`'s `after_agent_callback`. This prevents the planner from hallucinating that synthesis is complete upon resume.
 3. **Standard CLI Testing:** The agent must be fully testable via the standard `agents-cli playground` interface.
 4. **Deployment Readiness:** While currently a `--prototype`, the project must maintain a structure compatible with `agents-cli scaffold enhance` for future push-button deployment to Google Cloud Run or Agent Runtime.
 5. **Hot-Reloading:** The development server must support hot-reloading. Changes to core logic (like swapping `STRONG_MODEL` in `agent.py`) must instantly trigger a backend restart without manual intervention when running via `agents-cli playground` or `uvicorn --reload`.
@@ -86,7 +85,7 @@ The backend must consist of the following orchestrated ADK components. To optimi
 6. **Synthesis UI (Phase 4)**: The final report generated by the Synthesizer must be visually distinct from the standard debate messages. It must utilize a "Royal Violet" theme (e.g., `bg-violet-50` in Light Mode, `bg-violet-900/20` in Dark Mode) to signify the resolution and conclusion of the dialectical process.
 7. **Visual Documentation**: Core concepts must strictly be visualized as Mermaid diagrams (`DIAGRAMS.md`) to enable rapid onboarding for junior developers.
 8. **App Reset**: The header logo must be clickable to instantly reset the application to its initial state, allowing the user to easily start a "New Socratic Dialogue".
-9. **Connection Resiliency**: The frontend must handle network drops by automatically attempting to re-establish the SSE connection (with a 5-second backoff). Concurrently, the backend must safely cancel the background task upon client disconnect to ensure the debate session freezes and can be explicitly resumed where it crashed without losing intermediate generated events.
+9. **Connection Resiliency**: The frontend provides a "Resume Connection" button to recover from transient API errors (e.g., 503 Overloads). When clicked, the frontend must first verify the session's existence by querying the backend's history endpoint. If the in-memory session is still active, the debate gracefully resumes without reloading or duplicating previously posted output. If the session has been lost due to server scaling to zero or restarting, the frontend must display a graceful failure message instead of attempting to restart the debate from the beginning.
 
 ---
 

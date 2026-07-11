@@ -75,6 +75,25 @@ function App() {
     fetchHistory();
   }, [sessionId]);
 
+  const handleResume = async () => {
+    setIsTyping(true);
+    setCurrentActivity('Checking session status...');
+    setErrorMessage(null);
+    try {
+      const response = await fetch(`/api/history?session_id=${sessionId}`);
+      const data = await response.json();
+      if (!data.messages || data.messages.length === 0) {
+        setIsTyping(false);
+        setErrorMessage("Session expired due to server inactivity. Please start a new Socratic Duel.");
+        return;
+      }
+      startDebate(selectedLensIndex, true);
+    } catch (err) {
+      setIsTyping(false);
+      setErrorMessage("Failed to check session status. Please try again.");
+    }
+  };
+
   const analyzeTriage = () => {
     if (!thesis.trim()) return;
     setPhase('triage_loading');
@@ -232,7 +251,7 @@ function App() {
             <div>🚨 Backend Error: {errorMessage}</div>
             {phase === 'debate' && !errorMessage.includes('Automatically reconnecting') && (
               <button 
-                onClick={() => startDebate(selectedLensIndex, true)} 
+                onClick={handleResume} 
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition whitespace-nowrap ml-4 shadow"
               >
                 Resume Connection
@@ -543,7 +562,7 @@ function App() {
                   <div>🚨 Backend Error: {errorMessage}</div>
                   {phase === 'debate' && !errorMessage.includes('Automatically reconnecting') && (
                     <button 
-                      onClick={() => startDebate(selectedLensIndex, true)} 
+                      onClick={handleResume} 
                       className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition whitespace-nowrap ml-4 shadow"
                     >
                       Resume Connection

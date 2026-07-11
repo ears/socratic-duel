@@ -39,26 +39,6 @@ _AGENT_DIR = os.path.dirname(
 @functools.cache
 def get_session_service():
     """Process-wide session service shared across every serving surface."""
-    from urllib.parse import quote
-
-    db_user = os.environ.get("DB_USER", "postgres")
-    db_name = os.environ.get("DB_NAME", "postgres")
-    db_pass = os.environ.get("DB_PASS")
-    instance_connection_name = os.environ.get("INSTANCE_CONNECTION_NAME")
-
-    if instance_connection_name and db_pass:
-        # URL-encode credentials/instance; '[' would otherwise trigger IPv6 parsing.
-        encoded_user = quote(db_user, safe="")
-        encoded_pass = quote(db_pass, safe="")
-        encoded_instance = instance_connection_name.replace(":", "%3A")
-        session_service_uri = (
-            f"postgresql+asyncpg://{encoded_user}:{encoded_pass}@"
-            f"/{db_name}?host=/cloudsql/{encoded_instance}"
-        )
-        return create_session_service_from_options(
-            base_dir=_AGENT_DIR, session_service_uri=session_service_uri
-        )
-
     from google.adk.sessions.in_memory_session_service import InMemorySessionService
 
     return InMemorySessionService()

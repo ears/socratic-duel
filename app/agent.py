@@ -48,9 +48,7 @@ class DynamicGemini(Gemini):
         demo_mode = demo_mode_ctx.get()
         selected_model = self.model
         if demo_mode:
-            if self.model == STRONG_MODEL:
-                selected_model = "gemini-3.5-flash"
-            elif self.model == MID_MODEL:
+            if self.model in [STRONG_MODEL, MID_MODEL]:
                 selected_model = "gemini-2.5-flash"
                 
         temp_model = self.model_copy(update={'model': selected_model}) if hasattr(self, 'model_copy') else self.copy(update={'model': selected_model})
@@ -323,7 +321,14 @@ class EscalationChecker(BaseAgent):
             pass
 
         # Escalate after 5 iterations OR if the Judge declared consensus
-        if iterations >= 5 or consensus:
+        if iterations >= 5 and not consensus:
+            msg = "The maximum number of debate rounds has been reached. Escalating to synthesis."
+            yield Event(
+                author="judge",
+                content=types.Content(parts=[types.Part.from_text(text=msg)])
+            )
+            yield Event(author=self.name, actions=EventActions(escalate=True))
+        elif consensus:
             yield Event(author=self.name, actions=EventActions(escalate=True))
         else:
             ctx.session.state["current_step"] = "start"
@@ -398,7 +403,7 @@ FAST_TESTING = False  # Set to True to use a faster model testing
 
 FAST_MODEL = "gemini-3.1-flash-lite"
 MID_MODEL = "gemini-3.5-flash"
-STRONG_MODEL = MID_MODEL if FAST_TESTING else "gemini-3.1-pro-preview"
+STRONG_MODEL = "gemini-3.5-flash"
 
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
@@ -417,11 +422,31 @@ low_temp_generation_config = types.GenerateContentConfig(
     )
 )
 
+high_thinking_config = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_budget=4096),
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
+)
+
+moderate_high_thinking_config = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_budget=2048),
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
+)
+
+medium_thinking_config = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_budget=1024),
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
+)
+
+low_moderate_thinking_config = types.GenerateContentConfig(
+    thinking_config=types.ThinkingConfig(thinking_budget=512),
+    automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
+)
+
 # 1. Protagonist Lens
 protagonist = Agent(
     name="protagonist",
     model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
-    generate_content_config=default_generation_config,
+    generate_content_config=moderate_high_thinking_config,
     include_contents="none",
     instruction="""You are the Protagonist taking on the perspective of '{chosen_lens}'. 
 Apply this specific academic/analytical lens to analyze the following thesis:
@@ -500,7 +525,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.""",
 antagonist = Agent(
     name="antagonist",
     model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
-    generate_content_config=default_generation_config,
+    generate_content_config=moderate_high_thinking_config,
     include_contents="none",
 instruction="""You are the Antagonist/Contrarian to the '{chosen_lens}' perspective. 
 Original Thesis: {thesis}
@@ -599,6 +624,7 @@ async def skip_early_judge_callback(
 judge = Agent(
     name="judge",
     model=DynamicGemini(model=MID_MODEL, http_options=default_http_options),
+    generate_content_config=medium_thinking_config,
     before_model_callback=skip_early_judge_callback,
     after_agent_callback=append_judge_transcript,
     include_contents="none",
@@ -641,18 +667,18 @@ debate_loop = LoopAgent(
         judge,
         escalation_checker,
     ],
-    max_iterations=3,
+    max_iterations=5,
 )
 
-async def mark_synthesis_complete(callback_context: CallbackContext) -> None:
+async def mark_synthesis_complete(callback_context: CallbackContext) -> types.Content | None:
     callback_context.state["synthesis_complete"] = True
-    await append_token_count(callback_context)
+    return await append_token_count(callback_context)
 
 # 3. Synthesizer: Final Report Composer
 synthesizer = Agent(
     name="synthesizer",
     model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
-    generate_content_config=default_generation_config,
+    generate_content_config=high_thinking_config,
     include_contents="none",
     instruction="""You are the Epistemic Synthesizer for Socratic Duel.
 Based on the debate between the '{chosen_lens}' Protagonist and its Contrarian, generate a final Markdown report.
@@ -741,6 +767,7 @@ CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial
 root_agent = Agent(
     name="interactive_planner",
     model=DynamicGemini(model=STRONG_MODEL, http_options=default_http_options),
+    generate_content_config=low_moderate_thinking_config,
     before_agent_callback=set_planner_phase,
     instruction="""You are the Orchestrator for Socratic Duel.
 
