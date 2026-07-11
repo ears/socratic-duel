@@ -59,3 +59,17 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 - **Run Python with `uv`**: `uv run python script.py`. Run `agents-cli install` first.
 - **Stop on repeated errors**: If the same error appears 3+ times, fix the root cause instead of retrying.
 - **Terraform conflicts** (Error 409): Use `terraform import` instead of retrying creation.
+
+## Agent skills
+
+### Issue tracker
+
+[GitHub](file:///home/hartmut/socratic-duel/docs/agents/issue-tracker.md) is used to track issues for this repo. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default triage labels (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix) are used. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context documentation layout. See `docs/agents/domain.md`.
