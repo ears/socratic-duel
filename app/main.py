@@ -122,6 +122,8 @@ async def event_generator(session_id: str, message: str, demo_mode: bool = True)
         error_msg = str(e)
         if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "503" in error_msg or "UNAVAILABLE" in error_msg:
             error_msg = "Google's AI service is currently overloaded by high demand. Please wait a moment, refresh the page, and try again!"
+        elif "No API key was provided" in error_msg:
+            error_msg = "look at file .env.example and configure one of the two variants"
         yield f"data: {json.dumps({'author': 'system', 'error': error_msg})}\n\n"
 
 
