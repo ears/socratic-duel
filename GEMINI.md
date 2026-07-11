@@ -52,6 +52,7 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 
 ## Operational Guidelines for Coding Agents
 
+- **Project Knowledgebase**: **CRITICAL:** Before making structural changes, refactoring the ADK Loop, or modifying deployment/infrastructure, you MUST read `KNOWLEDGEBASE.md` for project-specific architectural gotchas and patterns.
 - **Code preservation**: Only modify code directly targeted by the user's request. Preserve all surrounding code, config values (e.g., `model`), comments, and formatting.
 - **NEVER change the model** unless explicitly asked.
 - **Model 404 errors**: Fix `GOOGLE_CLOUD_LOCATION` (e.g., `global` instead of `us-east1`), not the model name.
