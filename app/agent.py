@@ -410,6 +410,7 @@ default_http_options = types.HttpOptions(
     timeout=60000, retry_options=types.HttpRetryOptions(attempts=3)
 )
 default_generation_config = types.GenerateContentConfig(
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(
         maximum_remote_calls=3
     )
@@ -417,6 +418,7 @@ default_generation_config = types.GenerateContentConfig(
 
 low_temp_generation_config = types.GenerateContentConfig(
     temperature=0.1,
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(
         maximum_remote_calls=3
     )
@@ -424,21 +426,25 @@ low_temp_generation_config = types.GenerateContentConfig(
 
 high_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=4096),
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 moderate_high_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=2048),
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 medium_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=1024),
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 low_moderate_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=512),
+    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
