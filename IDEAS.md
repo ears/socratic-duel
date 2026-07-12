@@ -33,3 +33,8 @@ When the protagonist and antagonist use citations to support their arguments, th
 *   **Citation Count:** Using the number of other papers citing this citation as an indicator of its impact and academic consensus.
 *   **Hierarchy of Evidence:** Giving significantly more weight to meta-analyses or systematic reviews that combine results from multiple studies, compared to isolated or small-scale single studies.
 *   **Significance Metrics:** Exploring additional ways to quantify the power, reliability, and evidential weight of a study to ensure the debate is grounded in high-quality science rather than fringe papers.
+
+## Intellectual Black Belts
+*Date: 2026-07-13*
+
+Take the paragraph about the intellectual black belts from a write-up and incorporate it into `README.md` in an appropriate section and way.

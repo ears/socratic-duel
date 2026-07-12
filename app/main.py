@@ -189,41 +189,40 @@ def parse_adk_event(event):
                 status_part = text_content.split("\n\n")[0]
                 draft_part = text_content[len(status_part):].strip()
 
-            # Clean up the STATUS tag if it exists
-            status_part = (
-                re.sub(r"(?i)\[STATUS:", "", status_part).strip().rstrip("]")
-            )
-
-            if "NO_CITATIONS" in status_part.upper():
-                text_content = "No citations to check."
-            elif "VERIFIED" in status_part.upper():
-                matches = re.findall(
-                    r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\]",
-                    draft_part,
-                    re.IGNORECASE,
-                )
-                if matches:
-                    text_content = (
-                        "Citations verified.\n\n🛡️ bot-protected:\n"
-                        + "\n".join([f"- {t}" for t, u in matches])
+            # Search specifically for the STATUS tag, ignoring any preceding <THINKING> blocks
+            status_match = re.search(r"(?i)\[STATUS:\s*(.*?)\]", status_part)
+            if status_match:
+                extracted_status = status_match.group(1).strip().upper()
+                if "NO_CITATIONS" in extracted_status:
+                    text_content = "No citations to check."
+                elif "VERIFIED" in extracted_status:
+                    matches = re.findall(
+                        r"\[([^\[\]]{1,200})\]\(([^\s\)]+)\)\s*\[🛡️\]",
+                        draft_part,
+                        re.IGNORECASE,
                     )
+                    if matches:
+                        text_content = (
+                            "Citations verified.\n\n🛡️ bot-protected:\n"
+                            + "\n".join([f"- {t}" for t, u in matches])
+                        )
+                    else:
+                        text_content = "Citations verified."
+                elif "ERROR:" in extracted_status:
+                    # Extract the markdown link from the status string itself if present
+                    matches = re.findall(r"\[(.*?)\]\((.*?)\)", extracted_status)
+                    if matches:
+                        text_content = "\n".join(
+                            [f"- {text}" for text, url in matches]
+                        )
+                    else:
+                        text_content = re.sub(r"(?i)ERROR:", "", extracted_status).strip()
+                    is_citation_error = True
                 else:
-                    text_content = "Citations verified."
-            elif "ERROR:" in status_part.upper():
-                # Extract all markdown links, ignoring stray characters like commas
-                matches = re.findall(r"\[(.*?)\]\((.*?)\)", status_part)
-                if matches:
-                    text_content = "\n".join(
-                        [f"- {text}" for text, url in matches]
-                    )
-                else:
-                    # Fallback if parsing fails
-                    text_content = re.sub(
-                        r"(?i)ERROR:", "", status_part
-                    ).strip()
-                is_citation_error = True
+                    text_content = extracted_status
             else:
-                text_content = status_part
+                # Fallback if the status tag is completely missing
+                text_content = ""
         except Exception:
             pass
 
