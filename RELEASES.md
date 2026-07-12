@@ -11,6 +11,10 @@ This project uses a two-digit major/minor versioning system (e.g., `1.00`, `1.01
 ### Added
 - Initial setup of the RELEASES.md document structure.
 
+### Changed
+- **Enhanced Lens Recommendations:** The initial setup now suggests two distinct debate lenses—each with a brief explanation of why it would create an interesting debate—giving you better insight before committing to a path.
+- **Stricter Academic Auditing:** When the system catches a dead or hallucinated citation, it will now completely purge the specific unsupported claim from the debate text, ensuring a much higher standard of academic integrity.
+
 ## [1.00] - 2026-07-12
 ### Added
 - Established the formal release tracking process and `RELEASES.md` file.
