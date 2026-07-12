@@ -68,6 +68,7 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 - **Versioning Scheme**: We use a two-digit major/minor system (e.g., `1.00`, `1.01`, `1.10`, `2.00`). The minor version is always padded to two digits.
 - **AI Behavior**: Do NOT suggest or automatically increment release numbers when creating commits or making changes. The human developer will manually trigger a new release. When asked to help cut a release, follow the existing format in `RELEASES.md` and organize changes into `### Added`, `### Changed`, `### Fixed`, etc., omitting unused categories.
 - **Git Integration**: Releases are marked with Git tags (e.g., `v1.00`) by the human developer. Do NOT clutter `RELEASES.md` with commit hashes.
+- **End-User Perspective**: Entries in `RELEASES.md` MUST be written from an end-user's perspective, focusing entirely on the tangible benefit or user value of the change. Do NOT write technical implementation details or describe prompt adjustments in this file. Technical details, file names, and architectural logic belong exclusively in the Git commit messages for developers to reference.
 
 ## Agent skills
 
