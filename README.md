@@ -9,6 +9,11 @@ Standard Large Language Models (LLMs) suffer from **consensus bias**. When asked
 ## The Solution
 Socratic Duel is a multi-agent framework that replaces passive compliance with **adversarial debate**. Instead of defaulting to a safe consensus, it locks **specialized academic lenses**—such as The Empiricist or The Systems Theorist—into intellectual sparring. This friction ruthlessly exposes hidden biases, logical flaws, and empirical gaps, delivering a raw, **stress-tested audit** of your thesis.
 
+### The Overarching Value
+* **Uncovering the Unseen:** A single LLM prompt defaults to the most probable, generic response. Socratic Duel forces the AI to diverge, surfacing highly significant, impactful arguments and nuanced aspects of your thesis that standard prompts, even when asking for contrarian positions, simply cannot reveal. It helps you uncover high-value insights.
+* **Value Beyond Consensus:** The goal isn't necessarily to agree with the final synthesis. The adversarial process itself is the product. It uncovers profound blind spots, novel perspectives, and rigorous empirical evidence you would otherwise not find.
+* **Curing AI Sycophancy:** Standard LLMs suffer from a desire to be helpful by agreeing with you. Socratic Duel introduces deliberate intellectual friction, delivering a raw, stress-tested audit of your ideas rather than polite validation.
+
 ## 🚀 Key Features & User Benefits
 - **Zero-Trust Citation Auditing:** *Benefit:* Radically eliminates hallucinations. Specialized agents physically scrape every cited URL in real-time; if a link is dead or the claim is unsupported, it is purged before you ever see it, guaranteeing absolute academic integrity.
 - **Human-In-The-Loop Triage & Ground-Truth Anchoring:** *Benefit:* Puts you in control and prevents generic "AI sycophancy". You choose exactly which academic lens (e.g., The Ethicist, The Empiricist) the debaters must anchor their arguments to.

@@ -25,3 +25,11 @@ Instead of framing the lens expert purely by their title, we could expand their 
 *   **Their Special Method of Reasoning:** The specific logical framework they use to dismantle or support arguments.
 
 This gives the LLM much richer context for its roleplaying. To avoid cluttering the frontend, we wouldn't expose these bullet points directly to the user. Instead, the UI would continue to present a short, elegant summary in the existing style, keeping the interface clean while drastically improving the backend reasoning depth.
+
+## Evaluating the Epistemic Weight of Citations
+*Date: 2026-07-12*
+
+When the protagonist and antagonist use citations to support their arguments, they must also evaluate the "standing" or significance of that citation rather than treating all papers equally. Key concepts to explore include:
+*   **Citation Count:** Using the number of other papers citing this citation as an indicator of its impact and academic consensus.
+*   **Hierarchy of Evidence:** Giving significantly more weight to meta-analyses or systematic reviews that combine results from multiple studies, compared to isolated or small-scale single studies.
+*   **Significance Metrics:** Exploring additional ways to quantify the power, reliability, and evidential weight of a study to ensure the debate is grounded in high-quality science rather than fringe papers.
