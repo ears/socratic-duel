@@ -561,7 +561,7 @@ CRITICAL FORMATTING RULE: Ensure the text is free of raw LaTeX or math formattin
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level. STRICTLY FORBIDDEN: NEVER use LaTeX formatting, dollar signs ($), or math blocks (like \text{}). Use standard markdown only.""",
     tools=[google_search, search_semantic_scholar],
     output_key="protagonist_draft",
     before_model_callback=before_proto_resume_callback,
@@ -651,7 +651,7 @@ CRITICAL FORMATTING RULE: Ensure the text is free of raw LaTeX or math formattin
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.""",
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level. STRICTLY FORBIDDEN: NEVER use LaTeX formatting, dollar signs ($), or math blocks (like \text{}). Use standard markdown only.""",
     tools=[google_search, search_semantic_scholar],
     output_key="antagonist_draft",
     before_model_callback=before_anto_resume_callback,
@@ -803,7 +803,7 @@ Begin the report explicitly with a Markdown header block formatted exactly like 
 4. Interdisciplinary Synthesis (Where they converge/diverge + Novel Overarching Insights)
 5. Glossary (Abbreviations & Key Terms) - You MUST define any acronyms or abbreviations used anywhere in the report (e.g. "VO2max", "AHA", etc.) here.
 
-COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level.
+COMMUNICATION STYLE: Adapt your vocabulary, conceptual depth, and tone strictly to this target audience: {target_audience}. Both your expression and the concepts you introduce MUST be appropriate for this audience level. STRICTLY FORBIDDEN: NEVER use LaTeX formatting, dollar signs ($), or math blocks (like \text{}). Use standard markdown only.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write the ENTIRE final report (including your section headers) in {language}. Do NOT default to English.
 
@@ -829,7 +829,7 @@ triage_researcher = Agent(
 Use the `google_search` tool to look up the core concepts, current academic consensus, or related frameworks.
 Provide a concise 'Context Brief' summarizing the real-world context of the thesis so the Orchestrator can intelligently choose an Epistemic Lens.
 
-COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson.""",
+COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose. Avoid dense academic jargon and convoluted phrasing while maintaining rigorous intellectual precision. Ensure arguments are accessible to an educated layperson. STRICTLY FORBIDDEN: NEVER use LaTeX formatting, dollar signs ($), or math blocks (like \text{}). Use standard markdown only.""",
     description="Searches the web to provide real-world context for a thesis.",
     tools=[google_search],
 )
@@ -863,7 +863,7 @@ When the user first provides an input, you MUST evaluate it before proceeding:
       You MUST choose from this exact list. For each of your 2 choices, provide a brief 1-2 sentence explanation of why selecting that lens would yield a particularly interesting or challenging debate against the thesis. Do NOT output a list of all available lenses, do NOT ask the user to reply, and do NOT prompt them to make a choice. The UI will automatically display the available lenses for them to select. End your response after your second recommendation.
    D. DO NOT delegate to the research_pipeline yet. WAIT for the user to select a lens via the UI.
 
-COMMUNICATION STYLE: You must extract the target audience from the "[Target Audience: ...]" prefix in the input. You MUST adapt your own vocabulary, conceptual complexity, and tone strictly to this target audience when providing your synthesis and lens suggestions.
+COMMUNICATION STYLE: You must extract the target audience from the "[Target Audience: ...]" prefix in the input. You MUST adapt your own vocabulary, conceptual complexity, and tone strictly to this target audience when providing your synthesis and lens suggestions. STRICTLY FORBIDDEN: NEVER use LaTeX formatting, dollar signs ($), or math blocks (like \text{}). Use standard markdown only.
 
 CRITICAL LANGUAGE CONSTRAINT: You must detect the language of the user's initial input and ensure your ENTIRE response—including your synthesis and your lens suggestion—is strictly in that same language."""
 

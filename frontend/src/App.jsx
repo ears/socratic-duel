@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import './App.css';
 
 const FUN_STATUSES = [
