@@ -405,12 +405,22 @@ FAST_MODEL = "gemini-3.1-flash-lite"
 MID_MODEL = "gemini-3.5-flash"
 STRONG_MODEL = "gemini-3.5-flash"
 
+import os
+
+def get_tool_config():
+    # Only use include_server_side_tool_invocations if we are using the Gemini Developer API (API Key)
+    if os.environ.get("GEMINI_API_KEY"):
+        return types.ToolConfig(include_server_side_tool_invocations=True)
+    return None
+
+default_tool_config = get_tool_config()
+
 # Resiliency defaults for Vertex AI
 default_http_options = types.HttpOptions(
     timeout=60000, retry_options=types.HttpRetryOptions(attempts=3)
 )
 default_generation_config = types.GenerateContentConfig(
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(
         maximum_remote_calls=3
     )
@@ -418,7 +428,7 @@ default_generation_config = types.GenerateContentConfig(
 
 low_temp_generation_config = types.GenerateContentConfig(
     temperature=0.1,
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(
         maximum_remote_calls=3
     )
@@ -426,25 +436,25 @@ low_temp_generation_config = types.GenerateContentConfig(
 
 high_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=4096),
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 moderate_high_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=2048),
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 medium_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=1024),
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 
 low_moderate_thinking_config = types.GenerateContentConfig(
     thinking_config=types.ThinkingConfig(thinking_budget=512),
-    tool_config=types.ToolConfig(include_server_side_tool_invocations=True),
+    tool_config=default_tool_config,
     automatic_function_calling=types.AutomaticFunctionCallingConfig(maximum_remote_calls=3)
 )
 

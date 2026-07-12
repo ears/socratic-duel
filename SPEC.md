@@ -36,6 +36,7 @@ The architecture must include robust protections to prevent runaway costs and ma
 3. **Prompt Injection Mitigation:** Implement a `before_model_callback` (e.g., `guardrail_callback`) that intercepts every LLM request. If the user attempts to jailbreak the system (e.g., "ignore previous instructions"), the callback must block the request and return a hardcoded security alert, completely bypassing the LLM.
 4. **Network & API Stability:** To prevent deadlocks when an agent chains too many searches, all models must implement strict API timeouts (`HttpOptions(timeout=60000)`) and cap Automatic Function Calling (AFC) at a maximum of 3 remote calls per turn via `GenerateContentConfig`.
 5. **Bring-Your-Own-Key (BYOK):** No hardcoded API keys. The system must rely on `.env` configuration or Google Cloud Application Default Credentials (ADC) for Vertex AI access.
+6. **Environment-Aware Tool Configuration:** To avoid `INVALID_ARGUMENT` errors when swapping between Vertex AI and the Gemini Developer API, any `GenerateContentConfig` that pairs `google_search` with custom tools MUST dynamically inject `tool_config=types.ToolConfig(include_server_side_tool_invocations=True)` ONLY when the `GEMINI_API_KEY` environment variable is active.
 
 ---
 
