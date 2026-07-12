@@ -184,7 +184,7 @@ COMMUNICATION STYLE: Write in crisp, clear, and highly digestible prose.
 ```json
 {
   "decision": "CONTINUE or END",
-  "reasoning": "A brutally honest, surgical diagnosis of the debate. Maximum 20 words. Adopt a clinical, ruthless tone. No introductory filler (e.g., 'I notice that...'). Get straight to the exact logical flaw.",
+  "reasoning": "A brutally honest, surgical diagnosis of the debate. Maximum 21 words. Adopt a clinical, ruthless tone. No introductory filler (e.g., 'I notice that...'). Get straight to the exact logical flaw.",
   "audience_feedback": "A ruthless 10-word maximum pass/fail check on whether the language fits the {target_audience}"
 }
 ```

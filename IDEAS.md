@@ -15,3 +15,13 @@ While we decided to leave the current `STRONG_MODEL` (Pro) and `MID_MODEL` (Flas
 *   **Heavy Lifters:** Shifts down to `gemini-2.5-flash`.
 *   **Fastest Models (Utility/Verifiers):** `gemini-3.1-flash-lite` (or equivalent ultra-fast tier).
 This variant prioritizes the absolute lowest cost and maximum speed possible for casual testing or high-volume demonstrations.
+
+## Expanded Lens Expert Framing
+*Date: 2026-07-12*
+
+Instead of framing the lens expert purely by their title, we could expand their persona definition in the underlying LLM prompts. Specifically, we can add 3 to 5 bullet points to clearly explain:
+*   **Their Expertise:** What domain knowledge they possess.
+*   **Their Mindset:** Their core philosophy or worldview.
+*   **Their Special Method of Reasoning:** The specific logical framework they use to dismantle or support arguments.
+
+This gives the LLM much richer context for its roleplaying. To avoid cluttering the frontend, we wouldn't expose these bullet points directly to the user. Instead, the UI would continue to present a short, elegant summary in the existing style, keeping the interface clean while drastically improving the backend reasoning depth.

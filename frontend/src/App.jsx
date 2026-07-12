@@ -273,9 +273,10 @@ function App() {
               <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-3xl blur opacity-25 group-hover:opacity-40 transition duration-500"></div>
               <textarea 
                 className="relative w-full h-56 p-8 rounded-3xl bg-[var(--card-bg)] border border-[var(--border-color)] focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none text-lg shadow-xl leading-relaxed"
-                placeholder="e.g., Artificial Intelligence will inevitably lead to a post-scarcity economy..."
+                placeholder="e.g., This is how we grow: by being defeated by greater and greater things."
                 value={thesis}
                 onChange={e => setThesis(e.target.value)}
+                autoFocus
               />
             </div>
             

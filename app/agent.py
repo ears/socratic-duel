@@ -270,7 +270,7 @@ from pydantic import BaseModel, Field
 
 class JudgeDecision(BaseModel):
     decision: str = Field(description="Must be exactly 'CONTINUE' or 'END'")
-    reasoning: str = Field(description="A brutally honest, surgical diagnosis of the debate. Maximum 20 words. Adopt a clinical, ruthless tone. No introductory filler (e.g., 'I notice that...'). Get straight to the exact logical flaw.")
+    reasoning: str = Field(description="A brutally honest, surgical diagnosis of the debate. Maximum 21 words. Adopt a clinical, ruthless tone. No introductory filler (e.g., 'I notice that...'). Get straight to the exact logical flaw.")
     audience_feedback: str = Field(description="A ruthless 10-word maximum pass/fail check on whether the language fits the {target_audience}")
 
 
