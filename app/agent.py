@@ -43,12 +43,21 @@ from contextvars import ContextVar
 
 demo_mode_ctx = ContextVar('demo_mode_ctx', default=True)
 
+# Pricing configured per 1M tokens
+LAST_PRICE_UPDATE = "2026-07-12"
+GEMINI_PRICING = {
+    "gemini-3.5-flash": {"input": 1.50, "output": 9.00},
+    "gemini-2.5-flash": {"input": 0.30, "output": 2.50},
+    "gemini-3.1-flash-lite": {"input": 0.25, "output": 1.50},
+    "gemini-3.1-pro": {"input": 1.25, "output": 5.00},
+}
+
 class DynamicGemini(Gemini):
     async def generate_content_async(self, llm_request, stream=False, **kwargs):
         demo_mode = demo_mode_ctx.get()
         selected_model = self.model
         if demo_mode:
-            if self.model in [STRONG_MODEL, MID_MODEL]:
+            if "lite" not in self.model.lower():
                 selected_model = "gemini-2.5-flash"
                 
         temp_model = self.model_copy(update={'model': selected_model}) if hasattr(self, 'model_copy') else self.copy(update={'model': selected_model})
@@ -58,15 +67,46 @@ class DynamicGemini(Gemini):
 
 class TokenCounterPlugin(BasePlugin):
     async def after_model_callback(self, *, callback_context, llm_response):
-        current_tokens = callback_context.session.state.get("total_tokens", 0)
+        token_usage = callback_context.session.state.get("token_usage", {})
         try:
             if hasattr(llm_response, "usage_metadata") and llm_response.usage_metadata:
-                current_tokens += getattr(
-                    llm_response.usage_metadata, "total_token_count", 0
-                )
+                model_name = "gemini-3.5-flash"
+                if hasattr(llm_response, "model_version") and llm_response.model_version:
+                    model_name = llm_response.model_version
+                elif hasattr(callback_context.agent, "model"):
+                    m = getattr(callback_context.agent.model, "model", "gemini-3.5-flash")
+                    model_name = m if isinstance(m, str) else "gemini-3.5-flash"
+                
+                canonical_model = "gemini-3.5-flash"
+                if "lite" in model_name.lower() or "8b" in model_name.lower():
+                    canonical_model = "gemini-3.1-flash-lite"
+                elif "2.5" in model_name.lower():
+                    canonical_model = "gemini-2.5-flash"
+                elif "pro" in model_name.lower():
+                    canonical_model = "gemini-3.1-pro"
+
+                demo_mode = demo_mode_ctx.get()
+                if demo_mode and canonical_model in ["gemini-3.5-flash", "gemini-3.1-pro"]:
+                    canonical_model = "gemini-2.5-flash"
+
+                if canonical_model not in token_usage:
+                    token_usage[canonical_model] = {"input": 0, "output": 0, "thoughts": 0}
+                
+                prompt_tokens = getattr(llm_response.usage_metadata, "prompt_token_count", 0)
+                candidate_tokens = getattr(llm_response.usage_metadata, "candidates_token_count", 0)
+                thoughts_tokens = getattr(llm_response.usage_metadata, "thoughts_token_count", 0)
+                
+                token_usage[canonical_model]["input"] += prompt_tokens
+                token_usage[canonical_model]["output"] += candidate_tokens
+                token_usage[canonical_model]["thoughts"] = token_usage[canonical_model].get("thoughts", 0) + thoughts_tokens
+                
+                # Also track total for backwards compatibility
+                current_tokens = callback_context.session.state.get("total_tokens", 0)
+                current_tokens += getattr(llm_response.usage_metadata, "total_token_count", 0)
+                callback_context.session.state["total_tokens"] = current_tokens
         except Exception:
             pass
-        callback_context.session.state["total_tokens"] = current_tokens
+        callback_context.session.state["token_usage"] = token_usage
         return None
 
 
@@ -161,8 +201,29 @@ def search_semantic_scholar(query: str) -> str:
 
 
 async def append_token_count(callback_context: CallbackContext) -> types.Content | None:
-    tokens = callback_context.session.state.get("total_tokens", 0)
-    msg = f"**Total Tokens Used in Session:** {tokens}"
+    token_usage = callback_context.session.state.get("token_usage", {})
+    total_tokens = 0
+    total_cost = 0.0
+    
+    total_input = 0
+    total_output = 0
+    total_thoughts = 0
+    
+    for model, counts in token_usage.items():
+        inp = counts.get("input", 0)
+        out = counts.get("output", 0)
+        thoughts = counts.get("thoughts", 0)
+        
+        total_input += inp
+        total_output += out
+        total_thoughts += thoughts
+        total_tokens += (inp + out)
+        
+        pricing = GEMINI_PRICING.get(model, GEMINI_PRICING["gemini-3.5-flash"])
+        total_cost += (inp / 1_000_000.0) * pricing["input"]
+        total_cost += (out / 1_000_000.0) * pricing["output"]
+        
+    msg = f"**Total Tokens Used in Session:** {total_tokens} | **Estimated Cost:** ${total_cost:.2f}"
     return types.Content(parts=[types.Part(text=msg)])
 
 
