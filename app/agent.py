@@ -406,10 +406,12 @@ MID_MODEL = "gemini-3.5-flash"
 STRONG_MODEL = "gemini-3.5-flash"
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 def get_tool_config():
     # Only use include_server_side_tool_invocations if we are using the Gemini Developer API (API Key)
-    if os.environ.get("GEMINI_API_KEY"):
+    if os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY"):
         return types.ToolConfig(include_server_side_tool_invocations=True)
     return None
 
