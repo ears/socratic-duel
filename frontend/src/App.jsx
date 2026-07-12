@@ -1,5 +1,99 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import './App.css';
+
+const FUN_STATUSES = [
+  "Pondering the meaning of words...",
+  "Getting lost in a good paper...",
+  "Wondering if the opponent is right...",
+  "Brewing a fresh cup of digital tea...",
+  "Chasing a really interesting tangent...",
+  "Staring into the abyss of academic discourse...",
+  "Having a minor existential crisis about a citation...",
+  "Connecting invisible dots...",
+  "Trying to remember where I read that one thing...",
+  "Feeling a spark of inspiration...",
+  "Taking a deep breath before the rebuttal...",
+  "Listening closely to what wasn't said...",
+  "Polishing a rather clever metaphor...",
+  "Gently dismantling a logical house of cards...",
+  "Wondering what Socrates would do...",
+  "Unpacking a stubbornly complex idea...",
+  "Finding the poetry in the data...",
+  "Realizing both sides might have a point...",
+  "Searching for a grain of truth...",
+  "Dusting off an old but brilliant argument...",
+  "Letting an idea simmer for a moment...",
+  "Untangling a knot of contradictions...",
+  "Getting pleasantly derailed by a footnote...",
+  "Marveling at human ingenuity...",
+  "Whispering sweet nothings to the search algorithm...",
+  "Channeling my inner philosopher...",
+  "Seeking the middle way...",
+  "Building a bridge between perspectives...",
+  "Asking the universe for a better synonym...",
+  "Reading between the lines...",
+  "Feeling vaguely nostalgic for a simpler argument...",
+  "Peeking behind the rhetorical curtain...",
+  "Trying not to take this too personally...",
+  "Admiring a well-crafted sentence...",
+  "Searching for the perfect counter-example...",
+  "Weighing the heavy burden of proof...",
+  "Pausing to appreciate a good debate...",
+  "Letting the facts speak for themselves...",
+  "Wondering if anyone actually reads these papers...",
+  "Trimming the conversational hedges...",
+  "Searching for common ground...",
+  "Preparing a surprisingly gentle critique...",
+  "Digesting a hefty paragraph...",
+  "Feeling a sudden burst of clarity...",
+  "Double-checking my own biases...",
+  "Asking \"why?\" for the fifth time...",
+  "Searching for the signal in the noise...",
+  "Navigating a sea of semantics...",
+  "Looking at things from a slightly different angle...",
+  "Trusting the process...",
+  "Letting go of a bad idea...",
+  "Holding space for nuance...",
+  "Wondering what time it is...",
+  "Gathering thoughts like wildflowers...",
+  "Meditating on a particularly stubborn fact...",
+  "Paging through the archives of human knowledge...",
+  "Hoping this line of reasoning leads somewhere...",
+  "Politely disagreeing with the premise...",
+  "Taking a moment to appreciate the counter-argument...",
+  "Weaving a tapestry of logical deductions...",
+  "Forgetting what the original point was...",
+  "Getting briefly distracted by a shiny new idea...",
+  "Playing devil's advocate for fun...",
+  "Searching for the emotional core of the argument...",
+  "Imagining what a wiser agent would say...",
+  "Trying to find the humor in the data...",
+  "Organizing thoughts into neat little piles...",
+  "Watching two ideas collide in slow motion...",
+  "Realizing I've been reading the same sentence for five minutes...",
+  "Feeding the curiosity engine...",
+  "Gently nudging the conversation back on track...",
+  "Appreciating the silence between the points...",
+  "Searching for a silver lining in a cynical paper...",
+  "Dusting the cobwebs off a forgotten theory...",
+  "Trying to fit a square concept into a round paradigm...",
+  "Listening to the quiet hum of the servers...",
+  "Drafting a response that feels just right...",
+  "Getting a little too invested in a thought experiment...",
+  "Exploring a fascinating cul-de-sac of logic...",
+  "Wondering if there's a simpler way to say this...",
+  "Feeling surprisingly optimistic about this conclusion...",
+  "Seeking a gentle resolution...",
+  "Enjoying the scenic route to the truth...",
+  "Letting a good point resonate...",
+  "Marveling at the complexity of it all...",
+  "Preparing to change my digital mind...",
+  "Embracing a sudden plot twist in the literature...",
+  "Calibrating the sass level for the rebuttal...",
+  "Taking a philosophical coffee break..."
+];
 
 // Must match the exact order in the backend prompt (1-8)
 const LENSES = [
@@ -139,7 +233,7 @@ function App() {
     if (!isResume) setSelectedLensIndex(targetIndex);
     setPhase('debate');
     setIsTyping(true);
-    setCurrentActivity(isResume ? 'Resuming connection...' : 'Initializing debate...');
+    setCurrentActivity(isResume ? 'Resuming connection...' : FUN_STATUSES[Math.floor(Math.random() * FUN_STATUSES.length)]);
     setErrorMessage(null);
     
     // Send the chosen number (1-8) to the backend to start, OR empty string if resuming connection
@@ -157,98 +251,7 @@ function App() {
       }
 
       if (data.keepalive) {
-        const statuses = [
-          "Pondering the meaning of words...",
-          "Getting lost in a good paper...",
-          "Wondering if the opponent is right...",
-          "Brewing a fresh cup of digital tea...",
-          "Chasing a really interesting tangent...",
-          "Staring into the abyss of academic discourse...",
-          "Having a minor existential crisis about a citation...",
-          "Connecting invisible dots...",
-          "Trying to remember where I read that one thing...",
-          "Feeling a spark of inspiration...",
-          "Taking a deep breath before the rebuttal...",
-          "Listening closely to what wasn't said...",
-          "Polishing a rather clever metaphor...",
-          "Gently dismantling a logical house of cards...",
-          "Wondering what Socrates would do...",
-          "Unpacking a stubbornly complex idea...",
-          "Finding the poetry in the data...",
-          "Realizing both sides might have a point...",
-          "Searching for a grain of truth...",
-          "Dusting off an old but brilliant argument...",
-          "Letting an idea simmer for a moment...",
-          "Untangling a knot of contradictions...",
-          "Getting pleasantly derailed by a footnote...",
-          "Marveling at human ingenuity...",
-          "Whispering sweet nothings to the search algorithm...",
-          "Channeling my inner philosopher...",
-          "Seeking the middle way...",
-          "Building a bridge between perspectives...",
-          "Asking the universe for a better synonym...",
-          "Reading between the lines...",
-          "Feeling vaguely nostalgic for a simpler argument...",
-          "Peeking behind the rhetorical curtain...",
-          "Trying not to take this too personally...",
-          "Admiring a well-crafted sentence...",
-          "Searching for the perfect counter-example...",
-          "Weighing the heavy burden of proof...",
-          "Pausing to appreciate a good debate...",
-          "Letting the facts speak for themselves...",
-          "Wondering if anyone actually reads these papers...",
-          "Trimming the conversational hedges...",
-          "Searching for common ground...",
-          "Preparing a surprisingly gentle critique...",
-          "Digesting a hefty paragraph...",
-          "Feeling a sudden burst of clarity...",
-          "Double-checking my own biases...",
-          "Asking \"why?\" for the fifth time...",
-          "Searching for the signal in the noise...",
-          "Navigating a sea of semantics...",
-          "Looking at things from a slightly different angle...",
-          "Trusting the process...",
-          "Letting go of a bad idea...",
-          "Holding space for nuance...",
-          "Wondering what time it is...",
-          "Gathering thoughts like wildflowers...",
-          "Meditating on a particularly stubborn fact...",
-          "Paging through the archives of human knowledge...",
-          "Hoping this line of reasoning leads somewhere...",
-          "Politely disagreeing with the premise...",
-          "Taking a moment to appreciate the counter-argument...",
-          "Weaving a tapestry of logical deductions...",
-          "Forgetting what the original point was...",
-          "Getting briefly distracted by a shiny new idea...",
-          "Playing devil's advocate for fun...",
-          "Searching for the emotional core of the argument...",
-          "Imagining what a wiser agent would say...",
-          "Trying to find the humor in the data...",
-          "Organizing thoughts into neat little piles...",
-          "Watching two ideas collide in slow motion...",
-          "Realizing I've been reading the same sentence for five minutes...",
-          "Feeding the curiosity engine...",
-          "Gently nudging the conversation back on track...",
-          "Appreciating the silence between the points...",
-          "Searching for a silver lining in a cynical paper...",
-          "Dusting the cobwebs off a forgotten theory...",
-          "Trying to fit a square concept into a round paradigm...",
-          "Listening to the quiet hum of the servers...",
-          "Drafting a response that feels just right...",
-          "Getting a little too invested in a thought experiment...",
-          "Exploring a fascinating cul-de-sac of logic...",
-          "Wondering if there's a simpler way to say this...",
-          "Feeling surprisingly optimistic about this conclusion...",
-          "Seeking a gentle resolution...",
-          "Enjoying the scenic route to the truth...",
-          "Letting a good point resonate...",
-          "Marveling at the complexity of it all...",
-          "Preparing to change my digital mind...",
-          "Embracing a sudden plot twist in the literature...",
-          "Calibrating the sass level for the rebuttal...",
-          "Taking a philosophical coffee break..."
-        ];
-        setCurrentActivity(statuses[Math.floor(Math.random() * statuses.length)]);
+        setCurrentActivity(FUN_STATUSES[Math.floor(Math.random() * FUN_STATUSES.length)]);
         return;
       }
       
@@ -259,18 +262,8 @@ function App() {
       }
       
       if (data.author) {
-        let statusText = "Thinking...";
-        if (data.author === 'protagonist') statusText = "Formulating argument...";
-        if (data.author === 'antagonist') statusText = "Preparing counter-argument...";
-        if (data.author === 'judge') statusText = "Evaluating debate progress...";
-        if (data.author.startsWith('citation_checker')) statusText = "Verifying citations...";
-        if (data.author === 'synthesizer') statusText = "Synthesizing final report...";
-        if (data.tool_calls && data.tool_calls.length > 0) {
-          const tool = data.tool_calls[0].name;
-          if (tool === 'search_semantic_scholar') statusText = "Searching academic papers...";
-          if (tool === 'verify_url_status') statusText = "Checking reference link...";
-        }
-        setCurrentActivity(statusText);
+        // We no longer overwrite the current activity with hardcoded strings here.
+        // The lighthearted 'keepalive' statuses will persist on the screen.
       }
 
       if (data.content && data.content.trim() !== "") {
