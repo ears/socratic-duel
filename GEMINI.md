@@ -62,6 +62,13 @@ Ask the user: Option A (simple single-project) or Option B (full CI/CD pipeline 
 - **Terraform conflicts** (Error 409): Use `terraform import` instead of retrying creation.
 - **Git Commits**: NEVER use `git add .` or `git commit -a`. Always stage specific files explicitly using `git add <filename>` to prevent accidentally committing secrets or untracked files.
 
+## Release Management
+
+- **Release Tracking**: All notable changes are tracked in `RELEASES.md` located in the project root.
+- **Versioning Scheme**: We use a two-digit major/minor system (e.g., `1.00`, `1.01`, `1.10`, `2.00`). The minor version is always padded to two digits.
+- **AI Behavior**: Do NOT suggest or automatically increment release numbers when creating commits or making changes. The human developer will manually trigger a new release. When asked to help cut a release, follow the existing format in `RELEASES.md` and organize changes into `### Added`, `### Changed`, `### Fixed`, etc., omitting unused categories.
+- **Git Integration**: Releases are marked with Git tags (e.g., `v1.00`) by the human developer. Do NOT clutter `RELEASES.md` with commit hashes.
+
 ## Agent skills
 
 ### Issue tracker
