@@ -199,6 +199,8 @@ tests/load_test/.results/*.csv
 my_env.tfvars
 .saved_chats
 .env
+.env-VERTEX
+.env-API-KEY
 .google-agents-cli/
 
 # A2A Inspector
