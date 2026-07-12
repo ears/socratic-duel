@@ -4,11 +4,13 @@ This document serves as the central "Source of Truth" for the `socratic-duel` pr
 
 ---
 
-## 1. Purpose & Why
+## 1. The Overarching Value Proposition & Purpose
 
-**The Problem:** When standard LLMs are asked to analyze complex theses or arguments, they often produce a generic, middle-of-the-road consensus that lacks academic rigor and fails to expose critical blind spots.
-**The Solution:** "Socratic Duel". This system avoids generic consensus by actively forcing a rigorous dialectical debate between specialized academic lenses, stress-testing ideas through structured opposition.
-**The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper. The user provides a thesis, and the system suggests an appropriate epistemic lens (e.g., The Empiricist, The Systems Theorist) while listing all 8 available options. Once the user selects a lens, the system pits a dynamically assigned protagonist against a contrarian in an interactive reflection loop. They aggressively stress-test the user's thesis. Only after this loop concludes does a Synthesizer agent combine the arguments into a comprehensive, interdisciplinary report that highlights both methodological integrity and profound blind spots.
+> **CRITICAL INSTRUCTION FOR ALL AI CODING AGENTS:** Do NOT alter the architecture, prompts, or loop logic in any way that violates or dilutes the core value proposition described below.
+
+**The Problem:** Standard LLMs suffer from "consensus bias"—they provide safe, middle-of-the-road summaries that lack academic rigor and fail to stress-test ideas.
+**The Solution:** "Socratic Duel". This system avoids generic consensus by actively forcing a rigorous adversarial debate between specialized academic lenses, exposing hidden biases and empirical gaps.
+**The Purpose:** The system employs a Human-In-The-Loop (HITL) gatekeeper to ensure the user dictates the debate's anchor (the "lens"). Then, a tightly controlled ADK `LoopAgent` pits a Protagonist against a Contrarian to aggressively stress-test the thesis. Finally, a Synthesizer builds a clean, interdisciplinary report highlighting methodological integrity and profound blind spots.
 
 ---
 
@@ -55,16 +57,16 @@ The backend must consist of the following orchestrated ADK components. To optimi
   - **Utility / Verifiers (`citation_checker_proto`, `citation_checker_anto`, `triage_researcher`)**: Disabled (Standard generation). Optimized for speed during straightforward retrieval and fact extraction.
 
 - **`triage_researcher`**: A sub-agent equipped with `google_search` that provides real-world context for a thesis.
-- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline.
+- **`interactive_planner` (Root)**: The overarching orchestrator that enforces the HITL two-phase model. It utilizes an `AgentTool` to delegate initial web research to the `triage_researcher`, interacts with the user to select a lens, and then delegates the workload to the main pipeline. *[VALUE DELIVERED: Prevents AI sycophancy by forcing the user to anchor the debate to a specific worldview before execution begins.]*
 - **`research_pipeline`**: A `SequentialAgent` that strictly enforces the order of operations:
   1. **`debate_loop`**: A `LoopAgent` that runs the dialectical debate.
       - **`protagonist`**: Generates the initial epistemic frame using the dynamically injected `{chosen_lens}`.
-      - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations.
+      - **`citation_checker_proto`**: An Academic Integrity Auditor that intercepts the protagonist's draft, verifies citations via web search, and removes hallucinations. *[VALUE DELIVERED: Radically eliminates AI hallucinations by physically verifying URLs before the user sees them.]*
       - **`antagonist`**: Critiques the protagonist from the contrarian perspective of the `{chosen_lens}`.
-      - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search.
-      - **`judge`**: A semantic stopping condition agent that reviews the debate. It skips the first 2 rounds of the debate (via a pre-execution callback) to let arguments develop. When active, it uses a strict grading rubric (checking for strawmen, empirical gaps, and circular rhetoric) to determine if the debate has stagnated, explicitly keeping feedback short, crisp, and actionable. It must be highly lenient and allow multiple rounds of debate before outputting a structured JSON decision (via `response_schema`) to either continue or end the debate.
+      - **`citation_checker_anto`**: An Academic Integrity Auditor that verifies the antagonist's citations via web search. *[VALUE DELIVERED: Radically eliminates AI hallucinations by physically verifying URLs before the user sees them.]*
+      - **`judge`**: A semantic stopping condition agent that reviews the debate. It skips the first 2 rounds of the debate (via a pre-execution callback) to let arguments develop. When active, it uses a strict grading rubric (checking for strawmen, empirical gaps, and circular rhetoric) to determine if the debate has stagnated, explicitly keeping feedback short, crisp, and actionable. It must be highly lenient and allow multiple rounds of debate before outputting a structured JSON decision (via `response_schema`) to either continue or end the debate. *[VALUE DELIVERED: Acts as a cost-saving circuit breaker that kills the debate the exact moment it stops producing novel insights.]*
       - **`escalator`**: The `BaseAgent` that counts iterations and checks for consensus (by parsing the Judge's structured JSON output), stopping the loop at a hard limit of 5 rounds. If the hard limit is reached, it dynamically injects a final system message into the UI stream *as the Judge*, explaining that the iteration limit was triggered.
-  2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report.
+  2. **`synthesizer`**: Reads the final state of the debate, conducts a web search for overarching concepts, and generates the output report. *[VALUE DELIVERED: Does the heavy lifting of sense-making for the user by turning a messy debate into a mathematically clean, highly structured report.]*
 
 ---
 

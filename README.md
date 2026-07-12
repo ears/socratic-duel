@@ -9,11 +9,12 @@ Standard Large Language Models (LLMs) suffer from **consensus bias**. When asked
 ## The Solution
 Socratic Duel is a multi-agent framework that replaces passive compliance with **adversarial debate**. Instead of defaulting to a safe consensus, it locks **specialized academic lenses**—such as The Empiricist or The Systems Theorist—into intellectual sparring. This friction ruthlessly exposes hidden biases, logical flaws, and empirical gaps, delivering a raw, **stress-tested audit** of your thesis.
 
-## Core Values
-* **Ground-Truth Anchoring:** Forces LLMs to argue from a chosen, unyielding worldview rather than defaulting to sycophantic, middle-of-the-road personas.
-* **Zero-Trust Citation Auditing:** Deploys dedicated integrity agents to intercept drafts in real-time, verifying every URL, quote, and source citation to permanently purge hallucinations.
-* **Cognitive Depth Attunement:** Automatically calibrates vocabulary, tone, and conceptual complexity to match a defined target audience—scaling seamlessly from a 15-year-old to a PhD-level researcher.
-* **Stagnation Circuit-Breakers:** Employs a Semantic Judge to monitor the debate in real-time, killing the run the instant arguments stall or loop to eliminate token waste.
+## 🚀 Key Features & User Benefits
+- **Zero-Trust Citation Auditing:** *Benefit:* Radically eliminates hallucinations. Specialized agents physically scrape every cited URL in real-time; if a link is dead or the claim is unsupported, it is purged before you ever see it, guaranteeing absolute academic integrity.
+- **Human-In-The-Loop Triage & Ground-Truth Anchoring:** *Benefit:* Puts you in control and prevents generic "AI sycophancy". You choose exactly which academic lens (e.g., The Ethicist, The Empiricist) the debaters must anchor their arguments to.
+- **Dynamic Cognitive Profiling:** *Benefit:* Ensures the debate is always perfectly digestible for your specific needs, dynamically calibrating the vocabulary and conceptual depth from a high-school level to a PhD standard.
+- **Cost-Conscious Architecture & Demo Mode:** *Benefit:* Keeps your API bills low. A Semantic Judge acts as a circuit-breaker to kill the debate the second arguments stall, while a UI "Demo Mode" toggle lets you instantly cascade to cheaper models for casual testing.
+- **Interdisciplinary Synthesis:** *Benefit:* Does the heavy lifting of sense-making for you. A final agent compiles the raw back-and-forth into a beautifully structured, highly readable Markdown report complete with a custom glossary.
 
 <br>
 <div align="center">
@@ -111,17 +112,6 @@ pie title "Agent Model Allocation (Vertex AI: Global)"
     "gemini-3.1-flash-lite (Checkers)" : 2
     "gemini-3.5-flash (Orchestrator, Debaters, Synthesizer, Judge, Triage)" : 6
 ```
-
-## 🚀 Core Features & Agentic Architecture
-- **Flash-First Optimization Strategy:** Intelligently routes tasks across Vertex AI to balance cost and reasoning depth. Employs `gemini-3.5-flash` for the heavy lifters (debaters, judge, orchestrator, synthesizer) and parallel `gemini-3.1-flash-lite` models for rapid citation auditing.
-- **Radical Hallucination Mitigation:** "Academic Integrity Auditors" intercept drafts and actively scrape every cited URL in real-time. If a link is dead, hallucinated, or empirically incorrect, the auditor silently scrubs it before the user ever sees it.
-- **Dynamic Cognitive Profiling:** Automatically adapts the debate's vocabulary, tone, and conceptual depth based on a defined "Target Audience" complexity level (from 15-year-old to PhD).
-- **Demo Mode:** An optional frontend toggle switch ("faster, less costly"). When enabled, the `DynamicGemini` model wrapper dynamically cascades the heavy lifter models down to `gemini-2.5-flash`, drastically cutting costs during testing or casual use.
-- **Human-In-The-Loop Triage:** An Interactive Planner orchestrator that triages the thesis, strictly blocks prompt injections via ADK callbacks, and halts execution until you select 1 of 8 epistemic lenses (e.g., *The Ethicist*).
-- **Finite Dialectical Loop:** A tightly controlled ADK `LoopAgent` pits a Protagonist against an Antagonist. A Semantic Judge can end the debate early if arguments stagnate, while an Escalation circuit-breaker enforces a hard limit of 5 iterations to prevent token explosion.
-- **Interdisciplinary Synthesis:** A final Synthesizer agent conducts meta-research on the transcript, authoring a mathematically clean Markdown report complete with a dynamic glossary.
-- **Global Cost Tracking:** A custom ADK App-level plugin intercepts every agent invocation to automatically tally token usage across the entire session, ensuring budget transparency.
-
 
 ## Project Structure
 
