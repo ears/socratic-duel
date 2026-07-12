@@ -528,7 +528,7 @@ Review the following draft by the Protagonist: {protagonist_draft}
 ---DRAFT---
 <The full finalized text here>
 
-CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations. You are STRICTLY FORBIDDEN from adding new text, new citations, or trying to "fix" dead URLs by searching for replacements.
+CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. You must preserve the original text exactly, EXCEPT when removing unverified citations. When removing an unverified citation, you MUST delete the entire sentence or the specific claim that the citation was supporting. Deleting the claim to ensure no unbacked assertions remain DOES NOT violate the rule to preserve original text. You are STRICTLY FORBIDDEN from adding new text, new citations, or trying to "fix" dead URLs by searching for replacements.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
@@ -605,7 +605,7 @@ Review the following critique drafted by the Antagonist: {antagonist_draft}
 ---DRAFT---
 <The full finalized text here>
 
-CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. Preserve the original text exactly, except for the removal of unverified citations.
+CRITICAL CONSTRAINT: You must ONLY check alleged citations. Do NOT alter, critique, or rewrite the core arguments. You must preserve the original text exactly, EXCEPT when removing unverified citations. When removing an unverified citation, you MUST delete the entire sentence or the specific claim that the citation was supporting. Deleting the claim to ensure no unbacked assertions remain DOES NOT violate the rule to preserve original text. You are STRICTLY FORBIDDEN from adding new text, new citations, or trying to "fix" dead URLs by searching for replacements.
 
 CRITICAL LANGUAGE CONSTRAINT: You must write your entire response in {language}. However, DO NOT translate the `[STATUS: ...]` and `---DRAFT---` formatting tags. They must remain exactly in English for the backend parser to work.
 
