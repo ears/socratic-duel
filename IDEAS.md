@@ -43,3 +43,6 @@ Take the paragraph about the intellectual black belts from a write-up and incorp
 *Date: 2026-07-13*
 
 Concept to be added to `README.md`: There is a random element to the process. Let yourself be surprised by unexpected highlights and unconventional thoughts.
+
+## Use MCP 
+
