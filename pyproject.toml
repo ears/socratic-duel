@@ -33,6 +33,7 @@ dev = [
     "pytest-asyncio>=1.0.0,<2.0.0",
     "nest-asyncio>=1.6.0,<2.0.0",
     "pytest-html>=4.2.0",
+    "pytest-rerunfailures>=15.0",
 ]
 
 [project.optional-dependencies]
@@ -103,6 +104,7 @@ build-backend = "hatchling.build"
 [tool.pytest.ini_options]
 pythonpath = "."
 asyncio_default_fixture_loop_scope = "function"
+addopts = "--reruns 3 --reruns-delay 5"
 
 [tool.hatch.build.targets.wheel]
 packages = ["app","frontend"]
